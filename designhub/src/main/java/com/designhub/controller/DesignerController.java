@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.designhub.entity.Designer;
 import com.designhub.service.DesignerService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/designers")
 public class DesignerController {
@@ -43,7 +45,7 @@ public class DesignerController {
 
     @PostMapping
     public ResponseEntity<Designer> createDesigner(
-            @RequestBody Designer designer) {
+            @Valid @RequestBody Designer designer) {
 
         return ResponseEntity.ok(
                 designerService.createDesigner(designer)
@@ -53,7 +55,7 @@ public class DesignerController {
     @PutMapping("/{id}")
     public ResponseEntity<Designer> updateDesigner(
             @PathVariable Long id,
-            @RequestBody Designer designer) {
+            @Valid @RequestBody Designer designer) {
 
         return designerService.updateDesigner(id, designer)
                 .map(ResponseEntity::ok)

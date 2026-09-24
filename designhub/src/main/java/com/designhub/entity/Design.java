@@ -46,10 +46,12 @@ public class Design {
 
     private LocalDateTime createdAt;
 
+    @NotNull(message = "Danh mục không được để trống")
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @NotNull(message = "Designer không được để trống")
     @ManyToOne
     @JoinColumn(name = "designer_id", nullable = false)
     private Designer designer;
