@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,25 +23,32 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "design_images")
+@Table(name = "design_files")
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString(exclude = "design")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class DesignImage {
+public class DesignFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank(message = "URL hình ảnh không được để trống")
+    @NotBlank(message = "Tên file không được để trống")
+    @Size(max = 255, message = "Tên file không được vượt quá 255 ký tự")
     @Column(nullable = false)
-    private String imageUrl;
+    private String fileName;
 
-    private boolean isPrimary;
+    @NotBlank(message = "Đường dẫn file không được để trống")
+    @Column(nullable = false)
+    private String fileUrl;
+
+    private Long fileSize;
+
+    private String fileType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id", nullable = false)

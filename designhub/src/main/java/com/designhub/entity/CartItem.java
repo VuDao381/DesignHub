@@ -2,6 +2,7 @@ package com.designhub.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -13,8 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,34 +26,48 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "design_images")
+@Table(name = "cart_items")
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = "design")
+@ToString(exclude = { "cart", "design" })
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class DesignImage {
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank(message = "URL hình ảnh không được để trống")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
+    @Max(value = 100, message = "Số lượng không được vượt quá 100")
     @Column(nullable = false)
-    private String imageUrl;
+    private int quantity = 1;
 
-    private boolean isPrimary;
+    @JsonIgnore
+    @NotNull(message = "Cart không được để trống")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
+    @NotNull(message = "Design không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id", nullable = false)
     private Design design;
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

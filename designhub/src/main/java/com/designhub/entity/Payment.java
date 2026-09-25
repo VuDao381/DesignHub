@@ -27,48 +27,47 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "designs")
+@Table(name = "payments")
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"category", "designer"})
+@ToString(exclude = "order")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Design {
+public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank(message = "Tên thiết kế không được để trống")
-    @Size(max = 255, message = "Tên thiết kế không được vượt quá 255 ký tự")
-    @Column(nullable = false)
-    private String name;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @NotNull(message = "Giá không được để trống")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Giá phải lớn hơn 0")
+    @NotNull(message = "Số tiền thanh toán không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Số tiền thanh toán phải lớn hơn 0")
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal amount;
 
-    private String status;
+    @NotBlank(message = "Phương thức thanh toán không được để trống")
+    @Size(max = 50, message = "Phương thức thanh toán không được vượt quá 50 ký tự")
+    @Column(nullable = false, length = 50)
+    private String paymentMethod;
+
+    @Size(max = 100, message = "Mã giao dịch không được vượt quá 100 ký tự")
+    @Column(length = 100)
+    private String transactionId;
+
+    @Column(nullable = false, length = 30)
+    private String status = "PENDING";
+
+    private LocalDateTime paymentDate;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
-    @NotNull(message = "Danh mục không được để trống")
+    @NotNull(message = "Đơn hàng không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
-    @NotNull(message = "Designer không được để trống")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "designer_id", nullable = false)
-    private Designer designer;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @PrePersist
     public void prePersist() {
