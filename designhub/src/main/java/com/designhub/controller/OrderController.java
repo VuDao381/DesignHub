@@ -61,6 +61,15 @@ public class OrderController {
         );
     }
 
+    @PostMapping("/from-cart/{cartId}")
+    public ResponseEntity<Order> createOrderFromCart(
+            @PathVariable Long cartId) {
+
+        return ResponseEntity.ok(
+                orderService.createOrderFromCart(cartId)
+        );
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Order> updateOrder(
             @PathVariable Long id,

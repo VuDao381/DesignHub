@@ -6,8 +6,12 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.designhub.entity.Cart;
 import com.designhub.entity.CartItem;
+import com.designhub.entity.Design;
 import com.designhub.repository.CartItemRepository;
+import com.designhub.repository.CartRepository;
+import com.designhub.repository.DesignRepository;
 
 @Service
 @Transactional
@@ -17,9 +21,22 @@ public class CartItemService {
     private static final int MAX_QUANTITY = 100;
 
     private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository;
+    private final DesignRepository designRepository;
 
-    public CartItemService(CartItemRepository cartItemRepository) {
+    public CartItemService(
+            CartItemRepository cartItemRepository,
+            CartRepository cartRepository,
+            DesignRepository designRepository) {
+
         this.cartItemRepository = cartItemRepository;
+        this.cartRepository = cartRepository;
+        this.designRepository = designRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CartItem> getAllItems() {
+        return cartItemRepository.findAll();
     }
 
     @Transactional(readOnly = true)
@@ -44,26 +61,55 @@ public class CartItemService {
     }
 
     public CartItem createItem(CartItem cartItem) {
+
         validateQuantity(cartItem.getQuantity());
 
-        if (cartItem.getCart() == null || cartItem.getCart().getId() == null) {
-            throw new IllegalArgumentException("CartItem phải gắn với một cart hợp lệ");
-        }
-        if (cartItem.getDesign() == null || cartItem.getDesign().getId() == null) {
-            throw new IllegalArgumentException("CartItem phải gắn với một design hợp lệ");
+        if (cartItem.getCart() == null
+                || cartItem.getCart().getId() == null) {
+            throw new IllegalArgumentException(
+                    "CartItem phải gắn với một cart hợp lệ");
         }
 
+        if (cartItem.getDesign() == null
+                || cartItem.getDesign().getId() == null) {
+            throw new IllegalArgumentException(
+                    "CartItem phải gắn với một design hợp lệ");
+        }
+
+        Long cartId = cartItem.getCart().getId();
+        Long designId = cartItem.getDesign().getId();
+
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(()
+                        -> new IllegalArgumentException(
+                        "Cart không tồn tại"));
+
+        Design design = designRepository.findById(designId)
+                .orElseThrow(()
+                        -> new IllegalArgumentException(
+                        "Design không tồn tại"));
+
         return cartItemRepository
-                .findByCartIdAndDesignId(
-                        cartItem.getCart().getId(),
-                        cartItem.getDesign().getId())
+                .findByCartIdAndDesignId(cartId, designId)
                 .map(existing -> {
-                    int newQuantity = existing.getQuantity() + cartItem.getQuantity();
+
+                    int newQuantity
+                            = existing.getQuantity()
+                            + cartItem.getQuantity();
+
                     validateQuantity(newQuantity);
+
                     existing.setQuantity(newQuantity);
+
                     return cartItemRepository.save(existing);
                 })
-                .orElseGet(() -> cartItemRepository.save(cartItem));
+                .orElseGet(() -> {
+
+                    cartItem.setCart(cart);
+                    cartItem.setDesign(design);
+
+                    return cartItemRepository.save(cartItem);
+                });
     }
 
     public Optional<CartItem> updateItem(
@@ -74,13 +120,17 @@ public class CartItemService {
 
         return cartItemRepository.findById(id)
                 .map(existingItem -> {
-                    existingItem.setQuantity(cartItem.getQuantity());
+
+                    existingItem.setQuantity(
+                            cartItem.getQuantity()
+                    );
 
                     return cartItemRepository.save(existingItem);
                 });
     }
 
     public boolean deleteItem(Long id) {
+
         if (!cartItemRepository.existsById(id)) {
             return false;
         }
@@ -90,9 +140,16 @@ public class CartItemService {
     }
 
     private void validateQuantity(int quantity) {
-        if (quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
+
+        if (quantity < MIN_QUANTITY
+                || quantity > MAX_QUANTITY) {
+
             throw new IllegalArgumentException(
-                    "Số lượng phải trong khoảng " + MIN_QUANTITY + " - " + MAX_QUANTITY);
+                    "Số lượng phải trong khoảng "
+                    + MIN_QUANTITY
+                    + " - "
+                    + MAX_QUANTITY
+            );
         }
     }
 }

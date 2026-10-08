@@ -45,6 +45,13 @@ public class CartItemController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping
+    public ResponseEntity<List<CartItem>> getAllItems() {
+        return ResponseEntity.ok(
+                cartItemService.getAllItems()
+        );
+    }
+
     @PostMapping
     public ResponseEntity<CartItem> createItem(
             @Valid @RequestBody CartItem cartItem) {

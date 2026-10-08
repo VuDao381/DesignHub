@@ -14,10 +14,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,47 +24,44 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "cart_items")
+@Table(
+        name = "favorites",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_favorite_user_design",
+                    columnNames = {"user_id", "design_id"}
+            )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"cart", "design"})
+@ToString(exclude = {"user", "design"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class CartItem {
+public class Favorite {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
-    @Max(value = 100, message = "Số lượng không được vượt quá 100")
-    @Column(nullable = false)
-    private int quantity = 1;
-
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotNull(message = "User không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @NotNull(message = "Design không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id", nullable = false)
     private Design design;
 
+    @Column(nullable = false)
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 }
