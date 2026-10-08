@@ -9,4 +9,9 @@ import com.designhub.entity.Order;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserId(Long userId);
+
+    boolean existsByUserIdAndStatusAndOrderDetailsDesignId(
+            Long userId,
+            String status,
+            Long designId);
 }
