@@ -11,29 +11,34 @@ import com.designhub.entity.Favorite;
 import com.designhub.entity.User;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.FavoriteRepository;
-import com.designhub.repository.UserRepository;
+import com.designhub.security.CurrentUserService;
 
 @Service
 @Transactional
 public class FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
-    private final UserRepository userRepository;
     private final DesignRepository designRepository;
+    private final CurrentUserService currentUserService;
 
     public FavoriteService(
             FavoriteRepository favoriteRepository,
-            UserRepository userRepository,
-            DesignRepository designRepository) {
-
+            DesignRepository designRepository,
+            CurrentUserService currentUserService) {
         this.favoriteRepository = favoriteRepository;
-        this.userRepository = userRepository;
         this.designRepository = designRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
     public List<Favorite> getAllFavorites() {
         return favoriteRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Favorite> getMyFavorites() {
+        User me = currentUserService.getCurrentUser();
+        return favoriteRepository.findByUserId(me.getId());
     }
 
     @Transactional(readOnly = true)
@@ -58,60 +63,32 @@ public class FavoriteService {
 
         return favoriteRepository.findByUserIdAndDesignId(
                 userId,
-                designId
-        );
+                designId);
     }
 
     public Favorite createFavorite(Favorite favorite) {
-
-        if (favorite.getUser() == null
-                || favorite.getUser().getId() == null) {
-
-            throw new IllegalArgumentException(
-                    "Favorite phải gắn với một user hợp lệ");
+        if (favorite.getDesign() == null || favorite.getDesign().getId() == null) {
+            throw new IllegalArgumentException("Favorite phải gắn với một design hợp lệ");
         }
-
-        if (favorite.getDesign() == null
-                || favorite.getDesign().getId() == null) {
-
-            throw new IllegalArgumentException(
-                    "Favorite phải gắn với một design hợp lệ");
-        }
-
-        Long userId = favorite.getUser().getId();
+        User me = currentUserService.getCurrentUser();
         Long designId = favorite.getDesign().getId();
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
-                        "User không tồn tại"));
-
         Design design = designRepository.findById(designId)
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
-                        "Design không tồn tại"));
-
-        if (favoriteRepository.existsByUserIdAndDesignId(
-                userId,
-                designId)) {
-
-            throw new IllegalArgumentException(
-                    "Design này đã được yêu thích");
+                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+        if (favoriteRepository.existsByUserIdAndDesignId(me.getId(), designId)) {
+            throw new IllegalArgumentException("Thiết kế đã có trong danh sách yêu thích");
         }
-
-        favorite.setUser(user);
+        favorite.setUser(me);
         favorite.setDesign(design);
-
         return favoriteRepository.save(favorite);
     }
 
     public boolean deleteFavorite(Long id) {
-
-        if (!favoriteRepository.existsById(id)) {
-            return false;
-        }
-
-        favoriteRepository.deleteById(id);
-        return true;
+        return favoriteRepository.findById(id)
+                .map(favorite -> {
+                    currentUserService.checkOwnerOrAdmin(favorite.getUser().getId());
+                    favoriteRepository.delete(favorite);
+                    return true;
+                })
+                .orElse(false);
     }
 }

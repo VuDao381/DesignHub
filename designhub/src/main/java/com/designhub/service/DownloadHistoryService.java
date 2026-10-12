@@ -13,27 +13,27 @@ import com.designhub.entity.User;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.DownloadHistoryRepository;
 import com.designhub.repository.OrderRepository;
-import com.designhub.repository.UserRepository;
+import com.designhub.security.CurrentUserService;
 
 @Service
 @Transactional
 public class DownloadHistoryService {
 
     private final DownloadHistoryRepository downloadHistoryRepository;
-    private final UserRepository userRepository;
     private final DesignRepository designRepository;
     private final OrderRepository orderRepository;
+    private final CurrentUserService currentUserService;
 
     public DownloadHistoryService(
             DownloadHistoryRepository downloadHistoryRepository,
-            UserRepository userRepository,
             DesignRepository designRepository,
-            OrderRepository orderRepository) {
+            OrderRepository orderRepository,
+            CurrentUserService currentUserService) {
 
         this.downloadHistoryRepository = downloadHistoryRepository;
-        this.userRepository = userRepository;
         this.designRepository = designRepository;
         this.orderRepository = orderRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +43,17 @@ public class DownloadHistoryService {
 
     @Transactional(readOnly = true)
     public Optional<DownloadHistory> getDownloadHistoryById(Long id) {
-        return downloadHistoryRepository.findById(id);
+        return downloadHistoryRepository.findById(id)
+                .map(history -> {
+                    currentUserService.checkOwnerOrAdmin(history.getUser().getId());
+                    return history;
+                });
+    }
+
+    @Transactional(readOnly = true)
+    public List<DownloadHistory> getMyDownloadHistories() {
+        User me = currentUserService.getCurrentUser();
+        return downloadHistoryRepository.findByUserId(me.getId());
     }
 
     @Transactional(readOnly = true)
@@ -65,34 +75,24 @@ public class DownloadHistoryService {
                 .findByUserIdAndDesignId(userId, designId);
     }
 
-    public DownloadHistory createDownloadHistory(
-            Long userId,
-            Long designId) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
-                        "User không tồn tại"));
+    public DownloadHistory createDownloadHistory(Long designId) {
+        User me = currentUserService.getCurrentUser();
 
         Design design = designRepository.findById(designId)
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
-                        "Design không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
 
         boolean hasPurchased = orderRepository
                 .existsByUserIdAndStatusAndOrderDetailsDesignId(
-                        userId,
+                        me.getId(),
                         "PAID",
                         designId);
 
-        if (!hasPurchased) {
-            throw new IllegalArgumentException(
-                    "User chưa mua Design này");
+        if (!hasPurchased && !currentUserService.isAdmin()) {
+            throw new IllegalArgumentException("Bạn chưa mua thiết kế này");
         }
 
-        Optional<DownloadHistory> existingHistory
-                = downloadHistoryRepository
-                        .findByUserIdAndDesignId(userId, designId);
+        Optional<DownloadHistory> existingHistory = downloadHistoryRepository
+                .findByUserIdAndDesignId(me.getId(), designId);
 
         if (existingHistory.isPresent()) {
             DownloadHistory history = existingHistory.get();
@@ -101,7 +101,7 @@ public class DownloadHistoryService {
         }
 
         DownloadHistory history = new DownloadHistory();
-        history.setUser(user);
+        history.setUser(me);
         history.setDesign(design);
         history.setDownloadedAt(LocalDateTime.now());
 
@@ -109,12 +109,13 @@ public class DownloadHistoryService {
     }
 
     public boolean deleteDownloadHistory(Long id) {
-
-        if (!downloadHistoryRepository.existsById(id)) {
-            return false;
-        }
-
-        downloadHistoryRepository.deleteById(id);
-        return true;
+        return downloadHistoryRepository.findById(id)
+                .map(history -> {
+                    currentUserService.checkOwnerOrAdmin(history.getUser().getId());
+                    downloadHistoryRepository.delete(history);
+                    return true;
+                })
+                .orElse(false);
     }
+
 }

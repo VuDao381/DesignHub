@@ -9,18 +9,22 @@ import com.designhub.dto.LoginRequest;
 import com.designhub.dto.RegisterRequest;
 import com.designhub.entity.User;
 import com.designhub.repository.UserRepository;
+import com.designhub.security.JwtService;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -49,13 +53,11 @@ public class AuthService {
                 ? null
                 : request.phone().trim());
 
-        // Người đăng ký công khai mặc định là CUSTOMER.
-        // Không nhận role từ request để tránh tự cấp quyền ADMIN.
         user.setRole("CUSTOMER");
 
         User savedUser = userRepository.save(user);
 
-        return toAuthResponse(savedUser);
+        return toAuthResponse(savedUser, null);
     }
 
     @Transactional(readOnly = true)
@@ -72,16 +74,21 @@ public class AuthService {
                     "Username hoặc mật khẩu không đúng");
         }
 
-        return toAuthResponse(user);
+        String token = jwtService.generateToken(
+                user.getUsername(),
+                user.getRole());
+
+        return toAuthResponse(user, token);
     }
 
-    private AuthResponse toAuthResponse(User user) {
+    private AuthResponse toAuthResponse(User user, String token) {
         return new AuthResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
                 user.getPhone(),
-                user.getRole());
+                user.getRole(),
+                token);
     }
 }

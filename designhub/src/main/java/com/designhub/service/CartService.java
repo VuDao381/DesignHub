@@ -6,26 +6,66 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.designhub.entity.Cart;
+import com.designhub.entity.User;
 import com.designhub.repository.CartRepository;
+import com.designhub.security.CurrentUserService;
 
 @Service
 @Transactional
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final CurrentUserService currentUserService;
 
-    public CartService(CartRepository cartRepository) {
+    public CartService(CartRepository cartRepository, CurrentUserService currentUserService) {
         this.cartRepository = cartRepository;
+        this.currentUserService = currentUserService;
+    }
+
+    public Cart getMyCart() {
+        User me = currentUserService.getCurrentUser();
+        return cartRepository.findByUserId(me.getId())
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUser(me);
+                    return cartRepository.save(newCart);
+                });
     }
 
     @Transactional(readOnly = true)
     public Optional<Cart> getCartById(Long id) {
-        return cartRepository.findById(id);
+        return cartRepository.findById(id)
+                .map(cart -> {
+                    currentUserService.checkOwnerOrAdmin(cart.getUser().getId());
+                    return cart;
+                });
     }
 
     @Transactional(readOnly = true)
     public Optional<Cart> getCartByUserId(Long userId) {
         return cartRepository.findByUserId(userId);
+    }
+
+    public Cart createCart(Cart cart) {
+        if (cart.getUser() == null || cart.getUser().getId() == null) {
+            throw new IllegalArgumentException("Cart phải gắn với một user hợp lệ");
+        }
+        cartRepository.findByUserId(cart.getUser().getId())
+                .ifPresent(existing -> {
+                    throw new IllegalStateException(
+                            "User đã có cart, không thể tạo mới");
+                });
+        return cartRepository.save(cart);
+    }
+
+    public boolean deleteCart(Long id) {
+        return cartRepository.findById(id)
+                .map(cart -> {
+                    currentUserService.checkOwnerOrAdmin(cart.getUser().getId());
+                    cartRepository.delete(cart);
+                    return true;
+                })
+                .orElse(false);
     }
 
     public Cart getOrCreateCartForUser(com.designhub.entity.User user) {
@@ -37,26 +77,4 @@ public class CartService {
                 });
     }
 
-    public Cart createCart(Cart cart) {
-        if (cart.getUser() == null || cart.getUser().getId() == null) {
-            throw new IllegalArgumentException("Cart phải gắn với một user hợp lệ");
-        }
-
-        cartRepository.findByUserId(cart.getUser().getId())
-                .ifPresent(existing -> {
-                    throw new IllegalStateException(
-                            "User đã có cart, không thể tạo mới");
-                });
-
-        return cartRepository.save(cart);
-    }
-
-    public boolean deleteCart(Long id) {
-        if (!cartRepository.existsById(id)) {
-            return false;
-        }
-
-        cartRepository.deleteById(id);
-        return true;
-    }
 }

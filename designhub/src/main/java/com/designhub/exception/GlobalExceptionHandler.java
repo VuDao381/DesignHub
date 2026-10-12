@@ -15,69 +15,91 @@ import jakarta.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(
-            MethodArgumentNotValidException ex) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Map<String, Object>> handleValidationException(
+                        MethodArgumentNotValidException ex) {
 
-        Map<String, String> errors = new HashMap<>();
+                Map<String, String> errors = new HashMap<>();
 
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error
-                        -> errors.put(error.getField(), error.getDefaultMessage())
-                );
+                ex.getBindingResult()
+                                .getFieldErrors()
+                                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
-        Map<String, Object> response = new HashMap<>();
+                Map<String, Object> response = new HashMap<>();
 
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", 400);
-        response.put("error", "Validation Error");
-        response.put("messages", errors);
+                response.put("timestamp", LocalDateTime.now());
+                response.put("status", 400);
+                response.put("error", "Validation Error");
+                response.put("messages", errors);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(
-            ConstraintViolationException ex) {
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<Map<String, Object>> handleConstraintViolationException(
+                        ConstraintViolationException ex) {
 
-        Map<String, String> errors = new HashMap<>();
+                Map<String, String> errors = new HashMap<>();
 
-        ex.getConstraintViolations()
-                .forEach(violation
-                        -> errors.put(
-                        violation.getPropertyPath().toString(),
-                        violation.getMessage()
-                )
-                );
+                ex.getConstraintViolations()
+                                .forEach(violation -> errors.put(
+                                                violation.getPropertyPath().toString(),
+                                                violation.getMessage()));
 
-        Map<String, Object> response = new HashMap<>();
+                Map<String, Object> response = new HashMap<>();
 
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", 400);
-        response.put("error", "Validation Error");
-        response.put("messages", errors);
+                response.put("timestamp", LocalDateTime.now());
+                response.put("status", 400);
+                response.put("error", "Validation Error");
+                response.put("messages", errors);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
-            IllegalArgumentException ex) {
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
+                        IllegalArgumentException ex) {
 
-        Map<String, Object> response = new HashMap<>();
+                Map<String, Object> response = new HashMap<>();
 
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", 400);
-        response.put("error", "Bad Request");
-        response.put("message", ex.getMessage());
+                response.put("timestamp", LocalDateTime.now());
+                response.put("status", 400);
+                response.put("error", "Bad Request");
+                response.put("message", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
+
+        @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+        public ResponseEntity<Map<String, Object>> handleAccessDenied(
+                        org.springframework.security.access.AccessDeniedException ex) {
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("timestamp", LocalDateTime.now());
+                response.put("status", 403);
+                response.put("error", "Forbidden");
+                response.put("message", ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<Map<String, Object>> handleIllegalState(
+                        IllegalStateException ex) {
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("timestamp", LocalDateTime.now());
+                response.put("status", 409);
+                response.put("error", "Conflict");
+                response.put("message", ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
 }

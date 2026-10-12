@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.designhub.entity.User;
+import com.designhub.security.CurrentUserService;
 import com.designhub.entity.Cart;
 import com.designhub.entity.CartItem;
 import com.designhub.entity.Order;
@@ -15,32 +18,49 @@ import com.designhub.repository.OrderDetailRepository;
 import com.designhub.repository.OrderRepository;
 
 @Service
+@Transactional
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final CurrentUserService currentUserService;
 
     public OrderService(
             OrderRepository orderRepository,
             CartRepository cartRepository,
-            OrderDetailRepository orderDetailRepository) {
+            OrderDetailRepository orderDetailRepository,
+            CurrentUserService currentUserService) {
 
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.currentUserService = currentUserService;
     }
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
+    public List<Order> getMyOrders() {
+        User me = currentUserService.getCurrentUser();
+        return orderRepository.findByUserId(me.getId());
+    }
+
+    @Transactional(readOnly = true)
     public List<Order> getOrdersByUserId(Long userId) {
         return orderRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
+        return orderRepository.findById(id)
+                .map(order -> {
+                    currentUserService.checkOwnerOrAdmin(
+                            order.getUser().getId());
+                    return order;
+                });
     }
 
     public Order createOrder(Order order) {
@@ -70,14 +90,13 @@ public class OrderService {
         return true;
     }
 
-    public Order createOrderFromCart(Long cartId) {
-
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(()
-                        -> new IllegalArgumentException("Cart không tồn tại"));
-
+    public Order checkout() {
+        User me = currentUserService.getCurrentUser();
+        Cart cart = cartRepository.findByUserId(me.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Bạn chưa có giỏ hàng"));
         if (cart.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Cart không có sản phẩm");
+            throw new IllegalArgumentException("Giỏ hàng trống");
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -113,4 +132,5 @@ public class OrderService {
 
         return savedOrder;
     }
+
 }

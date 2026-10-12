@@ -16,6 +16,7 @@ import com.designhub.repository.CartItemRepository;
 import com.designhub.repository.CartRepository;
 import com.designhub.repository.OrderRepository;
 import com.designhub.repository.PaymentRepository;
+import com.designhub.security.CurrentUserService;
 
 @Service
 @Transactional
@@ -25,17 +26,20 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final CurrentUserService currentUserService;
 
     public PaymentService(
             PaymentRepository paymentRepository,
             OrderRepository orderRepository,
             CartRepository cartRepository,
-            CartItemRepository cartItemRepository) {
+            CartItemRepository cartItemRepository,
+            CurrentUserService currentUserService) {
 
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
@@ -45,11 +49,20 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Optional<Payment> getPaymentById(Long id) {
-        return paymentRepository.findById(id);
+        return paymentRepository.findById(id)
+                .map(payment -> {
+                    if (payment.getOrder() != null && payment.getOrder().getUser() != null) {
+                        currentUserService.checkOwnerOrAdmin(payment.getOrder().getUser().getId());
+                    }
+                    return payment;
+                });
     }
 
     @Transactional(readOnly = true)
     public List<Payment> getPaymentsByOrderId(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng"));
+        currentUserService.checkOwnerOrAdmin(order.getUser().getId());
         return paymentRepository.findByOrderId(orderId);
     }
 
@@ -60,52 +73,46 @@ public class PaymentService {
 
     public Payment createPayment(Payment payment) {
 
-        if (payment.getOrder() == null
-                || payment.getOrder().getId() == null) {
-
+        if (payment.getOrder() == null || payment.getOrder().getId() == null) {
             throw new IllegalArgumentException(
                     "Thanh toán phải gắn liền với một đơn hàng hợp lệ");
         }
 
         Order order = orderRepository
                 .findById(payment.getOrder().getId())
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
+                .orElseThrow(() -> new IllegalArgumentException(
                         "Không tìm thấy đơn hàng với id: "
-                        + payment.getOrder().getId()));
+                                + payment.getOrder().getId()));
 
-        if (payment.getAmount() == null
-                || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        currentUserService.checkOwnerOrAdmin(order.getUser().getId());
 
+        if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException(
                     "Số tiền thanh toán phải lớn hơn 0");
         }
 
         if (payment.getAmount().compareTo(order.getTotalAmount()) != 0) {
-
             throw new IllegalArgumentException(
                     "Số tiền thanh toán phải bằng tổng tiền đơn hàng");
         }
 
         if ("PAID".equalsIgnoreCase(order.getStatus())) {
-
             throw new IllegalArgumentException(
                     "Đơn hàng đã được thanh toán");
         }
 
         payment.setOrder(order);
 
-        if ("SUCCESS".equalsIgnoreCase(payment.getStatus())) {
-
+        if (!currentUserService.isAdmin()) {
+            payment.setStatus("PENDING");
+            payment.setPaymentDate(null);
+        } else if ("SUCCESS".equalsIgnoreCase(payment.getStatus())) {
             payment.setStatus("SUCCESS");
-
             if (payment.getPaymentDate() == null) {
                 payment.setPaymentDate(LocalDateTime.now());
             }
-
             order.setStatus("PAID");
             orderRepository.save(order);
-
             clearCartAfterPayment(order);
         }
 
@@ -219,8 +226,7 @@ public class PaymentService {
                             existingPayment.setPaymentDate(
                                     LocalDateTime.now());
 
-                            Order order
-                                    = existingPayment.getOrder();
+                            Order order = existingPayment.getOrder();
 
                             if (order != null) {
 
@@ -269,9 +275,8 @@ public class PaymentService {
             return;
         }
 
-        Optional<Cart> cartOptional
-                = cartRepository.findByUserId(
-                        order.getUser().getId());
+        Optional<Cart> cartOptional = cartRepository.findByUserId(
+                order.getUser().getId());
 
         if (cartOptional.isEmpty()) {
             return;
@@ -279,8 +284,7 @@ public class PaymentService {
 
         Cart cart = cartOptional.get();
 
-        List<CartItem> cartItems
-                = cartItemRepository.findByCartId(cart.getId());
+        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
 
         if (!cartItems.isEmpty()) {
             cartItemRepository.deleteAll(cartItems);

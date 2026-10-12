@@ -18,83 +18,83 @@ import com.designhub.service.DownloadHistoryService;
 @RequestMapping("/api/download-history")
 public class DownloadHistoryController {
 
-    private final DownloadHistoryService downloadHistoryService;
+        private final DownloadHistoryService downloadHistoryService;
 
-    public DownloadHistoryController(
-            DownloadHistoryService downloadHistoryService) {
-        this.downloadHistoryService = downloadHistoryService;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<DownloadHistory>> getAllDownloadHistories() {
-        return ResponseEntity.ok(
-                downloadHistoryService.getAllDownloadHistories());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<DownloadHistory> getDownloadHistoryById(
-            @PathVariable Long id) {
-
-        return downloadHistoryService
-                .getDownloadHistoryById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(()
-                        -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<DownloadHistory>> getDownloadHistoriesByUserId(
-            @PathVariable Long userId) {
-
-        return ResponseEntity.ok(
-                downloadHistoryService
-                        .getDownloadHistoriesByUserId(userId));
-    }
-
-    @GetMapping("/design/{designId}")
-    public ResponseEntity<List<DownloadHistory>> getDownloadHistoriesByDesignId(
-            @PathVariable Long designId) {
-
-        return ResponseEntity.ok(
-                downloadHistoryService
-                        .getDownloadHistoriesByDesignId(designId));
-    }
-
-    @GetMapping("/user/{userId}/design/{designId}")
-    public ResponseEntity<DownloadHistory>
-            getDownloadHistoryByUserAndDesign(
-                    @PathVariable Long userId,
-                    @PathVariable Long designId) {
-
-        return downloadHistoryService
-                .getDownloadHistoryByUserAndDesign(userId, designId)
-                .map(ResponseEntity::ok)
-                .orElseGet(()
-                        -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/user/{userId}/design/{designId}")
-    public ResponseEntity<DownloadHistory> createDownloadHistory(
-            @PathVariable Long userId,
-            @PathVariable Long designId) {
-
-        DownloadHistory history
-                = downloadHistoryService
-                        .createDownloadHistory(userId, designId);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(history);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDownloadHistory(
-            @PathVariable Long id) {
-
-        if (!downloadHistoryService.deleteDownloadHistory(id)) {
-            return ResponseEntity.notFound().build();
+        public DownloadHistoryController(
+                        DownloadHistoryService downloadHistoryService) {
+                this.downloadHistoryService = downloadHistoryService;
         }
 
-        return ResponseEntity.noContent().build();
-    }
+        @GetMapping
+        public ResponseEntity<List<DownloadHistory>> getAllDownloadHistories() {
+                return ResponseEntity.ok(
+                                downloadHistoryService.getAllDownloadHistories());
+        }
+
+        @GetMapping("/me")
+        public ResponseEntity<List<DownloadHistory>> getMyDownloadHistories() {
+                return ResponseEntity.ok(
+                                downloadHistoryService.getMyDownloadHistories());
+        }
+
+        @GetMapping("/{id}")
+        public ResponseEntity<DownloadHistory> getDownloadHistoryById(
+                        @PathVariable Long id) {
+
+                return downloadHistoryService
+                                .getDownloadHistoryById(id)
+                                .map(ResponseEntity::ok)
+                                .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+
+        @GetMapping("/user/{userId}")
+        public ResponseEntity<List<DownloadHistory>> getDownloadHistoriesByUserId(
+                        @PathVariable Long userId) {
+
+                return ResponseEntity.ok(
+                                downloadHistoryService
+                                                .getDownloadHistoriesByUserId(userId));
+        }
+
+        @GetMapping("/design/{designId}")
+        public ResponseEntity<List<DownloadHistory>> getDownloadHistoriesByDesignId(
+                        @PathVariable Long designId) {
+
+                return ResponseEntity.ok(
+                                downloadHistoryService
+                                                .getDownloadHistoriesByDesignId(designId));
+        }
+
+        @GetMapping("/user/{userId}/design/{designId}")
+        public ResponseEntity<DownloadHistory> getDownloadHistoryByUserAndDesign(
+                        @PathVariable Long userId,
+                        @PathVariable Long designId) {
+
+                return downloadHistoryService
+                                .getDownloadHistoryByUserAndDesign(userId, designId)
+                                .map(ResponseEntity::ok)
+                                .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+
+        @PostMapping("/design/{designId}")
+        public ResponseEntity<DownloadHistory> createDownloadHistory(
+                        @PathVariable Long designId) {
+
+                DownloadHistory history = downloadHistoryService.createDownloadHistory(designId);
+
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(history);
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteDownloadHistory(
+                        @PathVariable Long id) {
+
+                if (!downloadHistoryService.deleteDownloadHistory(id)) {
+                        return ResponseEntity.notFound().build();
+                }
+
+                return ResponseEntity.noContent().build();
+        }
 }

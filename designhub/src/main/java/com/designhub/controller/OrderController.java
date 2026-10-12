@@ -2,6 +2,7 @@ package com.designhub.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +31,7 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(
-                orderService.getAllOrders()
-        );
+                orderService.getAllOrders());
     }
 
     @GetMapping("/user/{userId}")
@@ -39,8 +39,7 @@ public class OrderController {
             @PathVariable Long userId) {
 
         return ResponseEntity.ok(
-                orderService.getOrdersByUserId(userId)
-        );
+                orderService.getOrdersByUserId(userId));
     }
 
     @GetMapping("/{id}")
@@ -57,17 +56,18 @@ public class OrderController {
             @Valid @RequestBody Order order) {
 
         return ResponseEntity.ok(
-                orderService.createOrder(order)
-        );
+                orderService.createOrder(order));
     }
 
-    @PostMapping("/from-cart/{cartId}")
-    public ResponseEntity<Order> createOrderFromCart(
-            @PathVariable Long cartId) {
+    @GetMapping("/me")
+    public ResponseEntity<List<Order>> getMyOrders() {
+        return ResponseEntity.ok(orderService.getMyOrders());
+    }
 
-        return ResponseEntity.ok(
-                orderService.createOrderFromCart(cartId)
-        );
+    @PostMapping("/checkout")
+    public ResponseEntity<Order> checkout() {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.checkout());
     }
 
     @PutMapping("/{id}")

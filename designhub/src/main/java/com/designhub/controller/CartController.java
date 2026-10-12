@@ -24,6 +24,11 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<Cart> getMyCart() {
+        return ResponseEntity.ok(cartService.getMyCart());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Cart> getCartById(
             @PathVariable Long id) {
@@ -47,8 +52,7 @@ public class CartController {
             @Valid @RequestBody Cart cart) {
 
         return ResponseEntity.ok(
-                cartService.createCart(cart)
-        );
+                cartService.createCart(cart));
     }
 
     @DeleteMapping("/{id}")
