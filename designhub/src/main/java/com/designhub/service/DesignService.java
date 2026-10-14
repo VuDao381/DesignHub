@@ -1,9 +1,13 @@
 package com.designhub.service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +18,7 @@ import com.designhub.entity.User;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.DesignerRepository;
 import com.designhub.security.CurrentUserService;
+import com.designhub.specification.DesignSpecification;
 
 @Service
 @Transactional
@@ -32,24 +37,55 @@ public class DesignService {
 
     @Transactional(readOnly = true)
     public Page<Design> getDesigns(String keyword, Pageable pageable) {
+        return searchAndFilterDesigns(keyword, null, null, null, null, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Design> searchAndFilterDesigns(
+            String keyword,
+            Long categoryId,
+            Long designerId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            String sortBy,
+            Pageable pageable) {
+
         boolean isAdmin = false;
         try {
             isAdmin = currentUserService.isAdmin();
         } catch (Exception ignored) {
         }
 
-        if (isAdmin) {
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return designRepository.findAll(pageable);
-            }
-            return designRepository.findByNameContainingIgnoreCase(keyword.trim(), pageable);
-        }
+        String requiredStatus = isAdmin ? null : "APPROVED";
 
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return designRepository.findByStatus("APPROVED", pageable);
+        Sort sort = resolveSort(sortBy);
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        Specification<Design> spec = DesignSpecification.filterDesigns(
+                keyword,
+                categoryId,
+                designerId,
+                minPrice,
+                maxPrice,
+                requiredStatus);
+
+        return designRepository.findAll(spec, sortedPageable);
+    }
+
+    private Sort resolveSort(String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
         }
-        return designRepository.findByStatusAndNameContainingIgnoreCase(
-                "APPROVED", keyword.trim(), pageable);
+        return switch (sortBy.trim().toLowerCase()) {
+            case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
+            case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "name_asc" -> Sort.by(Sort.Direction.ASC, "name");
+            case "createdat_asc", "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
     }
 
     @Transactional(readOnly = true)

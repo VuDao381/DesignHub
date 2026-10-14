@@ -72,7 +72,11 @@ public class SecurityConfig {
                                                                 "/js/**",
                                                                 "/images/**",
                                                                 "/favicon.ico",
-                                                                "/error")
+                                                                "/error",
+                                                                "/uploads/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html")
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 "/api/auth/register",
@@ -96,16 +100,31 @@ public class SecurityConfig {
                                                 .authenticated()
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
-                                                                "/api/design-images/**")
+                                                                "/api/design-images/**",
+                                                                "/api/design-files/**")
                                                 .hasAnyRole("ADMIN", "DESIGNER")
                                                 .requestMatchers(
                                                                 HttpMethod.PUT,
-                                                                "/api/design-images/**")
+                                                                "/api/design-images/**",
+                                                                "/api/design-files/**")
                                                 .hasAnyRole("ADMIN", "DESIGNER")
                                                 .requestMatchers(
                                                                 HttpMethod.DELETE,
-                                                                "/api/design-images/**")
+                                                                "/api/design-images/**",
+                                                                "/api/design-files/**")
                                                 .hasAnyRole("ADMIN", "DESIGNER")
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/upload/file")
+                                                .hasAnyRole("ADMIN", "DESIGNER")
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/upload/image")
+                                                .authenticated()
+                                                .requestMatchers(
+                                                                "/api/users/me",
+                                                                "/api/users/change-password")
+                                                .authenticated()
                                                 .requestMatchers("/api/users/**")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers("/api/categories/**")

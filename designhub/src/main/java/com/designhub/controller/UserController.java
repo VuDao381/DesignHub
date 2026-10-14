@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.designhub.dto.ChangePasswordRequest;
+import com.designhub.dto.UpdateProfileRequest;
+import com.designhub.dto.UserProfileResponse;
 import com.designhub.entity.User;
 import com.designhub.service.UserService;
 
@@ -25,6 +28,24 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMyProfile() {
+        return ResponseEntity.ok(userService.getMyProfile());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserProfileResponse> updateMyProfile(
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(userService.updateMyProfile(request));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
     }
 
     @GetMapping

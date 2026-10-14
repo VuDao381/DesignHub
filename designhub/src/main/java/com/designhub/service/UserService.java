@@ -7,9 +7,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.designhub.dto.ChangePasswordRequest;
+import com.designhub.dto.UpdateProfileRequest;
+import com.designhub.dto.UserProfileResponse;
 import com.designhub.entity.Role;
 import com.designhub.entity.User;
 import com.designhub.repository.UserRepository;
+import com.designhub.security.CurrentUserService;
 
 @Service
 @Transactional
@@ -17,12 +21,41 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CurrentUserService currentUserService;
 
     public UserService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            CurrentUserService currentUserService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.currentUserService = currentUserService;
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getMyProfile() {
+        User me = currentUserService.getCurrentUser();
+        return UserProfileResponse.fromEntity(me);
+    }
+
+    public UserProfileResponse updateMyProfile(UpdateProfileRequest request) {
+        User me = currentUserService.getCurrentUser();
+        me.setFullName(request.fullName().trim());
+        me.setPhone(request.phone() != null && !request.phone().isBlank() ? request.phone().trim() : null);
+        User saved = userRepository.save(me);
+        return UserProfileResponse.fromEntity(saved);
+    }
+
+    public void changePassword(ChangePasswordRequest request) {
+        User me = currentUserService.getCurrentUser();
+        if (!passwordEncoder.matches(request.currentPassword(), me.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không chính xác");
+        }
+        if (passwordEncoder.matches(request.newPassword(), me.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+        me.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(me);
     }
 
     public List<User> getAllUsers() {
