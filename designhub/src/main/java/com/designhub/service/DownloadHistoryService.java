@@ -58,18 +58,27 @@ public class DownloadHistoryService {
 
     @Transactional(readOnly = true)
     public List<DownloadHistory> getDownloadHistoriesByUserId(Long userId) {
+        currentUserService.checkOwnerOrAdmin(userId);
         return downloadHistoryRepository.findByUserId(userId);
     }
 
     @Transactional(readOnly = true)
     public List<DownloadHistory> getDownloadHistoriesByDesignId(Long designId) {
-        return downloadHistoryRepository.findByDesignId(designId);
+        if (currentUserService.isAdmin()) {
+            return downloadHistoryRepository.findByDesignId(designId);
+        }
+        User me = currentUserService.getCurrentUser();
+        return downloadHistoryRepository.findByUserIdAndDesignId(me.getId(), designId)
+                .map(List::of)
+                .orElseGet(List::of);
     }
 
     @Transactional(readOnly = true)
     public Optional<DownloadHistory> getDownloadHistoryByUserAndDesign(
             Long userId,
             Long designId) {
+
+        currentUserService.checkOwnerOrAdmin(userId);
 
         return downloadHistoryRepository
                 .findByUserIdAndDesignId(userId, designId);
@@ -101,6 +110,7 @@ public class DownloadHistoryService {
         }
 
         DownloadHistory history = new DownloadHistory();
+        history.setId(null);
         history.setUser(me);
         history.setDesign(design);
         history.setDownloadedAt(LocalDateTime.now());

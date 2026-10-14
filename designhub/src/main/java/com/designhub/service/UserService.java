@@ -2,20 +2,18 @@ package com.designhub.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.designhub.entity.Role;
 import com.designhub.entity.User;
 import com.designhub.repository.UserRepository;
 
 @Service
 @Transactional
 public class UserService {
-
-    private static final Set<String> VALID_ROLES = Set.of("ADMIN", "DESIGNER", "CUSTOMER");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -47,10 +45,17 @@ public class UserService {
             throw new IllegalArgumentException("Email đã tồn tại");
         }
 
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password không được để trống");
+        }
+        if (user.getPassword().length() < 8) {
+            throw new IllegalArgumentException("Password phải có ít nhất 8 ký tự");
+        }
+
         user.setId(null);
         user.setUsername(username);
         user.setEmail(email);
-        user.setRole(normalizeRole(user.getRole()));
+        user.setRole(user.getRole() != null ? user.getRole() : Role.CUSTOMER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return userRepository.save(user);
@@ -74,9 +79,16 @@ public class UserService {
                     existingUser.setEmail(email);
                     existingUser.setFullName(user.getFullName());
                     existingUser.setPhone(user.getPhone());
-                    existingUser.setRole(normalizeRole(user.getRole()));
-                    existingUser.setPassword(
-                            passwordEncoder.encode(user.getPassword()));
+                    if (user.getRole() != null) {
+                        existingUser.setRole(user.getRole());
+                    }
+
+                    if (user.getPassword() != null && !user.getPassword().isBlank()) {
+                        if (user.getPassword().length() < 8) {
+                            throw new IllegalArgumentException("Password phải có ít nhất 8 ký tự");
+                        }
+                        existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+                    }
 
                     return userRepository.save(existingUser);
                 });
@@ -90,16 +102,4 @@ public class UserService {
         userRepository.deleteById(id);
         return true;
     }
-
-    private String normalizeRole(String role) {
-        String normalized = role.trim().toUpperCase();
-
-        if (!VALID_ROLES.contains(normalized)) {
-            throw new IllegalArgumentException(
-                    "Role không hợp lệ. Chỉ chấp nhận: " + VALID_ROLES);
-        }
-
-        return normalized;
-    }
-
 }

@@ -62,6 +62,8 @@ public class ReviewService {
     }
 
     public Review createReview(Review review) {
+        review.setId(null);
+
         if (review.getDesign() == null || review.getDesign().getId() == null) {
             throw new IllegalArgumentException("Review phải gắn với một design hợp lệ");
         }

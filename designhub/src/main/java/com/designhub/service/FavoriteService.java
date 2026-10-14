@@ -43,17 +43,28 @@ public class FavoriteService {
 
     @Transactional(readOnly = true)
     public Optional<Favorite> getFavoriteById(Long id) {
-        return favoriteRepository.findById(id);
+        return favoriteRepository.findById(id)
+                .map(favorite -> {
+                    currentUserService.checkOwnerOrAdmin(favorite.getUser().getId());
+                    return favorite;
+                });
     }
 
     @Transactional(readOnly = true)
     public List<Favorite> getFavoritesByUserId(Long userId) {
+        currentUserService.checkOwnerOrAdmin(userId);
         return favoriteRepository.findByUserId(userId);
     }
 
     @Transactional(readOnly = true)
     public List<Favorite> getFavoritesByDesignId(Long designId) {
-        return favoriteRepository.findByDesignId(designId);
+        if (currentUserService.isAdmin()) {
+            return favoriteRepository.findByDesignId(designId);
+        }
+        User me = currentUserService.getCurrentUser();
+        return favoriteRepository.findByUserIdAndDesignId(me.getId(), designId)
+                .map(List::of)
+                .orElseGet(List::of);
     }
 
     @Transactional(readOnly = true)
@@ -61,12 +72,16 @@ public class FavoriteService {
             Long userId,
             Long designId) {
 
+        currentUserService.checkOwnerOrAdmin(userId);
+
         return favoriteRepository.findByUserIdAndDesignId(
                 userId,
                 designId);
     }
 
     public Favorite createFavorite(Favorite favorite) {
+        favorite.setId(null);
+
         if (favorite.getDesign() == null || favorite.getDesign().getId() == null) {
             throw new IllegalArgumentException("Favorite phải gắn với một design hợp lệ");
         }

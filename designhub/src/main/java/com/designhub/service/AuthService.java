@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.designhub.dto.AuthResponse;
 import com.designhub.dto.LoginRequest;
 import com.designhub.dto.RegisterRequest;
+import com.designhub.entity.Role;
 import com.designhub.entity.User;
 import com.designhub.repository.UserRepository;
 import com.designhub.security.JwtService;
@@ -53,7 +54,7 @@ public class AuthService {
                 ? null
                 : request.phone().trim());
 
-        user.setRole("CUSTOMER");
+        user.setRole(Role.CUSTOMER);
 
         User savedUser = userRepository.save(user);
 
@@ -65,18 +66,18 @@ public class AuthService {
         User user = userRepository
                 .findByUsername(request.username().trim())
                 .orElseThrow(()
-                        -> new IllegalArgumentException(
+                        -> new org.springframework.security.authentication.BadCredentialsException(
                                 "Username hoặc mật khẩu không đúng"));
 
         if (!passwordEncoder.matches(
                 request.password(), user.getPassword())) {
-            throw new IllegalArgumentException(
+            throw new org.springframework.security.authentication.BadCredentialsException(
                     "Username hoặc mật khẩu không đúng");
         }
 
         String token = jwtService.generateToken(
                 user.getUsername(),
-                user.getRole());
+                user.getRole().name());
 
         return toAuthResponse(user, token);
     }

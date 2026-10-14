@@ -43,6 +43,15 @@ public class DesignerController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<Designer> registerAsDesigner(
+            @Valid @RequestBody(required = false) com.designhub.dto.RegisterDesignerRequest request) {
+
+        return ResponseEntity.ok(
+                designerService.registerAsDesigner(request)
+        );
+    }
+
     @PostMapping
     public ResponseEntity<Designer> createDesigner(
             @Valid @RequestBody Designer designer) {

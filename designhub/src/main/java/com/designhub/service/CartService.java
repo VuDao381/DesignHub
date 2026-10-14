@@ -50,6 +50,7 @@ public class CartService {
         if (cart.getUser() == null || cart.getUser().getId() == null) {
             throw new IllegalArgumentException("Cart phải gắn với một user hợp lệ");
         }
+        cart.setId(null);
         cartRepository.findByUserId(cart.getUser().getId())
                 .ifPresent(existing -> {
                     throw new IllegalStateException(

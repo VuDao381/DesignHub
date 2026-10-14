@@ -49,7 +49,6 @@ public class OrderDetail {
     private BigDecimal price;
 
     @JsonIgnore
-    @NotNull(message = "Order không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

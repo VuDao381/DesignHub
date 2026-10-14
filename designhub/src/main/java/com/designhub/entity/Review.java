@@ -60,7 +60,6 @@ public class Review {
     private String comment;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotNull(message = "User không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

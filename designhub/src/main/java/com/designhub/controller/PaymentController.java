@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.designhub.entity.Payment;
+import com.designhub.entity.PaymentStatus;
 import com.designhub.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -85,7 +86,7 @@ public class PaymentController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Payment> updatePaymentStatus(
             @PathVariable Long id,
-            @RequestParam String status,
+            @RequestParam PaymentStatus status,
             @RequestParam(required = false) String transactionId) {
 
         return paymentService.updatePaymentStatus(id, status, transactionId)

@@ -1,11 +1,13 @@
 package com.designhub.dto;
 
+import com.designhub.entity.Role;
+
 public record AuthResponse(
         Long id,
         String username,
         String email,
         String fullName,
         String phone,
-        String role,
+        Role role,
         String token
-        ) {}
+) {}

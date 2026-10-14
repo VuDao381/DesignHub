@@ -54,6 +54,7 @@ public class Order {
 
     private LocalDateTime updatedAt;
 
+    @JsonIgnoreProperties({"password", "phone", "email", "role", "createdAt", "updatedAt"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

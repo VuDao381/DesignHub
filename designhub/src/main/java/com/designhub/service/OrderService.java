@@ -64,6 +64,7 @@ public class OrderService {
     }
 
     public Order createOrder(Order order) {
+        order.setId(null);
         return orderRepository.save(order);
     }
 
@@ -95,33 +96,56 @@ public class OrderService {
         Cart cart = cartRepository.findByUserId(me.getId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Bạn chưa có giỏ hàng"));
-        if (cart.getItems().isEmpty()) {
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng trống");
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (CartItem item : cart.getItems()) {
+            var design = item.getDesign();
+            if (design == null) {
+                throw new IllegalArgumentException("Sản phẩm trong giỏ hàng không hợp lệ");
+            }
 
-            BigDecimal itemTotal = item.getDesign()
-                    .getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+            if (!"APPROVED".equalsIgnoreCase(design.getStatus())) {
+                throw new IllegalArgumentException("Thiết kế '" + design.getName() + "' chưa được phê duyệt để bán");
+            }
 
+            if (design.getDesigner() != null
+                    && design.getDesigner().getUser() != null
+                    && design.getDesigner().getUser().getId().equals(me.getId())) {
+                throw new IllegalArgumentException("Bạn không thể mua thiết kế của chính mình: " + design.getName());
+            }
+
+            if (orderRepository.existsByUserIdAndStatusAndOrderDetailsDesignId(me.getId(), "PAID", design.getId())) {
+                throw new IllegalArgumentException("Bạn đã mua thiết kế này rồi: " + design.getName());
+            }
+
+            BigDecimal itemTotal = design.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             totalAmount = totalAmount.add(itemTotal);
         }
 
-        Order order = new Order();
+        List<Order> oldPendingOrders = orderRepository.findByUserId(me.getId())
+                .stream()
+                .filter(o -> "PENDING".equalsIgnoreCase(o.getStatus()))
+                .toList();
+        for (Order oldOrder : oldPendingOrders) {
+            oldOrder.setStatus("CANCELLED");
+            orderRepository.save(oldOrder);
+        }
 
-        order.setUser(cart.getUser());
+        Order order = new Order();
+        order.setId(null);
+        order.setUser(me);
         order.setTotalAmount(totalAmount);
         order.setStatus("PENDING");
 
         Order savedOrder = orderRepository.save(order);
 
         for (CartItem item : cart.getItems()) {
-
             OrderDetail detail = new OrderDetail();
-
+            detail.setId(null);
             detail.setOrder(savedOrder);
             detail.setDesign(item.getDesign());
             detail.setQuantity(item.getQuantity());

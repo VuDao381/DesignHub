@@ -32,26 +32,61 @@ public class DesignService {
 
     @Transactional(readOnly = true)
     public Page<Design> getDesigns(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return designRepository.findAll(pageable);
+        boolean isAdmin = false;
+        try {
+            isAdmin = currentUserService.isAdmin();
+        } catch (Exception ignored) {
         }
-        return designRepository.findByNameContainingIgnoreCase(
-                keyword.trim(),
-                pageable);
+
+        if (isAdmin) {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return designRepository.findAll(pageable);
+            }
+            return designRepository.findByNameContainingIgnoreCase(keyword.trim(), pageable);
+        }
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return designRepository.findByStatus("APPROVED", pageable);
+        }
+        return designRepository.findByStatusAndNameContainingIgnoreCase(
+                "APPROVED", keyword.trim(), pageable);
     }
 
     @Transactional(readOnly = true)
     public Optional<Design> getDesignById(Long id) {
-        return designRepository.findById(id);
+        return designRepository.findById(id)
+                .filter(design -> {
+                    if ("APPROVED".equalsIgnoreCase(design.getStatus())) {
+                        return true;
+                    }
+                    try {
+                        if (currentUserService.isAdmin()) {
+                            return true;
+                        }
+                        User me = currentUserService.getCurrentUser();
+                        return design.getDesigner() != null
+                                && design.getDesigner().getUser() != null
+                                && design.getDesigner().getUser().getId().equals(me.getId());
+                    } catch (Exception ignored) {
+                        return false;
+                    }
+                });
     }
 
     public Design createDesign(Design design) {
+        design.setId(null);
+
         User me = currentUserService.getCurrentUser();
         if (!currentUserService.isAdmin()) {
             Designer designer = designerRepository.findByUserId(me.getId())
                     .orElseThrow(() -> new AccessDeniedException(
                             "Tài khoản của bạn chưa được kích hoạt hồ sơ Designer"));
             design.setDesigner(designer);
+            design.setStatus("PENDING");
+        } else {
+            if (design.getStatus() == null) {
+                design.setStatus("APPROVED");
+            }
         }
         return designRepository.save(design);
     }
@@ -63,8 +98,11 @@ public class DesignService {
                     existingDesign.setName(design.getName());
                     existingDesign.setDescription(design.getDescription());
                     existingDesign.setPrice(design.getPrice());
-                    existingDesign.setStatus(design.getStatus());
                     existingDesign.setCategory(design.getCategory());
+
+                    if (currentUserService.isAdmin() && design.getStatus() != null) {
+                        existingDesign.setStatus(design.getStatus());
+                    }
 
                     if (currentUserService.isAdmin() && design.getDesigner() != null) {
                         existingDesign.setDesigner(design.getDesigner());

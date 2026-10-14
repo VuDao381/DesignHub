@@ -9,4 +9,8 @@ import com.designhub.entity.Design;
 public interface DesignRepository extends JpaRepository<Design, Long> {
 
     Page<Design> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    Page<Design> findByStatus(String status, Pageable pageable);
+
+    Page<Design> findByStatusAndNameContainingIgnoreCase(String status, String name, Pageable pageable);
 }

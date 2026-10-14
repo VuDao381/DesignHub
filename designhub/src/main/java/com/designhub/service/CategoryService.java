@@ -6,10 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.designhub.entity.Category;
 import com.designhub.repository.CategoryRepository;
 
 @Service
+@Transactional
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -18,6 +21,7 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<Category> getCategories(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return categoryRepository.findAll(pageable);
@@ -29,6 +33,7 @@ public class CategoryService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Optional<Category> getCategoryById(Long id) {
         return categoryRepository.findById(id);
     }
@@ -38,6 +43,7 @@ public class CategoryService {
             throw new IllegalArgumentException("Tên danh mục đã tồn tại");
         }
 
+        category.setId(null);
         category.setName(category.getName().trim());
 
         if (category.getDescription() != null) {

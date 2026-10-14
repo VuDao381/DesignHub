@@ -12,9 +12,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -42,8 +45,6 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @NotBlank(message = "Password không được để trống")
-    @Size(min = 8, message = "Password phải có ít nhất 8 ký tự")
     @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ToString.Exclude
@@ -62,8 +63,10 @@ public class User {
     @Size(max = 20, message = "Số điện thoại không được vượt quá 20 ký tự")
     private String phone;
 
-    @NotBlank(message = "Role không được để trống")
-    private String role;
+    @NotNull(message = "Role không được để trống")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.CUSTOMER;
 
     private LocalDateTime createdAt;
 

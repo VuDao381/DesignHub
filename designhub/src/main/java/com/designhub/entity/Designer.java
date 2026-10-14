@@ -44,6 +44,7 @@ public class Designer {
     private String avatar;
 
     @NotNull(message = "User không được để trống")
+    @JsonIgnoreProperties({"password", "phone", "email", "role", "createdAt", "updatedAt"})
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

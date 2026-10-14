@@ -16,6 +16,7 @@ import com.designhub.repository.OrderRepository;
 import com.designhub.security.CurrentUserService;
 
 @Service
+@Transactional
 public class DesignFileService {
 
     private final DesignFileRepository designFileRepository;
@@ -58,6 +59,8 @@ public class DesignFileService {
         Design design = designRepository.findById(designFile.getDesign().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
         checkAuthorOrAdmin(design);
+
+        designFile.setId(null);
         designFile.setDesign(design);
         return designFileRepository.save(designFile);
     }

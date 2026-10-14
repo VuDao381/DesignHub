@@ -41,6 +41,7 @@ public class Cart {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @JsonIgnoreProperties({"password", "phone", "email", "role", "createdAt", "updatedAt"})
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

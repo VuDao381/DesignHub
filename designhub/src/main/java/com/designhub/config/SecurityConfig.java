@@ -1,9 +1,12 @@
 package com.designhub.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,11 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.designhub.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -32,10 +39,24 @@ public class SecurityConfig {
         }
 
         @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOriginPatterns(List.of("*"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(List.of("*"));
+                config.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
+
+        @Bean
         public SecurityFilterChain securityFilterChain(
                         HttpSecurity http) throws Exception {
 
                 http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(csrf -> csrf.disable())
                                 .formLogin(form -> form.disable())
                                 .httpBasic(basic -> basic.disable())
@@ -60,8 +81,31 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
                                                                 "/api/designs/**",
-                                                                "/api/categories/**")
+                                                                "/api/categories/**",
+                                                                "/api/design-images/**",
+                                                                "/api/designers/**",
+                                                                "/api/reviews/design/**")
                                                 .permitAll()
+                                                .requestMatchers("/api/designers/register")
+                                                .authenticated()
+                                                .requestMatchers(HttpMethod.POST, "/api/designers")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.DELETE, "/api/designers/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.PUT, "/api/designers/**")
+                                                .authenticated()
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/design-images/**")
+                                                .hasAnyRole("ADMIN", "DESIGNER")
+                                                .requestMatchers(
+                                                                HttpMethod.PUT,
+                                                                "/api/design-images/**")
+                                                .hasAnyRole("ADMIN", "DESIGNER")
+                                                .requestMatchers(
+                                                                HttpMethod.DELETE,
+                                                                "/api/design-images/**")
+                                                .hasAnyRole("ADMIN", "DESIGNER")
                                                 .requestMatchers("/api/users/**")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers("/api/categories/**")
@@ -84,6 +128,19 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.PUT, "/api/orders/**")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.DELETE, "/api/orders/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/order-details/**",
+                                                                "/api/order-details")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(
+                                                                HttpMethod.PUT,
+                                                                "/api/order-details/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(
+                                                                HttpMethod.DELETE,
+                                                                "/api/order-details/**")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.GET, "/api/payments")
                                                 .hasRole("ADMIN")

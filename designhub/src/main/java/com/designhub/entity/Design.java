@@ -65,7 +65,6 @@ public class Design {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @NotNull(message = "Designer không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "designer_id", nullable = false)
     private Designer designer;
