@@ -27,12 +27,12 @@ public class JwtService {
         this.expiration = expiration;
     }
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String subject, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(subject)
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -40,18 +40,26 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractSubject(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public String extractEmail(String token) {
+        return extractSubject(token);
+    }
+
+    public String extractUsername(String token) {
+        return extractSubject(token);
     }
 
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
 
-    public boolean isTokenValid(String token, String username) {
+    public boolean isTokenValid(String token, String subject) {
         Claims claims = extractAllClaims(token);
 
-        return claims.getSubject().equals(username)
+        return claims.getSubject().equals(subject)
                 && claims.getExpiration().after(new Date());
     }
 

@@ -28,7 +28,7 @@ public class CurrentUserService {
             throw new AccessDeniedException("Chưa đăng nhập");
         }
 
-        return userRepository.findByUsername(auth.getName())
+        return userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new AccessDeniedException(
                         "Tài khoản không tồn tại"));
     }

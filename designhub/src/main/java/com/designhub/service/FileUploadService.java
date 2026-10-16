@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,19 +22,16 @@ public class FileUploadService {
     private String baseUploadDir;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp", "gif", "svg"
-    );
+            "jpg", "jpeg", "png", "webp", "gif", "svg");
 
     private static final Set<String> BLOCKED_FILE_EXTENSIONS = Set.of(
-            "exe", "bat", "cmd", "sh", "jsp", "jar", "html", "htm", "js", "php", "asp", "aspx", "py", "vbs", "msi"
-    );
+            "exe", "bat", "cmd", "sh", "jsp", "jar", "html", "htm", "js", "php", "asp", "aspx", "py", "vbs", "msi");
 
     public FileUploadResponse uploadImage(MultipartFile file) {
         validateFile(file);
 
         String originalName = StringUtils.cleanPath(
-                file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.png"
-        );
+                file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.png");
         String extension = getFileExtension(originalName).toLowerCase();
 
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
@@ -50,8 +46,7 @@ public class FileUploadService {
         validateFile(file);
 
         String originalName = StringUtils.cleanPath(
-                file.getOriginalFilename() != null ? file.getOriginalFilename() : "file.zip"
-        );
+                file.getOriginalFilename() != null ? file.getOriginalFilename() : "file.zip");
         String extension = getFileExtension(originalName).toLowerCase();
 
         if (BLOCKED_FILE_EXTENSIONS.contains(extension)) {
@@ -87,8 +82,7 @@ public class FileUploadService {
                     storedFileName,
                     fileUrl,
                     file.getSize(),
-                    file.getContentType() != null ? file.getContentType() : "application/octet-stream"
-            );
+                    file.getContentType() != null ? file.getContentType() : "application/octet-stream");
         } catch (IOException ex) {
             throw new IllegalStateException("Lỗi khi lưu trữ tệp tin: " + ex.getMessage(), ex);
         }
