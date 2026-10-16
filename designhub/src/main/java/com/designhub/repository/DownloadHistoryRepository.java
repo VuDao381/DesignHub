@@ -21,4 +21,7 @@ public interface DownloadHistoryRepository
     boolean existsByUserIdAndDesignId(
             Long userId,
             Long designId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(d) FROM DownloadHistory d WHERE d.design.designer.id = :designerId")
+    long countByDesignerId(@org.springframework.data.repository.query.Param("designerId") Long designerId);
 }

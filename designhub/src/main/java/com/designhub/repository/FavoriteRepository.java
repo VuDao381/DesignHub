@@ -20,4 +20,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     boolean existsByUserIdAndDesignId(
             Long userId,
             Long designId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(f) FROM Favorite f WHERE f.design.designer.id = :designerId")
+    long countByDesignerId(@org.springframework.data.repository.query.Param("designerId") Long designerId);
 }

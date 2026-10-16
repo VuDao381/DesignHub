@@ -6,7 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.designhub.dto.AuthResponse;
 import com.designhub.dto.LoginRequest;
+import com.designhub.dto.RefreshTokenRequest;
+import com.designhub.dto.RefreshTokenResponse;
 import com.designhub.dto.RegisterRequest;
+import com.designhub.entity.RefreshToken;
 import com.designhub.entity.Role;
 import com.designhub.entity.User;
 import com.designhub.repository.UserRepository;
@@ -18,14 +21,17 @@ public class AuthService {
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtService jwtService;
+        private final RefreshTokenService refreshTokenService;
 
         public AuthService(
                         UserRepository userRepository,
                         PasswordEncoder passwordEncoder,
-                        JwtService jwtService) {
+                        JwtService jwtService,
+                        RefreshTokenService refreshTokenService) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtService = jwtService;
+                this.refreshTokenService = refreshTokenService;
         }
 
         @Transactional
@@ -58,10 +64,10 @@ public class AuthService {
 
                 User savedUser = userRepository.save(user);
 
-                return toAuthResponse(savedUser, null);
+                return toAuthResponse(savedUser, null, null);
         }
 
-        @Transactional(readOnly = true)
+        @Transactional
         public AuthResponse login(LoginRequest request) {
                 User user = userRepository
                                 .findByEmail(request.email().trim())
@@ -78,10 +84,29 @@ public class AuthService {
                                 user.getEmail(),
                                 user.getRole().name());
 
-                return toAuthResponse(user, token);
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+                return toAuthResponse(user, token, refreshToken.getToken());
         }
 
-        private AuthResponse toAuthResponse(User user, String token) {
+        @Transactional
+        public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+                RefreshToken refreshToken = refreshTokenService.findByToken(request.refreshToken())
+                                .map(refreshTokenService::verifyExpiration)
+                                .orElseThrow(() -> new IllegalArgumentException("Refresh token không hợp lệ hoặc đã hết hạn!"));
+
+                User user = refreshToken.getUser();
+                String newAccessToken = jwtService.generateToken(user.getEmail(), user.getRole().name());
+
+                return new RefreshTokenResponse(newAccessToken, refreshToken.getToken());
+        }
+
+        @Transactional
+        public void logout(RefreshTokenRequest request) {
+                refreshTokenService.revokeToken(request.refreshToken());
+        }
+
+        private AuthResponse toAuthResponse(User user, String token, String refreshToken) {
                 return new AuthResponse(
                                 user.getId(),
                                 user.getUsername(),
@@ -89,6 +114,7 @@ public class AuthService {
                                 user.getFullName(),
                                 user.getPhone(),
                                 user.getRole(),
-                                token);
+                                token,
+                                refreshToken);
         }
 }
