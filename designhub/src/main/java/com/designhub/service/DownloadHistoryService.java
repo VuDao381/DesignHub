@@ -96,7 +96,11 @@ public class DownloadHistoryService {
                         "PAID",
                         designId);
 
-        if (!hasPurchased && !currentUserService.isAdmin()) {
+        boolean isAuthor = design.getDesigner() != null
+                && design.getDesigner().getUser() != null
+                && design.getDesigner().getUser().getId().equals(me.getId());
+
+        if (!hasPurchased && !currentUserService.isAdmin() && !isAuthor) {
             throw new IllegalArgumentException("Bạn chưa mua thiết kế này");
         }
 

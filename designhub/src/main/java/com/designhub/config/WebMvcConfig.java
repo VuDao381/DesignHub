@@ -16,14 +16,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        String uploadUri = uploadPath.toUri().toString();
+        // Chỉ cho phép truy cập tài nguyên tĩnh công khai đối với hình ảnh (preview, avatar)
+        // Tuyệt đối KHÔNG cấu hình static handler cho /uploads/files/** để bảo vệ tệp thiết kế gốc
+        Path imagesPath = Paths.get(uploadDir, "images").toAbsolutePath().normalize();
+        String imagesUri = imagesPath.toUri().toString();
 
-        if (!uploadUri.endsWith("/")) {
-            uploadUri += "/";
+        if (!imagesUri.endsWith("/")) {
+            imagesUri += "/";
         }
 
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadUri);
+        registry.addResourceHandler("/uploads/images/**")
+                .addResourceLocations(imagesUri);
     }
 }

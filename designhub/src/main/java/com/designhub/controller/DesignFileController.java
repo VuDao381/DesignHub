@@ -1,7 +1,12 @@
 package com.designhub.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,16 +20,36 @@ import org.springframework.web.bind.annotation.RestController;
 import com.designhub.entity.DesignFile;
 import com.designhub.service.DesignFileService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/design-files")
+@Tag(name = "Design Files", description = "API quản lý và tải xuống tệp tin thiết kế")
 public class DesignFileController {
 
     private final DesignFileService designFileService;
 
     public DesignFileController(DesignFileService designFileService) {
         this.designFileService = designFileService;
+    }
+
+    @GetMapping("/{id}/download")
+    @Operation(summary = "Tải xuống tệp thiết kế an toàn",
+               description = "Kiểm tra quyền sở hữu/đơn hàng đã thanh toán, ghi nhận lịch sử tải và stream file nhị phân.")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
+        DesignFileService.DownloadableFile downloadableFile = designFileService.getFileForDownload(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(downloadableFile.contentType()))
+                .contentLength(downloadableFile.contentLength())
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(downloadableFile.fileName(), StandardCharsets.UTF_8)
+                                .build()
+                                .toString())
+                .body(downloadableFile.resource());
     }
 
     @GetMapping

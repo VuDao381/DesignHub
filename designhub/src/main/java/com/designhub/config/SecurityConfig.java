@@ -73,7 +73,7 @@ public class SecurityConfig {
                                                                 "/images/**",
                                                                 "/favicon.ico",
                                                                 "/error",
-                                                                "/uploads/**",
+                                                                "/uploads/images/**",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html")
@@ -172,6 +172,8 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.DELETE, "/api/payments/**")
                                                 .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/api/design-files/*/download")
+                                                .authenticated()
                                                 .requestMatchers(HttpMethod.GET, "/api/design-files")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.GET,
