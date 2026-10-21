@@ -4,41 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DesignHub</title>
+    <title>DesignHub - Sàn Giao Dịch Thiết Kế Số Hàng Đầu</title>
+    <meta name="description"
+        content="Khám phá, mua và tải xuống các bản thiết kế số chất lượng cao: UI/UX, Poster, Logo, Template từ các Designer hàng đầu.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
 </head>
 
 <body>
 
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
     <header class="header">
         <div class="container">
             <nav class="navbar navbar-expand-lg">
-                <a class="navbar-brand" href="/">
+                <a class="navbar-brand d-flex align-items-center gap-1" href="/">
                     <span class="logo">Design</span><span class="logo-highlight">Hub</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarMenu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarMenu">
-                    <ul class="navbar-nav me-auto ms-4">
+                    <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link active" href="/">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Thiết kế</a>
+                            <a class="nav-link" href="#designsSection">Thiết kế</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Danh mục</a>
+                            <a class="nav-link" href="#categoriesSection">Danh mục</a>
                         </li>
                     </ul>
 
                     <div class="header-actions">
-                        <a href="#" class="login-link">Đăng nhập</a>
-                        <a href="#" class="register-btn">Đăng ký</a>
+                        <div class="auth-guest d-flex align-items-center gap-3">
+                            <button type="button" class="btn btn-link text-decoration-none login-link text-dark p-0"
+                                data-bs-toggle="modal" data-bs-target="#loginModal">
+                                Đăng nhập
+                            </button>
+                            <button type="button" class="register-btn border-0" data-bs-toggle="modal"
+                                data-bs-target="#registerModal">
+                                Đăng ký
+                            </button>
+                        </div>
+
+                        <div class="auth-logged d-none d-flex align-items-center gap-3">
+                            <button type="button"
+                                class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 action-open-purchased d-flex align-items-center gap-1">
+                                <i class="bi bi-folder-check"></i>
+                                <span class="d-none d-sm-inline">Kho của tôi</span>
+                            </button>
+
+                            <button type="button" class="cart-icon-btn" id="btnOpenCart" title="Xem giỏ hàng">
+                                <i class="bi bi-bag"></i>
+                                <span class="cart-badge-count d-none" id="cartBadge">0</span>
+                            </button>
+                            <div class="dropdown">
+                                <button
+                                    class="btn p-0 border-0 d-flex align-items-center gap-2 dropdown-toggle shadow-none"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="user-avatar-badge" id="userAvatarInitial">U</div>
+                                    <div class="text-start d-none d-md-block">
+                                        <div class="fw-bold small user-display-name text-truncate"
+                                            style="max-width: 120px;">Người dùng</div>
+                                        <span class="badge bg-secondary" id="userRoleBadge"
+                                            style="font-size: 10px;">CUSTOMER</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 py-2">
+                                    <li class="px-3 py-1 border-bottom mb-2">
+                                        <small class="text-muted d-block">Tài khoản</small>
+                                        <strong class="user-display-name">Người dùng</strong>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2 action-open-purchased" href="#">
+                                            <i class="bi bi-cloud-arrow-down me-2 text-primary"></i> Kho thiết kế đã mua
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="#designsSection">
+                                            <i class="bi bi-compass me-2 text-info"></i> Khám phá sản phẩm
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2 text-danger action-logout" href="#">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -61,20 +136,22 @@
                             </h1>
 
                             <p>
-                                DesignHub là nơi kết nối designer và khách hàng,
-                                cung cấp các file thiết kế chất lượng cho mọi nhu cầu.
+                                DesignHub là nền tảng số kết nối Designer và khách hàng,
+                                cung cấp kho tệp tin thiết kế gốc bản quyền chất lượng cho mọi nhu cầu sáng tạo.
                             </p>
 
-                            <div class="search-box">
-                                <input type="text" placeholder="Tìm kiếm thiết kế...">
-                                <button>Tìm kiếm</button>
-                            </div>
+                            <form id="heroSearchForm" class="search-box">
+                                <input type="text" id="heroSearchInput"
+                                    placeholder="Tìm kiếm poster, UI/UX, logo, template..." autocomplete="off">
+                                <button type="submit">Tìm kiếm</button>
+                            </form>
 
-                            <div class="hero-tags">
-                                <span>Poster</span>
-                                <span>Logo</span>
-                                <span>UI/UX</span>
-                                <span>Template</span>
+                            <div class="hero-tags mt-3">
+                                <span class="cursor-pointer" onclick="filterByCategory(null)">Tất cả</span>
+                                <span class="cursor-pointer" onclick="searchByTag('Poster')">Poster</span>
+                                <span class="cursor-pointer" onclick="searchByTag('Logo')">Logo</span>
+                                <span class="cursor-pointer" onclick="searchByTag('UI/UX')">UI/UX</span>
+                                <span class="cursor-pointer" onclick="searchByTag('Template')">Template</span>
                             </div>
                         </div>
                     </div>
@@ -82,17 +159,23 @@
                     <div class="col-lg-6">
                         <div class="hero-image">
                             <div class="design-card card-one">
-                                <div class="fake-image purple"></div>
+                                <div class="fake-image purple">
+                                    <i class="bi bi-brush fs-1 text-white"></i>
+                                </div>
                                 <div class="fake-text">Creative<br>Design</div>
                             </div>
 
                             <div class="design-card card-two">
-                                <div class="fake-image orange"></div>
+                                <div class="fake-image orange">
+                                    <i class="bi bi-window-fullscreen fs-1 text-white"></i>
+                                </div>
                                 <div class="fake-text">Modern<br>Template</div>
                             </div>
 
                             <div class="design-card card-three">
-                                <div class="fake-image blue"></div>
+                                <div class="fake-image blue">
+                                    <i class="bi bi-palette fs-1 text-white"></i>
+                                </div>
                                 <div class="fake-text">Digital<br>Artwork</div>
                             </div>
                         </div>
@@ -102,7 +185,7 @@
             </div>
         </section>
 
-        <section class="categories section-padding">
+        <section class="categories section-padding" id="categoriesSection">
             <div class="container">
 
                 <div class="section-heading">
@@ -111,184 +194,59 @@
                         <h2>Danh mục thiết kế</h2>
                     </div>
 
-                    <a href="#" class="view-all">Xem tất cả →</a>
+                    <a href="#designsSection" class="view-all">Xem tất cả thiết kế →</a>
                 </div>
 
-                <div class="row g-4">
-
-                    <div class="col-6 col-md-3">
-                        <a href="#" class="category-card">
-                            <div class="category-icon purple-icon">✦</div>
-                            <h3>Poster</h3>
-                            <p>120+ thiết kế</p>
-                        </a>
-                    </div>
-
-                    <div class="col-6 col-md-3">
-                        <a href="#" class="category-card">
-                            <div class="category-icon blue-icon">◆</div>
-                            <h3>Logo</h3>
-                            <p>85+ thiết kế</p>
-                        </a>
-                    </div>
-
-                    <div class="col-6 col-md-3">
-                        <a href="#" class="category-card">
-                            <div class="category-icon orange-icon">▣</div>
-                            <h3>UI/UX</h3>
-                            <p>96+ thiết kế</p>
-                        </a>
-                    </div>
-
-                    <div class="col-6 col-md-3">
-                        <a href="#" class="category-card">
-                            <div class="category-icon green-icon">◈</div>
-                            <h3>Template</h3>
-                            <p>150+ thiết kế</p>
-                        </a>
-                    </div>
-
+                <div class="row g-4" id="categoryCardsRow">
                 </div>
             </div>
         </section>
 
-        <section class="products section-padding">
+        <section class="products section-padding bg-light" id="designsSection">
             <div class="container">
 
                 <div class="section-heading">
                     <div>
-                        <span class="section-label">NỔI BẬT</span>
-                        <h2>Thiết kế nổi bật</h2>
+                        <span class="section-label">BỘ SƯU TẬP</span>
+                        <h2>Bản thiết kế nổi bật</h2>
                     </div>
-
-                    <a href="#" class="view-all">Xem tất cả →</a>
                 </div>
 
-                <div class="row g-4">
-
-                    <div class="col-md-6 col-lg-3">
-                        <div class="product-card">
-
-                            <div class="product-image product-purple">
-                                <span class="product-tag">Mới</span>
-                                <span class="favorite">♡</span>
-
-                                <div class="preview-text">
-                                    CREATIVE<br>
-                                    POSTER
-                                </div>
+                <div class="toolbar-box p-3 bg-white rounded-3 shadow-sm border mb-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-lg-7">
+                            <div class="d-flex gap-2 overflow-auto py-1" id="categoryPills">
                             </div>
+                        </div>
 
-                            <div class="product-info">
-                                <span class="product-category">Poster</span>
-                                <h3>Creative Poster Collection</h3>
+                        <div class="col-12 col-lg-5">
+                            <div class="d-flex gap-2">
+                                <form id="designsSearchForm" class="flex-grow-1 position-relative">
+                                    <input type="text" id="keywordInput" class="form-control form-control-sm pe-4"
+                                        placeholder="Lọc theo tên...">
+                                    <button type="submit"
+                                        class="btn btn-sm position-absolute end-0 top-0 border-0 text-muted">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </form>
 
-                                <div class="designer">
-                                    <div class="designer-avatar">A</div>
-                                    <span>Alex Design</span>
-                                </div>
-
-                                <div class="product-bottom">
-                                    <strong>99.000đ</strong>
-                                    <span>★ 4.9</span>
-                                </div>
+                                <select id="sortSelect" class="form-select form-select-sm" style="max-width: 170px;">
+                                    <option value="createdAt_desc">Mới nhất</option>
+                                    <option value="createdAt_asc">Cũ nhất</option>
+                                    <option value="price_asc">Giá tăng dần</option>
+                                    <option value="price_desc">Giá giảm dần</option>
+                                    <option value="name_asc">Tên (A-Z)</option>
+                                </select>
                             </div>
-
                         </div>
                     </div>
-
-                    <div class="col-md-6 col-lg-3">
-                        <div class="product-card">
-
-                            <div class="product-image product-blue">
-                                <span class="favorite">♡</span>
-
-                                <div class="preview-text">
-                                    BRAND<br>
-                                    IDENTITY
-                                </div>
-                            </div>
-
-                            <div class="product-info">
-                                <span class="product-category">Logo</span>
-                                <h3>Brand Identity Pack</h3>
-
-                                <div class="designer">
-                                    <div class="designer-avatar">M</div>
-                                    <span>Minh Studio</span>
-                                </div>
-
-                                <div class="product-bottom">
-                                    <strong>149.000đ</strong>
-                                    <span>★ 4.8</span>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3">
-                        <div class="product-card">
-
-                            <div class="product-image product-orange">
-                                <span class="product-tag">Hot</span>
-                                <span class="favorite">♡</span>
-
-                                <div class="preview-text">
-                                    MOBILE<br>
-                                    UI KIT
-                                </div>
-                            </div>
-
-                            <div class="product-info">
-                                <span class="product-category">UI/UX</span>
-                                <h3>Modern Mobile UI Kit</h3>
-
-                                <div class="designer">
-                                    <div class="designer-avatar">D</div>
-                                    <span>Design Lab</span>
-                                </div>
-
-                                <div class="product-bottom">
-                                    <strong>199.000đ</strong>
-                                    <span>★ 5.0</span>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3">
-                        <div class="product-card">
-
-                            <div class="product-image product-green">
-                                <span class="favorite">♡</span>
-
-                                <div class="preview-text">
-                                    SOCIAL<br>
-                                    MEDIA KIT
-                                </div>
-                            </div>
-
-                            <div class="product-info">
-                                <span class="product-category">Template</span>
-                                <h3>Social Media Template</h3>
-
-                                <div class="designer">
-                                    <div class="designer-avatar">S</div>
-                                    <span>Studio S</span>
-                                </div>
-
-                                <div class="product-bottom">
-                                    <strong>79.000đ</strong>
-                                    <span>★ 4.7</span>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
                 </div>
+
+                <div class="row g-4" id="designsGrid">
+                </div>
+                <div class="mt-5" id="designsPagination">
+                </div>
+
             </div>
         </section>
 
@@ -297,15 +255,15 @@
                 <div class="designer-banner-content">
                     <div>
                         <span class="section-label">DÀNH CHO DESIGNER</span>
-                        <h2>Bạn là designer?</h2>
+                        <h2>Bạn là một nhà thiết kế tài năng?</h2>
                         <p>
-                            Chia sẻ thiết kế của bạn và kiếm thêm thu nhập
-                            cùng cộng đồng DesignHub.
+                            Chia sẻ và bán các tác phẩm thiết kế của bạn tới hàng ngàn khách hàng tiềm năng,
+                            tạo thu nhập thụ động cùng cộng đồng DesignHub.
                         </p>
                     </div>
 
-                    <a href="#" class="designer-btn">
-                        Trở thành Designer
+                    <a href="#" class="designer-btn" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        Trở thành Designer ngay
                     </a>
                 </div>
             </div>
@@ -316,51 +274,298 @@
     <footer class="footer">
         <div class="container">
 
-            <div class="row">
+            <div class="row gy-4">
 
                 <div class="col-lg-4">
-                    <a class="navbar-brand footer-logo" href="/">
-                        <span class="logo">Design</span><span class="logo-highlight">Hub</span>
+                    <a class="navbar-brand footer-logo d-inline-block mb-3" href="/">
+                        <span class="logo text-white">Design</span><span class="logo-highlight">Hub</span>
                     </a>
 
-                    <p>
-                        Nền tảng mua bán file thiết kế dành cho designer
-                        và những người yêu thích sáng tạo.
+                    <p class="text-secondary small">
+                        Nền tảng thương mại điện tử chuyên kinh doanh và phân phối các bản thiết kế số chất lượng cao
+                        dành cho Designer và các nhà sáng tạo nội dung.
                     </p>
                 </div>
 
                 <div class="col-6 col-lg-2">
                     <h4>DesignHub</h4>
                     <a href="#">Về chúng tôi</a>
-                    <a href="#">Liên hệ</a>
-                    <a href="#">Điều khoản</a>
+                    <a href="#">Liên hệ hỗ trợ</a>
+                    <a href="#">Điều khoản sử dụng</a>
                 </div>
 
                 <div class="col-6 col-lg-2">
                     <h4>Khám phá</h4>
-                    <a href="#">Thiết kế</a>
-                    <a href="#">Danh mục</a>
-                    <a href="#">Designer</a>
+                    <a href="#designsSection">Tất cả thiết kế</a>
+                    <a href="#categoriesSection">Danh mục</a>
+                    <a href="#">Designer tiêu biểu</a>
                 </div>
 
                 <div class="col-lg-4">
-                    <h4>Hỗ trợ</h4>
-                    <a href="#">Trung tâm trợ giúp</a>
-                    <a href="#">Chính sách mua hàng</a>
-                    <a href="#">Chính sách hoàn tiền</a>
+                    <h4>Bảo mật & Quyền lợi</h4>
+                    <a href="#">Chính sách cấp quyền tải file bản quyền</a>
+                    <a href="#">Bảo mật thanh toán trực tuyến</a>
+                    <a href="#">Quy định kiểm duyệt sản phẩm</a>
                 </div>
 
             </div>
 
             <div class="footer-bottom">
-                <span>© 2026 DesignHub. All rights reserved.</span>
-                <span>Made for creators.</span>
+                <span>© 2026 DesignHub. Báo cáo Đồ án Liên ngành (ĐALN).</span>
+                <span>An toàn • Nhanh chóng • Bản quyền số.</span>
             </div>
 
         </div>
     </footer>
 
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="loginModalLabel">Đăng nhập DesignHub</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="loginAlert" class="alert alert-danger d-none py-2 small" role="alert"></div>
+
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email tài khoản</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i
+                                        class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control border-start-0"
+                                    placeholder="name@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" class="form-control border-start-0"
+                                    placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold"
+                                style="background:#7357ff; border-color:#6045e5;">
+                                Đăng nhập
+                            </button>
+                        </div>
+
+                        <div class="text-center small text-muted">
+                            Chưa có tài khoản?
+                            <a href="#" class="text-primary fw-semibold text-decoration-none"
+                                data-bs-target="#registerModal" data-bs-toggle="modal">Đăng ký ngay</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="registerModalLabel">Tạo tài khoản mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="registerAlert" class="alert alert-danger d-none py-2 small" role="alert"></div>
+
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tên đăng nhập (Username)</label>
+                            <input type="text" name="username" class="form-control" placeholder="nguyenvana"
+                                minlength="3" maxlength="50" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Họ và tên</label>
+                            <input type="text" name="fullName" class="form-control" placeholder="Nguyễn Văn A" required>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-semibold">Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="name@example.com"
+                                    required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold">Số điện thoại</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="0912345678">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Mật khẩu (8 - 20 ký tự)</label>
+                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 8 ký tự"
+                                minlength="8" maxlength="20" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold">Xác nhận mật khẩu</label>
+                            <input type="password" name="confirmPassword" class="form-control"
+                                placeholder="Nhập lại mật khẩu" required>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold"
+                                style="background:#7357ff; border-color:#6045e5;">
+                                Tạo tài khoản
+                            </button>
+                        </div>
+
+                        <div class="text-center small text-muted">
+                            Đã có tài khoản?
+                            <a href="#" class="text-primary fw-semibold text-decoration-none"
+                                data-bs-target="#loginModal" data-bs-toggle="modal">Đăng nhập</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="designDetailModal" tabindex="-1" aria-labelledby="designDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="designDetailContent">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold d-flex align-items-center gap-2" id="cartOffcanvasLabel">
+                <i class="bi bi-bag-check text-primary"></i> Giỏ hàng của bạn
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column" id="cartDrawerBody">
+        </div>
+        <div class="p-3 border-top bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Tổng cộng:</span>
+                <span class="fs-4 fw-bold text-primary" id="cartTotalAmount">0 ₫</span>
+            </div>
+            <div class="d-grid">
+                <button type="button" class="btn btn-primary btn-lg fw-semibold" id="cartCheckoutBtn">
+                    Tiến hành đặt hàng & Thanh toán
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true"
+        data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="checkoutModalLabel">Thanh toán đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="checkoutModalContent">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="purchasedModal" tabindex="-1" aria-labelledby="purchasedModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-2">
+                    <div>
+                        <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="purchasedModalLabel">
+                            <i class="bi bi-cloud-arrow-down-fill text-success"></i> Kho thiết kế đã sở hữu
+                        </h5>
+                        <small class="text-muted">Các bản thiết kế bạn đã thanh toán thành công và được cấp quyền tải
+                            file gốc an toàn.</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="purchasedModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="reviewModalLabel">Đánh giá sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="reviewForm">
+                        <input type="hidden" name="designId" id="reviewDesignId">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Sản phẩm:</label>
+                            <h6 class="fw-bold" id="reviewDesignTitle"></h6>
+                        </div>
+
+                        <div class="mb-3 text-center">
+                            <label class="form-label small fw-semibold d-block">Mức độ hài lòng:</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="reviewRating" id="star1" value="1">
+                                <label class="btn btn-outline-warning" for="star1">1 ★</label>
+                                <input type="radio" class="btn-check" name="reviewRating" id="star2" value="2">
+                                <label class="btn btn-outline-warning" for="star2">2 ★</label>
+                                <input type="radio" class="btn-check" name="reviewRating" id="star3" value="3">
+                                <label class="btn btn-outline-warning" for="star3">3 ★</label>
+                                <input type="radio" class="btn-check" name="reviewRating" id="star4" value="4">
+                                <label class="btn btn-outline-warning" for="star4">4 ★</label>
+                                <input type="radio" class="btn-check" name="reviewRating" id="star5" value="5" checked>
+                                <label class="btn btn-outline-warning" for="star5">5 ★ Tuyệt vời</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold">Nhận xét chi tiết</label>
+                            <textarea name="comment" id="reviewComment" class="form-control" rows="3"
+                                placeholder="Chia sẻ cảm nhận của bạn về chất lượng file thiết kế..."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                Gửi đánh giá
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:src="@{/js/api.js}" src="/js/api.js"></script>
+    <script th:src="@{/js/auth.js}" src="/js/auth.js"></script>
+    <script th:src="@{/js/app.js}" src="/js/app.js"></script>
+
+    <script>
+        function searchByTag(tag) {
+            const input = document.getElementById('keywordInput');
+            if (input) input.value = tag;
+            const heroInput = document.getElementById('heroSearchInput');
+            if (heroInput) heroInput.value = tag;
+            if (window.appState) {
+                window.appState.currentFilters.keyword = tag;
+                window.appState.currentFilters.page = 0;
+                window.loadDesigns();
+            }
+            document.getElementById('designsSection')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
 
 </body>
 

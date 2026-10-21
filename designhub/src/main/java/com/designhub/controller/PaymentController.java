@@ -94,6 +94,14 @@ public class PaymentController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<Payment> confirmPayment(
+            @PathVariable Long id,
+            @RequestParam(required = false) String transactionId) {
+
+        return ResponseEntity.ok(paymentService.confirmPayment(id, transactionId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePayment(
             @PathVariable Long id) {

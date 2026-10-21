@@ -559,3 +559,130 @@ a {
         gap: 8px;
     }
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cat-pill {
+    padding: 8px 18px;
+    border-radius: 50px;
+    background: #f1efff;
+    color: #4b3bb3;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cat-pill:hover {
+    background: #e2ddfe;
+    color: #31219b;
+}
+
+.cat-pill.active {
+    background: #7357ff;
+    color: #ffffff;
+    border-color: #6045e5;
+    box-shadow: 0 4px 12px rgba(115, 87, 255, 0.35);
+}
+
+.user-avatar-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7357ff, #4facfe);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 2px 6px rgba(115, 87, 255, 0.3);
+}
+
+.cart-icon-btn {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #212529;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.cart-icon-btn:hover {
+    background: #f1efff;
+    color: #7357ff;
+    border-color: #dcd6ff;
+}
+
+.cart-badge-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    background: #ff4757;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.product-image-container {
+    height: 200px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.design-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .design-img {
+    transform: scale(1.05);
+}
+
+.product-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #212529;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 44px;
+}
+
+.product-title:hover {
+    color: #7357ff;
+}
+
+.product-price {
+    font-size: 18px;
+    color: #7357ff;
+}
+
+.toast-container {
+    z-index: 1090;
+}
+
+.reviews-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}

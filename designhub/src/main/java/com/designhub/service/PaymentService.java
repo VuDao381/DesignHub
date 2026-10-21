@@ -146,6 +146,24 @@ public class PaymentService {
                 });
     }
 
+    public Payment confirmPayment(Long id, String transactionId) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin thanh toán với ID: " + id));
+
+        currentUserService.checkOwnerOrAdmin(payment.getOrder().getUser().getId());
+
+        payment.setStatus(PaymentStatus.SUCCESS);
+        payment.setPaymentDate(LocalDateTime.now());
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            payment.setTransactionId(transactionId.trim());
+        } else if (payment.getTransactionId() == null || payment.getTransactionId().isBlank()) {
+            payment.setTransactionId("SIM_" + System.currentTimeMillis());
+        }
+
+        applyPaymentSuccess(payment, payment.getOrder());
+        return paymentRepository.save(payment);
+    }
+
     public Optional<Payment> updatePayment(
             Long id,
             Payment payment) {

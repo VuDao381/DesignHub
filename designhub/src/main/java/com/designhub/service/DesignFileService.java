@@ -54,8 +54,8 @@ public class DesignFileService {
             Resource resource,
             String fileName,
             String contentType,
-            long contentLength
-    ) {}
+            long contentLength) {
+    }
 
     @Transactional(readOnly = true)
     public List<DesignFile> getAllFiles() {
@@ -128,15 +128,12 @@ public class DesignFileService {
         DesignFile file = designFileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tệp thiết kế với ID: " + fileId));
 
-        // 1. Kiểm tra quyền truy cập: Admin, Tác giả thiết kế hoặc Khách hàng đã thanh toán (Order status = PAID)
         checkAccessPermission(file.getDesign().getId());
 
-        // 2. Định vị file an toàn trên hệ thống lưu trữ
         String storedFileName = Paths.get(file.getFileUrl()).getFileName().toString();
         Path baseDir = Paths.get(baseUploadDir, "files").toAbsolutePath().normalize();
         Path filePath = baseDir.resolve(storedFileName).normalize();
 
-        // Chống lỗ hổng Path Traversal
         if (!filePath.startsWith(baseDir)) {
             throw new SecurityException("Đường dẫn tệp tin không hợp lệ");
         }
@@ -156,11 +153,9 @@ public class DesignFileService {
                 contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
             }
 
-            // 3. Tự động ghi nhận lịch sử tải xuống
             try {
                 downloadHistoryService.createDownloadHistory(file.getDesign().getId());
             } catch (Exception ex) {
-                // Không làm gián đoạn tải nếu có lỗi phụ khi ghi log
             }
 
             return new DownloadableFile(resource, file.getFileName(), contentType, contentLength);
