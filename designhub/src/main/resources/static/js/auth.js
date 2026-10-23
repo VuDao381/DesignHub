@@ -131,9 +131,9 @@ async function handleRegister(e) {
         return;
     }
 
-    if (password.length < 8 || password.length > 20) {
+    if (password.length < 8 || password.length > 72) {
         if (alertBox) {
-            alertBox.textContent = 'Mật khẩu phải có độ dài từ 8 đến 20 ký tự!';
+            alertBox.textContent = 'Mật khẩu phải có độ dài từ 8 đến 72 ký tự!';
             alertBox.classList.remove('d-none');
         }
         return;

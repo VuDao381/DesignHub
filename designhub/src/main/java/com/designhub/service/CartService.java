@@ -43,10 +43,14 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public Optional<Cart> getCartByUserId(Long userId) {
+        currentUserService.checkOwnerOrAdmin(userId);
         return cartRepository.findByUserId(userId);
     }
 
     public Cart createCart(Cart cart) {
+        if (!currentUserService.isAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền tạo giỏ hàng thủ công");
+        }
         if (cart.getUser() == null || cart.getUser().getId() == null) {
             throw new IllegalArgumentException("Cart phải gắn với một user hợp lệ");
         }

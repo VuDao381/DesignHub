@@ -77,6 +77,7 @@ class AnalyticsServiceTest {
 
     @Test
     void testGetAdminDashboard() {
+        when(currentUserService.isAdmin()).thenReturn(true);
         when(orderRepository.calculateTotalRevenue()).thenReturn(BigDecimal.valueOf(5000000));
         when(orderRepository.countByStatus("PAID")).thenReturn(25L);
         when(userRepository.count()).thenReturn(100L);

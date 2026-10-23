@@ -8,6 +8,6 @@ public record ChangePasswordRequest(
         String currentPassword,
 
         @NotBlank(message = "Mật khẩu mới không được để trống")
-        @Size(min = 8, message = "Mật khẩu mới phải có ít nhất 8 ký tự")
+        @Size(min = 8, max = 72, message = "Mật khẩu mới phải từ 8 đến 72 ký tự")
         String newPassword
 ) {}

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -70,6 +71,20 @@ public class DesignController {
         );
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Lấy danh sách thiết kế của tôi (Designer)",
+               description = "Lấy toàn bộ thiết kế do chính Designer hiện tại đăng tải với mọi trạng thái.")
+    public ResponseEntity<Page<Design>> getMyDesigns(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        int validPage = Math.max(page, 0);
+        int validSize = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(validPage, validSize);
+
+        return ResponseEntity.ok(designService.getMyDesigns(pageable));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Design> getDesignById(
             @PathVariable Long id) {
@@ -94,6 +109,18 @@ public class DesignController {
             @Valid @RequestBody Design design) {
 
         return designService.updateDesign(id, design)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Phê duyệt hoặc cập nhật trạng thái thiết kế", description = "Dành riêng cho ADMIN để duyệt (APPROVED), từ chối (REJECTED kèm rejectReason) hoặc lưu trữ (ARCHIVED) thiết kế.")
+    public ResponseEntity<Design> updateDesignStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            @RequestParam(required = false) String rejectReason) {
+
+        return designService.updateDesignStatus(id, status, rejectReason)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

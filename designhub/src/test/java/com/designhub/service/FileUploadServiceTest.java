@@ -45,8 +45,11 @@ class FileUploadServiceTest {
 
     @Test
     void testUploadImageSuccess() {
+        byte[] validPngBytes = new byte[] {
+                (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D
+        };
         MockMultipartFile file = new MockMultipartFile(
-                "file", "avatar.png", "image/png", "sample-image-content".getBytes());
+                "file", "avatar.png", "image/png", validPngBytes);
 
         FileUploadResponse response = fileUploadService.uploadImage(file);
 
@@ -54,6 +57,17 @@ class FileUploadServiceTest {
         assertEquals("avatar.png", response.originalFileName());
         assertTrue(response.fileUrl().startsWith("/uploads/images/"));
         assertTrue(response.storedFileName().endsWith(".png"));
+    }
+
+    @Test
+    void testUploadImageFailsInvalidMagicBytes() {
+        MockMultipartFile fakePng = new MockMultipartFile(
+                "file", "malicious.png", "image/png", "NOT_A_REAL_PNG".getBytes());
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> fileUploadService.uploadImage(fakePng));
+        assertTrue(ex.getMessage().contains("magic bytes không hợp lệ"));
     }
 
     @Test

@@ -22,13 +22,19 @@ public class FileUploadService {
     private String baseUploadDir;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp", "gif", "svg");
+            "jpg", "jpeg", "png", "webp", "gif");
 
     private static final Set<String> BLOCKED_FILE_EXTENSIONS = Set.of(
-            "exe", "bat", "cmd", "sh", "jsp", "jar", "html", "htm", "js", "php", "asp", "aspx", "py", "vbs", "msi");
+            "exe", "bat", "cmd", "sh", "jsp", "jar", "html", "htm", "js", "php", "asp", "aspx",
+            "py", "vbs", "msi", "ps1", "psm1", "dll", "com", "scr", "phtml", "phar", "war",
+            "ear", "cgi", "pl", "rb", "wsf", "hta", "xhtml");
 
     public FileUploadResponse uploadImage(MultipartFile file) {
         validateFile(file);
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("Kích thước hình ảnh không được vượt quá 10MB");
+        }
 
         String originalName = StringUtils.cleanPath(
                 file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.png");
@@ -39,7 +45,70 @@ public class FileUploadService {
                     + String.join(", ", ALLOWED_IMAGE_EXTENSIONS));
         }
 
+        validateImageMagicBytes(file, extension);
+
         return storeFile(file, "images", originalName, extension);
+    }
+
+    private void validateImageMagicBytes(MultipartFile file, String extension) {
+        try (var is = file.getInputStream()) {
+            byte[] header = new byte[12];
+            int bytesRead = is.read(header);
+            if (bytesRead < 4) {
+                throw new IllegalArgumentException("Tệp tin quá nhỏ hoặc không hợp lệ");
+            }
+
+            boolean valid = false;
+            switch (extension) {
+                case "jpg":
+                case "jpeg":
+                    // FF D8 FF
+                    valid = (header[0] & 0xFF) == 0xFF
+                            && (header[1] & 0xFF) == 0xD8
+                            && (header[2] & 0xFF) == 0xFF;
+                    break;
+                case "png":
+                    // 89 50 4E 47 0D 0A 1A 0A
+                    valid = bytesRead >= 8
+                            && (header[0] & 0xFF) == 0x89
+                            && (header[1] & 0xFF) == 0x50
+                            && (header[2] & 0xFF) == 0x4E
+                            && (header[3] & 0xFF) == 0x47
+                            && (header[4] & 0xFF) == 0x0D
+                            && (header[5] & 0xFF) == 0x0A
+                            && (header[6] & 0xFF) == 0x1A
+                            && (header[7] & 0xFF) == 0x0A;
+                    break;
+                case "gif":
+                    // GIF8
+                    valid = (header[0] & 0xFF) == 0x47
+                            && (header[1] & 0xFF) == 0x49
+                            && (header[2] & 0xFF) == 0x46
+                            && (header[3] & 0xFF) == 0x38;
+                    break;
+                case "webp":
+                    // RIFF .... WEBP
+                    valid = bytesRead >= 12
+                            && (header[0] & 0xFF) == 0x52
+                            && (header[1] & 0xFF) == 0x49
+                            && (header[2] & 0xFF) == 0x46
+                            && (header[3] & 0xFF) == 0x46
+                            && (header[8] & 0xFF) == 0x57
+                            && (header[9] & 0xFF) == 0x45
+                            && (header[10] & 0xFF) == 0x42
+                            && (header[11] & 0xFF) == 0x50;
+                    break;
+                default:
+                    valid = false;
+            }
+
+            if (!valid) {
+                throw new IllegalArgumentException(
+                        "Nội dung tệp không khớp với định dạng hình ảnh hợp lệ (magic bytes không hợp lệ)");
+            }
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Không thể đọc tệp để xác thực định dạng ảnh", ex);
+        }
     }
 
     public FileUploadResponse uploadDesignFile(MultipartFile file) {

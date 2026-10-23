@@ -44,9 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7).trim();
         } else {
-            String paramToken = request.getParameter("token");
-            if (paramToken != null && !paramToken.isBlank()) {
-                token = paramToken.trim();
+            String uri = request.getRequestURI();
+            if (uri != null && uri.endsWith("/download")) {
+                String paramToken = request.getParameter("token");
+                if (paramToken != null && !paramToken.isBlank()) {
+                    token = paramToken.trim();
+                }
             }
         }
 

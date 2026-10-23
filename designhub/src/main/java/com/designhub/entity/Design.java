@@ -2,9 +2,13 @@ package com.designhub.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,6 +17,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -31,7 +37,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"category", "designer"})
+@ToString(exclude = {"category", "designer", "images", "files"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Design {
@@ -56,6 +62,9 @@ public class Design {
 
     private String status;
 
+    @Column(name = "reject_reason", length = 500)
+    private String rejectReason;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -68,6 +77,19 @@ public class Design {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "designer_id", nullable = false)
     private Designer designer;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonIgnoreProperties({"design", "hibernateLazyInitializer", "handler"})
+    @org.hibernate.annotations.BatchSize(size = 20)
+    @OneToMany(mappedBy = "design", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OrderBy("isPrimary DESC, id ASC")
+    private List<DesignImage> images = new ArrayList<>();
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonIgnoreProperties({"design", "fileUrl", "hibernateLazyInitializer", "handler"})
+    @org.hibernate.annotations.BatchSize(size = 20)
+    @OneToMany(mappedBy = "design", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    private List<DesignFile> files = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

@@ -54,7 +54,10 @@ public class RefreshTokenService {
     }
 
     public void revokeToken(String token) {
-        refreshTokenRepository.findByToken(token).ifPresent(refreshTokenRepository::delete);
+        Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(token);
+        if (tokenOpt.isPresent()) {
+            refreshTokenRepository.delete(tokenOpt.get());
+        }
     }
 
     public void deleteByUser(User user) {

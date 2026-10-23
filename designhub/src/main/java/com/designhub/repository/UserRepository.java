@@ -23,6 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByRole(Role role);
 
+    long countByRole(Role role);
+
     @org.springframework.data.jpa.repository.Query("""
         SELECT new com.designhub.dto.UserGrowthDTO(
             YEAR(u.createdAt),

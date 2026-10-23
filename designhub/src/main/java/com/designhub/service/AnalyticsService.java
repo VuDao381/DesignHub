@@ -56,6 +56,9 @@ public class AnalyticsService {
     }
 
     public AdminDashboardResponse getAdminDashboard() {
+        if (!currentUserService.isAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem thống kê tổng quan");
+        }
         BigDecimal totalRevenue = orderRepository.calculateTotalRevenue();
         long totalOrders = orderRepository.countByStatus("PAID");
         long totalUsers = userRepository.count();
@@ -78,8 +81,22 @@ public class AnalyticsService {
 
     public DesignerDashboardResponse getDesignerDashboard() {
         User me = currentUserService.getCurrentUser();
-        Designer designer = designerRepository.findByUserId(me.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Tài khoản chưa có hồ sơ Designer"));
+        java.util.Optional<Designer> designerOpt = designerRepository.findByUserId(me.getId());
+        if (designerOpt.isEmpty()) {
+            if (currentUserService.isAdmin() || me.getRole() == com.designhub.entity.Role.DESIGNER) {
+                return new DesignerDashboardResponse(
+                        null,
+                        me.getFullName(),
+                        BigDecimal.ZERO,
+                        0L,
+                        0L,
+                        0L,
+                        List.of()
+                );
+            }
+            throw new IllegalArgumentException("Tài khoản chưa có hồ sơ Designer");
+        }
+        Designer designer = designerOpt.get();
 
         Long designerId = designer.getId();
 

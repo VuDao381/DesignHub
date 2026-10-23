@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.designhub.entity.Design;
 import com.designhub.entity.DownloadHistory;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.DownloadHistoryRepository;
 import com.designhub.repository.OrderRepository;
@@ -38,6 +39,9 @@ public class DownloadHistoryService {
 
     @Transactional(readOnly = true)
     public List<DownloadHistory> getAllDownloadHistories() {
+        if (!currentUserService.isAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem toàn bộ lịch sử tải xuống");
+        }
         return downloadHistoryRepository.findAll();
     }
 
@@ -68,9 +72,8 @@ public class DownloadHistoryService {
             return downloadHistoryRepository.findByDesignId(designId);
         }
         User me = currentUserService.getCurrentUser();
-        return downloadHistoryRepository.findByUserIdAndDesignId(me.getId(), designId)
-                .map(List::of)
-                .orElseGet(List::of);
+        Optional<DownloadHistory> historyOpt = downloadHistoryRepository.findByUserIdAndDesignId(me.getId(), designId);
+        return historyOpt.isPresent() ? List.of(historyOpt.get()) : List.of();
     }
 
     @Transactional(readOnly = true)
@@ -84,11 +87,12 @@ public class DownloadHistoryService {
                 .findByUserIdAndDesignId(userId, designId);
     }
 
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public DownloadHistory createDownloadHistory(Long designId) {
         User me = currentUserService.getCurrentUser();
 
         Design design = designRepository.findById(designId)
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
 
         boolean hasPurchased = orderRepository
                 .existsByUserIdAndStatusAndOrderDetailsDesignId(

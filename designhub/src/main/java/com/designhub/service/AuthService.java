@@ -64,7 +64,13 @@ public class AuthService {
 
                 User savedUser = userRepository.save(user);
 
-                return toAuthResponse(savedUser, null, null);
+                String token = jwtService.generateToken(
+                                savedUser.getEmail(),
+                                savedUser.getRole().name());
+
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser);
+
+                return toAuthResponse(savedUser, token, refreshToken.getToken());
         }
 
         @Transactional

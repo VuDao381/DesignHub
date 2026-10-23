@@ -16,24 +16,26 @@ public interface OrderDetailRepository
 
     List<OrderDetail> findByOrderId(Long orderId);
 
+    boolean existsByDesignId(Long designId);
+
     @Query("""
         SELECT new com.designhub.dto.TopSellingDesignDTO(
             od.design.id,
             od.design.name,
             od.design.price,
             od.design.designer.user.fullName,
-            COUNT(od.id),
-            SUM(od.price)
+            COALESCE(SUM(od.quantity), 0),
+            COALESCE(SUM(od.price * od.quantity), 0)
         )
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'
         GROUP BY od.design.id, od.design.name, od.design.price, od.design.designer.user.fullName
-        ORDER BY COUNT(od.id) DESC
+        ORDER BY COALESCE(SUM(od.quantity), 0) DESC
     """)
     List<TopSellingDesignDTO> findTopSellingDesigns(Pageable pageable);
 
     @Query("""
-        SELECT COALESCE(SUM(od.price), 0)
+        SELECT COALESCE(SUM(od.price * od.quantity), 0)
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'
           AND od.design.designer.id = :designerId
@@ -41,7 +43,7 @@ public interface OrderDetailRepository
     BigDecimal calculateDesignerRevenue(@Param("designerId") Long designerId);
 
     @Query("""
-        SELECT COUNT(od.id)
+        SELECT COALESCE(SUM(od.quantity), 0)
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'
           AND od.design.designer.id = :designerId
@@ -54,14 +56,14 @@ public interface OrderDetailRepository
             od.design.name,
             od.design.price,
             od.design.designer.user.fullName,
-            COUNT(od.id),
-            SUM(od.price)
+            COALESCE(SUM(od.quantity), 0),
+            COALESCE(SUM(od.price * od.quantity), 0)
         )
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'
           AND od.design.designer.id = :designerId
         GROUP BY od.design.id, od.design.name, od.design.price, od.design.designer.user.fullName
-        ORDER BY COUNT(od.id) DESC
+        ORDER BY COALESCE(SUM(od.quantity), 0) DESC
     """)
     List<TopSellingDesignDTO> findTopDesignsByDesigner(@Param("designerId") Long designerId, Pageable pageable);
 }

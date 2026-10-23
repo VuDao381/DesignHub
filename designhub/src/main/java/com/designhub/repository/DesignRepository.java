@@ -14,4 +14,10 @@ public interface DesignRepository extends JpaRepository<Design, Long>, JpaSpecif
     Page<Design> findByStatus(String status, Pageable pageable);
 
     Page<Design> findByStatusAndNameContainingIgnoreCase(String status, String name, Pageable pageable);
+
+    boolean existsByDesignerId(Long designerId);
+
+    boolean existsByCategoryId(Long categoryId);
+
+    Page<Design> findByDesignerId(Long designerId, Pageable pageable);
 }

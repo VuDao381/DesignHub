@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import com.designhub.entity.CartItem;
 import com.designhub.entity.Order;
 import com.designhub.entity.Payment;
 import com.designhub.entity.PaymentStatus;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.CartItemRepository;
 import com.designhub.repository.CartRepository;
 import com.designhub.repository.OrderRepository;
@@ -45,6 +47,9 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public List<Payment> getAllPayments() {
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem tất cả thanh toán");
+        }
         return paymentRepository.findAll();
     }
 
@@ -62,7 +67,7 @@ public class PaymentService {
     @Transactional(readOnly = true)
     public List<Payment> getPaymentsByOrderId(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
         currentUserService.checkOwnerOrAdmin(order.getUser().getId());
         return paymentRepository.findByOrderId(orderId);
     }
@@ -88,7 +93,7 @@ public class PaymentService {
 
         Order order = orderRepository
                 .findById(payment.getOrder().getId())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Không tìm thấy đơn hàng với id: "
                                 + payment.getOrder().getId()));
 
@@ -104,9 +109,9 @@ public class PaymentService {
                     "Số tiền thanh toán phải bằng tổng tiền đơn hàng");
         }
 
-        if ("PAID".equalsIgnoreCase(order.getStatus())) {
+        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
             throw new IllegalArgumentException(
-                    "Đơn hàng đã được thanh toán");
+                    "Chỉ có thể tạo thanh toán cho đơn hàng đang chờ xử lý (PENDING). Trạng thái hiện tại: " + order.getStatus());
         }
 
         payment.setOrder(order);
@@ -125,6 +130,11 @@ public class PaymentService {
             Long id,
             PaymentStatus status,
             String transactionId) {
+
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException(
+                    "Chỉ Quản trị viên (ADMIN) mới có quyền cập nhật trạng thái thanh toán");
+        }
 
         if (status == null) {
             throw new IllegalArgumentException("Trạng thái thanh toán không được để trống");
@@ -148,16 +158,25 @@ public class PaymentService {
 
     public Payment confirmPayment(Long id, String transactionId) {
         Payment payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin thanh toán với ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin thanh toán với ID: " + id));
+
+        if (payment.getOrder() == null || payment.getOrder().getUser() == null) {
+            throw new ResourceNotFoundException("Không tìm thấy đơn hàng liên kết với thanh toán này");
+        }
 
         currentUserService.checkOwnerOrAdmin(payment.getOrder().getUser().getId());
+
+        if (!PaymentStatus.PENDING.equals(payment.getStatus())) {
+            throw new IllegalArgumentException(
+                    "Chỉ có thể xác nhận giao dịch đang ở trạng thái chờ (PENDING). Trạng thái hiện tại: " + payment.getStatus());
+        }
 
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setPaymentDate(LocalDateTime.now());
         if (transactionId != null && !transactionId.trim().isEmpty()) {
             payment.setTransactionId(transactionId.trim());
         } else if (payment.getTransactionId() == null || payment.getTransactionId().isBlank()) {
-            payment.setTransactionId("SIM_" + System.currentTimeMillis());
+            payment.setTransactionId("TXN_CONF_" + System.currentTimeMillis());
         }
 
         applyPaymentSuccess(payment, payment.getOrder());
@@ -168,12 +187,16 @@ public class PaymentService {
             Long id,
             Payment payment) {
 
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền chỉnh sửa thanh toán");
+        }
+
         return paymentRepository.findById(id)
                 .map(existingPayment -> {
                     if (payment.getAmount() != null) {
                         if (payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                             throw new IllegalArgumentException(
-                                    "Số tiền thanh toán phải lớn hơn 0");
+                                     "Số tiền thanh toán phải lớn hơn 0");
                         }
 
                         if (existingPayment.getOrder() != null
@@ -208,7 +231,7 @@ public class PaymentService {
 
     private void applyPaymentSuccess(Payment payment, Order order) {
         if (order == null) {
-            throw new IllegalArgumentException("Không tìm thấy đơn hàng liên kết để thanh toán");
+            throw new ResourceNotFoundException("Không tìm thấy đơn hàng liên kết để thanh toán");
         }
 
         if (payment.getAmount() == null
@@ -217,8 +240,8 @@ public class PaymentService {
                     "Số tiền thanh toán phải bằng tổng tiền đơn hàng");
         }
 
-        if ("PAID".equalsIgnoreCase(order.getStatus())) {
-            throw new IllegalArgumentException("Đơn hàng đã được thanh toán trước đó");
+        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalArgumentException("Chỉ có thể xác nhận thanh toán thành công cho đơn hàng đang ở trạng thái PENDING. Trạng thái hiện tại: " + order.getStatus());
         }
 
         payment.setStatus(PaymentStatus.SUCCESS);
@@ -229,10 +252,25 @@ public class PaymentService {
         order.setStatus("PAID");
         orderRepository.save(order);
 
+        if (order.getId() != null) {
+            List<Payment> siblingPayments = paymentRepository.findByOrderId(order.getId());
+            for (Payment other : siblingPayments) {
+                if (other != payment
+                        && (payment.getId() == null || !payment.getId().equals(other.getId()))
+                        && PaymentStatus.PENDING.equals(other.getStatus())) {
+                    other.setStatus(PaymentStatus.CANCELLED);
+                    paymentRepository.save(other);
+                }
+            }
+        }
+
         clearCartAfterPayment(order);
     }
 
     public boolean deletePayment(Long id) {
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xóa thanh toán");
+        }
 
         if (!paymentRepository.existsById(id)) {
             return false;
@@ -261,7 +299,25 @@ public class PaymentService {
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
 
         if (!cartItems.isEmpty()) {
-            cartItemRepository.deleteAll(cartItems);
+            java.util.Set<Long> orderedDesignIds = order.getOrderDetails() != null
+                    ? order.getOrderDetails().stream()
+                            .filter(od -> od.getDesign() != null && od.getDesign().getId() != null)
+                            .map(od -> od.getDesign().getId())
+                            .collect(java.util.stream.Collectors.toSet())
+                    : java.util.Set.of();
+
+            List<CartItem> toRemove = orderedDesignIds.isEmpty()
+                    ? cartItems
+                    : cartItems.stream()
+                            .filter(ci -> ci.getDesign() != null && orderedDesignIds.contains(ci.getDesign().getId()))
+                            .toList();
+
+            if (!toRemove.isEmpty()) {
+                if (cart.getItems() != null) {
+                    cart.getItems().removeAll(toRemove);
+                }
+                cartItemRepository.deleteAll(toRemove);
+            }
         }
     }
 }
