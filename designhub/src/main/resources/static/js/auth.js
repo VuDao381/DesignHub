@@ -59,6 +59,13 @@ function updateAuthUI() {
         guestElements.forEach(el => el.classList.remove('d-none'));
         loggedElements.forEach(el => el.classList.add('d-none'));
     }
+
+    const adminElements = document.querySelectorAll('.auth-admin');
+    if (currentUser && currentUser.role === 'ADMIN') {
+        adminElements.forEach(el => el.classList.remove('d-none'));
+    } else {
+        adminElements.forEach(el => el.classList.add('d-none'));
+    }
 }
 
 async function handleLogin(e) {

@@ -173,7 +173,42 @@ const api = {
     },
 
     categories: {
-        getAll: () => request('/api/categories')
+        getAll: (params = {}) => {
+            const query = new URLSearchParams();
+            if (params.keyword) query.append('keyword', params.keyword);
+            if (params.page !== undefined) query.append('page', params.page);
+            query.append('size', params.size || 100);
+            return request(`/api/categories?${query.toString()}`);
+        },
+        getById: (id) => request(`/api/categories/${id}`),
+        create: (data) => request('/api/categories', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        update: (id, data) => request(`/api/categories/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        delete: (id) => request(`/api/categories/${id}`, {
+            method: 'DELETE'
+        })
+    },
+
+    users: {
+        getAll: () => request('/api/users'),
+        getById: (id) => request(`/api/users/${id}`),
+        update: (id, data) => request(`/api/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        delete: (id) => request(`/api/users/${id}`, {
+            method: 'DELETE'
+        })
+    },
+
+    analytics: {
+        getAdminDashboard: () => request('/api/analytics/admin'),
+        getDesignerDashboard: () => request('/api/analytics/designer')
     },
 
     designs: {
@@ -184,6 +219,7 @@ const api = {
             if (params.designerId) query.append('designerId', params.designerId);
             if (params.minPrice) query.append('minPrice', params.minPrice);
             if (params.maxPrice) query.append('maxPrice', params.maxPrice);
+            if (params.status) query.append('status', params.status);
             if (params.sortBy) query.append('sortBy', params.sortBy);
             if (params.page !== undefined) query.append('page', params.page);
             if (params.size !== undefined) query.append('size', params.size);
@@ -200,6 +236,14 @@ const api = {
             method: 'PUT',
             body: JSON.stringify(data)
         }),
+        updateStatus: (id, status, rejectReason = null) => {
+            const query = new URLSearchParams();
+            query.append('status', status);
+            if (rejectReason) query.append('rejectReason', rejectReason);
+            return request(`/api/designs/${id}/status?${query.toString()}`, {
+                method: 'PATCH'
+            });
+        },
         delete: (id) => request(`/api/designs/${id}`, {
             method: 'DELETE'
         }),
