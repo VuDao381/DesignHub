@@ -11,6 +11,8 @@ import com.designhub.dto.RegisterDesignerRequest;
 import com.designhub.entity.Designer;
 import com.designhub.entity.Role;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
+import com.designhub.repository.DesignRepository;
 import com.designhub.repository.DesignerRepository;
 import com.designhub.repository.UserRepository;
 import com.designhub.security.CurrentUserService;
@@ -20,14 +22,17 @@ import com.designhub.security.CurrentUserService;
 public class DesignerService {
 
     private final DesignerRepository designerRepository;
+    private final DesignRepository designRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
 
     public DesignerService(
             DesignerRepository designerRepository,
+            DesignRepository designRepository,
             UserRepository userRepository,
             CurrentUserService currentUserService) {
         this.designerRepository = designerRepository;
+        this.designRepository = designRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
     }
@@ -65,7 +70,7 @@ public class DesignerService {
             throw new IllegalArgumentException("Hồ sơ Designer phải liên kết với User hợp lệ");
         }
         User user = userRepository.findById(designer.getUser().getId())
-                .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
 
         if (designerRepository.findByUserId(user.getId()).isPresent()) {
             throw new IllegalArgumentException("User này đã có hồ sơ Designer");
@@ -119,11 +124,22 @@ public class DesignerService {
             throw new AccessDeniedException("Chỉ ADMIN mới có quyền xoá hồ sơ Designer");
         }
 
-        if (!designerRepository.existsById(id)) {
+        Optional<Designer> designerOpt = designerRepository.findById(id);
+        if (designerOpt.isEmpty()) {
             return false;
         }
 
-        designerRepository.deleteById(id);
+        if (designRepository.existsByDesignerId(id)) {
+            throw new IllegalStateException("Không thể xóa Designer khi vẫn còn các thiết kế liên kết trong hệ thống. Vui lòng chuyển giao hoặc xóa các thiết kế trước.");
+        }
+
+        Designer designer = designerOpt.get();
+        if (designer.getUser() != null && designer.getUser().getRole() == Role.DESIGNER) {
+            designer.getUser().setRole(Role.CUSTOMER);
+            userRepository.save(designer.getUser());
+        }
+
+        designerRepository.delete(designer);
         return true;
     }
 }

@@ -33,6 +33,11 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<Review>> getMyReviews() {
+        return ResponseEntity.ok(reviewService.getMyReviews());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Review> getReviewById(
             @PathVariable Long id) {

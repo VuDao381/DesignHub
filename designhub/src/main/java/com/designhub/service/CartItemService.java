@@ -10,6 +10,7 @@ import com.designhub.entity.Cart;
 import com.designhub.entity.CartItem;
 import com.designhub.entity.Design;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.CartItemRepository;
 import com.designhub.repository.CartRepository;
 import com.designhub.repository.DesignRepository;
@@ -42,13 +43,16 @@ public class CartItemService {
 
     @Transactional(readOnly = true)
     public List<CartItem> getAllItems() {
+        if (!currentUserService.isAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem tất cả mục giỏ hàng");
+        }
         return cartItemRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     public List<CartItem> getItemsByCartId(Long cartId) {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giỏ hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy giỏ hàng"));
         currentUserService.checkOwnerOrAdmin(cart.getUser().getId());
         return cartItemRepository.findByCartId(cartId);
     }
@@ -68,7 +72,7 @@ public class CartItemService {
             Long designId) {
 
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giỏ hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy giỏ hàng"));
         currentUserService.checkOwnerOrAdmin(cart.getUser().getId());
 
         return cartItemRepository.findByCartIdAndDesignId(
@@ -84,7 +88,7 @@ public class CartItemService {
         User me = currentUserService.getCurrentUser();
         Long designId = cartItem.getDesign().getId();
         Design design = designRepository.findById(designId)
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
 
         if (!"APPROVED".equalsIgnoreCase(design.getStatus())) {
             throw new IllegalArgumentException("Thiết kế chưa được phê duyệt để bán");
@@ -135,6 +139,9 @@ public class CartItemService {
                 .map(item -> {
                     currentUserService.checkOwnerOrAdmin(
                             item.getCart().getUser().getId());
+                    if (item.getCart() != null && item.getCart().getItems() != null) {
+                        item.getCart().getItems().remove(item);
+                    }
                     cartItemRepository.delete(item);
                     return true;
                 })

@@ -19,13 +19,13 @@ public class AdminInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.admin.username:admin}")
+    @Value("${app.admin.username:}")
     private String adminUsername;
 
-    @Value("${app.admin.password:Admin@123456}")
+    @Value("${app.admin.password:}")
     private String adminPassword;
 
-    @Value("${app.admin.email:admin@designhub.com}")
+    @Value("${app.admin.email:}")
     private String adminEmail;
 
     public AdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -36,7 +36,14 @@ public class AdminInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (!userRepository.existsByRole(Role.ADMIN)) {
-            log.info("Chưa có tài khoản ADMIN trong hệ thống. Đang khởi tạo ADMIN mặc định...");
+            if (adminUsername == null || adminUsername.isBlank()
+                    || adminPassword == null || adminPassword.isBlank()
+                    || adminEmail == null || adminEmail.isBlank()) {
+                throw new IllegalStateException(
+                        "Thiếu cấu hình tài khoản Quản trị viên khởi tạo (APP_ADMIN_USERNAME, APP_ADMIN_EMAIL, APP_ADMIN_PASSWORD) trong biến môi trường hoặc file .env!");
+            }
+
+            log.info("Chưa có tài khoản ADMIN trong hệ thống. Đang khởi tạo ADMIN từ cấu hình...");
 
             User admin = new User();
             admin.setUsername(adminUsername.trim());

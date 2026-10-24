@@ -1,8 +1,12 @@
 package com.designhub.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.designhub.entity.Design;
 import com.designhub.entity.DesignImage;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.DesignImageRepository;
 import com.designhub.repository.DesignRepository;
 import com.designhub.security.CurrentUserService;
@@ -17,6 +22,9 @@ import com.designhub.security.CurrentUserService;
 @Service
 @Transactional
 public class DesignImageService {
+
+    @Value("${file.upload-dir:uploads}")
+    private String baseUploadDir = "uploads";
 
     private final DesignImageRepository designImageRepository;
     private final DesignRepository designRepository;
@@ -52,9 +60,14 @@ public class DesignImageService {
         }
 
         Design design = designRepository.findById(designImage.getDesign().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Thiết kế không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Thiết kế không tồn tại"));
 
         checkAuthorOrAdmin(design);
+        resetDesignPendingIfApproved(design);
+
+        if (designImage.isPrimary()) {
+            clearPrimaryImages(design.getId(), null);
+        }
 
         designImage.setId(null);
         designImage.setDesign(design);
@@ -68,6 +81,11 @@ public class DesignImageService {
         return designImageRepository.findById(id)
                 .map(existingImage -> {
                     checkAuthorOrAdmin(existingImage.getDesign());
+                    resetDesignPendingIfApproved(existingImage.getDesign());
+
+                    if (designImage.isPrimary()) {
+                        clearPrimaryImages(existingImage.getDesign().getId(), existingImage.getId());
+                    }
 
                     existingImage.setImageUrl(designImage.getImageUrl());
                     existingImage.setPrimary(designImage.isPrimary());
@@ -80,10 +98,43 @@ public class DesignImageService {
         return designImageRepository.findById(id)
                 .map(image -> {
                     checkAuthorOrAdmin(image.getDesign());
+                    resetDesignPendingIfApproved(image.getDesign());
+
                     designImageRepository.delete(image);
+                    try {
+                        if (image.getImageUrl() != null) {
+                            String storedFileName = Paths.get(image.getImageUrl()).getFileName().toString();
+                            Path baseDir = Paths.get(baseUploadDir, "images").toAbsolutePath().normalize();
+                            Path filePath = baseDir.resolve(storedFileName).normalize();
+                            if (filePath.startsWith(baseDir)) {
+                                Files.deleteIfExists(filePath);
+                            }
+                        }
+                    } catch (Exception ignored) {
+                    }
                     return true;
                 })
                 .orElse(false);
+    }
+
+    private void clearPrimaryImages(Long designId, Long excludeImageId) {
+        List<DesignImage> images = designImageRepository.findByDesignId(designId);
+        for (DesignImage img : images) {
+            if (img.isPrimary() && (excludeImageId == null || !excludeImageId.equals(img.getId()))) {
+                img.setPrimary(false);
+                designImageRepository.save(img);
+            }
+        }
+    }
+
+    private void resetDesignPendingIfApproved(Design design) {
+        if (!currentUserService.isAdmin()
+                && ("APPROVED".equalsIgnoreCase(design.getStatus())
+                        || "REJECTED".equalsIgnoreCase(design.getStatus()))) {
+            design.setStatus("PENDING");
+            design.setRejectReason(null);
+            designRepository.save(design);
+        }
     }
 
     private void checkAuthorOrAdmin(Design design) {

@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.designhub.entity.Design;
 import com.designhub.entity.DesignFile;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.DesignFileRepository;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.OrderRepository;
@@ -27,6 +30,8 @@ import com.designhub.security.CurrentUserService;
 @Service
 @Transactional
 public class DesignFileService {
+
+    private static final Logger log = LoggerFactory.getLogger(DesignFileService.class);
 
     @Value("${file.upload-dir:uploads}")
     private String baseUploadDir;
@@ -59,6 +64,9 @@ public class DesignFileService {
 
     @Transactional(readOnly = true)
     public List<DesignFile> getAllFiles() {
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem toàn bộ tệp thiết kế");
+        }
         return designFileRepository.findAll();
     }
 
@@ -82,8 +90,10 @@ public class DesignFileService {
             throw new IllegalArgumentException("File phải gắn với một Design hợp lệ");
         }
         Design design = designRepository.findById(designFile.getDesign().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
         checkAuthorOrAdmin(design);
+
+        resetDesignPendingIfApproved(design);
 
         designFile.setId(null);
         designFile.setDesign(design);
@@ -97,6 +107,8 @@ public class DesignFileService {
         return designFileRepository.findById(id)
                 .map(existingFile -> {
                     checkAuthorOrAdmin(existingFile.getDesign());
+                    resetDesignPendingIfApproved(existingFile.getDesign());
+
                     existingFile.setFileName(designFile.getFileName());
                     existingFile.setFileUrl(designFile.getFileUrl());
                     existingFile.setFileSize(designFile.getFileSize());
@@ -109,6 +121,8 @@ public class DesignFileService {
         return designFileRepository.findById(id)
                 .map(file -> {
                     checkAuthorOrAdmin(file.getDesign());
+                    resetDesignPendingIfApproved(file.getDesign());
+
                     designFileRepository.delete(file);
                     try {
                         String storedFileName = Paths.get(file.getFileUrl()).getFileName().toString();
@@ -124,9 +138,19 @@ public class DesignFileService {
                 .orElse(false);
     }
 
+    private void resetDesignPendingIfApproved(Design design) {
+        if (!currentUserService.isAdmin()
+                && ("APPROVED".equalsIgnoreCase(design.getStatus())
+                        || "REJECTED".equalsIgnoreCase(design.getStatus()))) {
+            design.setStatus("PENDING");
+            design.setRejectReason(null);
+            designRepository.save(design);
+        }
+    }
+
     public DownloadableFile getFileForDownload(Long fileId) {
         DesignFile file = designFileRepository.findById(fileId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tệp thiết kế với ID: " + fileId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tệp thiết kế với ID: " + fileId));
 
         checkAccessPermission(file.getDesign().getId());
 
@@ -156,6 +180,7 @@ public class DesignFileService {
             try {
                 downloadHistoryService.createDownloadHistory(file.getDesign().getId());
             } catch (Exception ex) {
+                log.warn("Không thể ghi nhận lịch sử tải cho design id {}: {}", file.getDesign().getId(), ex.getMessage());
             }
 
             return new DownloadableFile(resource, file.getFileName(), contentType, contentLength);
@@ -172,7 +197,7 @@ public class DesignFileService {
         }
         User me = currentUserService.getCurrentUser();
         Design design = designRepository.findById(designId)
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
         if (design.getDesigner() != null
                 && design.getDesigner().getUser() != null
                 && design.getDesigner().getUser().getId().equals(me.getId())) {

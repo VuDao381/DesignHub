@@ -84,14 +84,14 @@ async function request(endpoint, options = {}) {
                     const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: TokenStorage.getRefreshToken() })
+                        body: JSON.stringify({ refreshToken: TokenStorage.getRefreshToken() })
                     });
 
                     if (refreshRes.ok) {
                         const refreshData = await refreshRes.json();
-                        TokenStorage.setTokens(refreshData.token, TokenStorage.getRefreshToken());
+                        const newToken = refreshData.accessToken || refreshData.token; TokenStorage.setTokens(newToken, refreshData.refreshToken || TokenStorage.getRefreshToken());
                         isRefreshing = false;
-                        onRefreshed(refreshData.token);
+                        onRefreshed(refreshData.accessToken || refreshData.token);
                     } else {
                         isRefreshing = false;
                         TokenStorage.clear();
@@ -163,7 +163,7 @@ const api = {
             if (rf) {
                 request('/api/auth/logout', {
                     method: 'POST',
-                    body: JSON.stringify({ token: rf })
+                    body: JSON.stringify({ refreshToken: rf })
                 }).catch(() => { });
             }
             TokenStorage.clear();

@@ -51,6 +51,7 @@ public class DesignFile {
 
     private String fileType;
 
+    @JsonIgnoreProperties({"images", "files", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id", nullable = false)
     private Design design;

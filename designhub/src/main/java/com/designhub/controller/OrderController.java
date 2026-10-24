@@ -70,6 +70,11 @@ public class OrderController {
                 .body(orderService.checkout());
     }
 
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<Order> approveOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.approveOrder(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Order> updateOrder(
             @PathVariable Long id,

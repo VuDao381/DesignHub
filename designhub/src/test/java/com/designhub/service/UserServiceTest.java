@@ -19,6 +19,9 @@ import com.designhub.dto.UpdateProfileRequest;
 import com.designhub.dto.UserProfileResponse;
 import com.designhub.entity.Role;
 import com.designhub.entity.User;
+import com.designhub.repository.DesignRepository;
+import com.designhub.repository.DesignerRepository;
+import com.designhub.repository.OrderRepository;
 import com.designhub.repository.UserRepository;
 import com.designhub.security.CurrentUserService;
 
@@ -29,10 +32,22 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private DesignerRepository designerRepository;
+
+    @Mock
+    private DesignRepository designRepository;
+
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
     private CurrentUserService currentUserService;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     private UserService userService;
 
@@ -40,7 +55,14 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, passwordEncoder, currentUserService);
+        userService = new UserService(
+                userRepository,
+                designerRepository,
+                designRepository,
+                orderRepository,
+                passwordEncoder,
+                currentUserService,
+                refreshTokenService);
 
         sampleUser = new User();
         sampleUser.setId(1L);
@@ -88,6 +110,7 @@ class UserServiceTest {
 
         assertEquals("encodedNewPassword", sampleUser.getPassword());
         verify(userRepository).save(sampleUser);
+        verify(refreshTokenService).deleteByUser(sampleUser);
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,6 +50,8 @@ public class DesignController {
             @RequestParam(required = false) BigDecimal minPrice,
             @Parameter(description = "Giá tối đa")
             @RequestParam(required = false) BigDecimal maxPrice,
+            @Parameter(description = "Trạng thái thiết kế (Dành cho ADMIN): PENDING, APPROVED, REJECTED")
+            @RequestParam(required = false) String status,
             @Parameter(description = "Tiêu chí sắp xếp: createdAt_desc (mới nhất), createdAt_asc (cũ nhất), price_asc (giá tăng), price_desc (giá giảm), name_asc (A-Z)")
             @RequestParam(required = false, defaultValue = "createdAt_desc") String sortBy,
             @RequestParam(defaultValue = "0") int page,
@@ -65,14 +68,15 @@ public class DesignController {
                         designerId,
                         minPrice,
                         maxPrice,
+                        status,
                         sortBy,
                         pageable)
         );
     }
 
-    @GetMapping("/my")
+    @GetMapping({"/my", "/me"})
     @Operation(summary = "Lấy danh sách thiết kế của chính Designer đang đăng nhập",
-               description = "Trả về tất cả thiết kế (bao gồm PENDING, APPROVED) của tác giả đang đăng nhập.")
+               description = "Trả về tất cả thiết kế (bao gồm PENDING, APPROVED, REJECTED) của tác giả đang đăng nhập.")
     public ResponseEntity<Page<Design>> getMyDesigns(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
@@ -113,6 +117,18 @@ public class DesignController {
             @Valid @RequestBody Design design) {
 
         return designService.updateDesign(id, design)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Phê duyệt hoặc cập nhật trạng thái thiết kế", description = "Dành riêng cho ADMIN để duyệt (APPROVED), từ chối (REJECTED kèm rejectReason) hoặc lưu trữ (ARCHIVED) thiết kế.")
+    public ResponseEntity<Design> updateDesignStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            @RequestParam(required = false) String rejectReason) {
+
+        return designService.updateDesignStatus(id, status, rejectReason)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

@@ -3,12 +3,14 @@ package com.designhub.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.designhub.entity.Design;
 import com.designhub.entity.Review;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.OrderRepository;
 import com.designhub.repository.ReviewRepository;
@@ -36,7 +38,16 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public List<Review> getAllReviews() {
+        if (!currentUserService.isAdmin()) {
+            throw new AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem toàn bộ đánh giá");
+        }
         return reviewRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Review> getMyReviews() {
+        User me = currentUserService.getCurrentUser();
+        return reviewRepository.findByUserId(me.getId());
     }
 
     @Transactional(readOnly = true)
@@ -46,6 +57,7 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public List<Review> getReviewsByUserId(Long userId) {
+        currentUserService.checkOwnerOrAdmin(userId);
         return reviewRepository.findByUserId(userId);
     }
 
@@ -58,6 +70,7 @@ public class ReviewService {
     public Optional<Review> getReviewByUserAndDesign(
             Long userId,
             Long designId) {
+        currentUserService.checkOwnerOrAdmin(userId);
         return reviewRepository.findByUserIdAndDesignId(userId, designId);
     }
 
@@ -72,7 +85,7 @@ public class ReviewService {
         Long designId = review.getDesign().getId();
 
         Design design = designRepository.findById(designId)
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
 
         boolean hasPurchased = orderRepository.existsByUserIdAndStatusAndOrderDetailsDesignId(
                 me.getId(), "PAID", designId);

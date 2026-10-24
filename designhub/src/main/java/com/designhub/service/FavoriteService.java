@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.designhub.entity.Design;
 import com.designhub.entity.Favorite;
 import com.designhub.entity.User;
+import com.designhub.exception.ResourceNotFoundException;
 import com.designhub.repository.DesignRepository;
 import com.designhub.repository.FavoriteRepository;
 import com.designhub.security.CurrentUserService;
@@ -32,6 +33,9 @@ public class FavoriteService {
 
     @Transactional(readOnly = true)
     public List<Favorite> getAllFavorites() {
+        if (!currentUserService.isAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền xem toàn bộ danh sách yêu thích");
+        }
         return favoriteRepository.findAll();
     }
 
@@ -62,9 +66,8 @@ public class FavoriteService {
             return favoriteRepository.findByDesignId(designId);
         }
         User me = currentUserService.getCurrentUser();
-        return favoriteRepository.findByUserIdAndDesignId(me.getId(), designId)
-                .map(List::of)
-                .orElseGet(List::of);
+        Optional<Favorite> favOpt = favoriteRepository.findByUserIdAndDesignId(me.getId(), designId);
+        return favOpt.isPresent() ? List.of(favOpt.get()) : List.of();
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +91,7 @@ public class FavoriteService {
         User me = currentUserService.getCurrentUser();
         Long designId = favorite.getDesign().getId();
         Design design = designRepository.findById(designId)
-                .orElseThrow(() -> new IllegalArgumentException("Design không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Design không tồn tại"));
         if (favoriteRepository.existsByUserIdAndDesignId(me.getId(), designId)) {
             throw new IllegalArgumentException("Thiết kế đã có trong danh sách yêu thích");
         }

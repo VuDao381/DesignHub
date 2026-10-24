@@ -2,7 +2,9 @@ package com.designhub.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,8 +42,12 @@ public class DesignImage {
     @Column(nullable = false)
     private String imageUrl;
 
+    @JsonProperty("isPrimary")
+    @JsonAlias("primary")
+    @Column(name = "is_primary")
     private boolean isPrimary;
 
+    @JsonIgnoreProperties({"images", "files", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "design_id", nullable = false)
     private Design design;

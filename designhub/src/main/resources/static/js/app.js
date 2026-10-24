@@ -67,11 +67,12 @@ function showToast(message, type = 'success') {
     toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
 }
 
+window.appState = appState;
 window.showToast = showToast;
 
 async function loadCategories() {
     try {
-        const categories = await api.categories.getAll();
+        const res = await api.categories.getAll(); const categories = Array.isArray(res) ? res : (res && Array.isArray(res.content) ? res.content : []);
         appState.categories = categories || [];
         renderCategoryFilters();
         renderCategoryCards();
@@ -292,6 +293,7 @@ function renderPagination(currentPage, totalPages) {
     container.innerHTML = html;
 }
 
+window.loadDesigns = loadDesigns;
 window.resetFilters = () => {
     appState.currentFilters.keyword = '';
     appState.currentFilters.categoryId = null;
@@ -703,7 +705,7 @@ async function openPurchasedModal() {
 
     try {
         const orders = await api.orders.getMyOrders();
-        const paidOrders = (orders || []).filter(o => 'PAID'.equalsIgnoreCase ? o.status?.toUpperCase() === 'PAID' : o.status === 'PAID');
+        const paidOrders = (orders || []).filter(o => String(o.status || '').toUpperCase() === 'PAID');
 
         const purchasedDesigns = [];
         const seenDesignIds = new Set();

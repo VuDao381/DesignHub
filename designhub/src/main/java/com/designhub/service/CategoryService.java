@@ -10,15 +10,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.designhub.entity.Category;
 import com.designhub.repository.CategoryRepository;
+import com.designhub.repository.DesignRepository;
 
 @Service
 @Transactional
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final DesignRepository designRepository;
 
     public CategoryService(CategoryRepository categoryRepository) {
+        this(categoryRepository, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CategoryService(
+            CategoryRepository categoryRepository,
+            DesignRepository designRepository) {
         this.categoryRepository = categoryRepository;
+        this.designRepository = designRepository;
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +90,11 @@ public class CategoryService {
     public boolean deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             return false;
+        }
+
+        if (designRepository != null && designRepository.existsByCategoryId(id)) {
+            throw new IllegalStateException(
+                    "Không thể xóa danh mục đang có thiết kế liên kết. Vui lòng chuyển hoặc xóa các thiết kế trước.");
         }
 
         categoryRepository.deleteById(id);

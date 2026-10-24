@@ -26,7 +26,7 @@ public class FileUploadController {
     }
 
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Tải lên hình ảnh", description = "Hỗ trợ các định dạng: jpg, jpeg, png, webp, gif, svg. Tối đa 10MB.")
+    @Operation(summary = "Tải lên hình ảnh", description = "Hỗ trợ các định dạng: jpg, jpeg, png, webp, gif. Tối đa 10MB.")
     public ResponseEntity<FileUploadResponse> uploadImage(
             @RequestParam("file") MultipartFile file) {
 

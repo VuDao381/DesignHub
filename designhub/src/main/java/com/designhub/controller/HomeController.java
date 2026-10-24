@@ -15,4 +15,9 @@ public class HomeController {
     public String designer() {
         return "designer";
     }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
+    }
 }
