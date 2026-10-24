@@ -124,7 +124,7 @@ async function loadAdminDashboard() {
                         <td class="text-center fw-medium">${formatCurrency(item.price)}</td>
                         <td class="text-center">
                             <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1">
-                                ${item.salesCount} lượt
+                                ${item.totalSold ?? item.salesCount ?? 0} lượt
                             </span>
                         </td>
                         <td class="text-end pe-3 fw-bold text-success">${formatCurrency(item.totalRevenue)}</td>

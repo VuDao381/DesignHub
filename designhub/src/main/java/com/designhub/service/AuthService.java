@@ -75,15 +75,17 @@ public class AuthService {
 
         @Transactional
         public AuthResponse login(LoginRequest request) {
+                String identifier = request.email().trim();
                 User user = userRepository
-                                .findByEmail(request.email().trim())
+                                .findByEmail(identifier)
+                                .or(() -> userRepository.findByUsername(identifier))
                                 .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException(
-                                                "Email hoặc mật khẩu không đúng"));
+                                                "Email/Tài khoản hoặc mật khẩu không đúng"));
 
                 if (!passwordEncoder.matches(
                                 request.password(), user.getPassword())) {
                         throw new org.springframework.security.authentication.BadCredentialsException(
-                                        "Email hoặc mật khẩu không đúng");
+                                        "Email/Tài khoản hoặc mật khẩu không đúng");
                 }
 
                 String token = jwtService.generateToken(

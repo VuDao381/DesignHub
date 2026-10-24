@@ -154,7 +154,7 @@ async function loadDesignerDashboard() {
                 <td class="text-center fw-semibold text-secondary">${formatCurrency(item.price)}</td>
                 <td class="text-center">
                     <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold">
-                        ${item.salesCount} lượt bán
+                        ${item.totalSold ?? item.salesCount ?? 0} lượt bán
                     </span>
                 </td>
                 <td class="text-end pe-3 fw-bold text-success fs-6">${formatCurrency(item.totalRevenue)}</td>
