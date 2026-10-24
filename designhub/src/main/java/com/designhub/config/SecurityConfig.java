@@ -94,6 +94,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/",
                                                                 "/designer",
+                                                                "/admin",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
