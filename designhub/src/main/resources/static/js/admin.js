@@ -1,8 +1,3 @@
-/**
- * DesignHub - Admin Console & Moderation Controller
- * Quản lý kiểm duyệt thiết kế, thống kê toàn sàn, danh mục và người dùng
- */
-
 let currentAdminUser = null;
 let currentModerationStatus = 'PENDING';
 let allLoadedUsers = [];
@@ -322,9 +317,6 @@ async function handleApproveDesign(designId, name) {
     }
 }
 
-/**
- * Mở modal Từ chối duyệt (REJECT)
- */
 function openRejectModal(designId) {
     document.getElementById('rejectDesignId').value = designId;
     document.getElementById('rejectReasonInput').value = '';
@@ -332,9 +324,6 @@ function openRejectModal(designId) {
     modal.show();
 }
 
-/**
- * Xác nhận từ chối duyệt
- */
 async function handleConfirmRejectSubmit(e) {
     e.preventDefault();
     const designId = document.getElementById('rejectDesignId').value;
@@ -364,9 +353,6 @@ async function handleConfirmRejectSubmit(e) {
     }
 }
 
-/**
- * Xóa thiết kế bởi Admin
- */
 async function handleAdminDeleteDesign(designId, name) {
     if (!confirm(`Bạn có chắc muốn XÓA vĩnh viễn thiết kế "${name}"? Thao tác này sẽ xóa toàn bộ hình ảnh và tệp gốc liên quan!`)) {
         return;
@@ -382,9 +368,6 @@ async function handleAdminDeleteDesign(designId, name) {
     }
 }
 
-/**
- * Mở Modal xem trước Mockup & File gốc
- */
 async function openPreviewModal(designId) {
     const modalEl = document.getElementById('previewDesignModal');
     const titleEl = document.getElementById('previewDesignModalTitle');
@@ -473,9 +456,6 @@ async function openPreviewModal(designId) {
     }
 }
 
-/**
- * 3. Tải danh mục thiết kế (Category CRUD)
- */
 async function loadCategoriesTable() {
     const tbody = document.getElementById('categoriesTableBody');
     if (!tbody) return;
@@ -573,9 +553,6 @@ async function handleDeleteCategory(id, name) {
     }
 }
 
-/**
- * 4. Tải danh sách người dùng (User Management)
- */
 async function loadUsersTable() {
     const tbody = document.getElementById('usersTableBody');
     if (!tbody) return;
@@ -696,13 +673,9 @@ async function handleDeleteUser(id, username) {
     }
 }
 
-/**
- * Event Listeners & Binding
- */
 document.addEventListener('DOMContentLoaded', () => {
     initAdminPortal();
 
-    // Nút làm mới toàn bộ
     const btnRefresh = document.getElementById('btnAdminRefreshAll');
     if (btnRefresh) {
         btnRefresh.addEventListener('click', async () => {
@@ -718,7 +691,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Filter status pills
     const statusBtns = document.querySelectorAll('.filter-status-btn');
     statusBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -784,7 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userEditForm) userEditForm.addEventListener('submit', handleUserEditSubmit);
 });
 
-// Lắng nghe sự kiện đăng nhập thành công
 window.addEventListener('auth:login_success', () => {
     initAdminPortal();
 });

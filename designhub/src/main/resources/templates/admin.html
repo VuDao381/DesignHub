@@ -5,21 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trung tâm Quản trị - DesignHub Admin Console</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body class="admin-portal-body">
-    <!-- Header -->
     <header class="header bg-dark text-white border-bottom border-dark">
         <div class="container-fluid px-lg-5">
             <nav class="navbar navbar-expand-lg navbar-dark">
@@ -38,10 +33,12 @@
                             <a class="nav-link text-white-50" href="/"><i class="bi bi-shop me-1"></i> Sàn Bán Lẻ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white-50" href="/designer"><i class="bi bi-brush me-1"></i> Kênh Designer</a>
+                            <a class="nav-link text-white-50" href="/designer"><i class="bi bi-brush me-1"></i> Kênh
+                                Designer</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active text-white fw-bold" href="/admin"><i class="bi bi-shield-lock-fill me-1 text-danger"></i> Quản Trị Hệ Thống</a>
+                            <a class="nav-link active text-white fw-bold" href="/admin"><i
+                                    class="bi bi-shield-lock-fill me-1 text-danger"></i> Quản Trị Hệ Thống</a>
                         </li>
                     </ul>
 
@@ -50,7 +47,8 @@
                             <div class="d-flex align-items-center gap-2">
                                 <div class="user-avatar-badge bg-danger text-white" id="adminAvatarInitial">A</div>
                                 <div class="text-start d-none d-md-block text-white">
-                                    <div class="fw-bold small user-display-name text-truncate" style="max-width: 140px;">Admin</div>
+                                    <div class="fw-bold small user-display-name text-truncate"
+                                        style="max-width: 140px;">Admin</div>
                                     <span class="badge bg-danger" style="font-size: 10px;">SUPER ADMIN</span>
                                 </div>
                             </div>
@@ -66,17 +64,18 @@
 
     <main class="py-4">
         <div class="container-fluid px-lg-5">
-            <!-- 1. State: Unauthorized (Not Admin) -->
             <div id="sectionUnauthorized" class="d-none">
                 <div class="row justify-content-center my-5">
                     <div class="col-md-7 col-lg-5">
                         <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center p-4 p-md-5">
-                            <div class="bg-danger-subtle text-danger p-4 rounded-circle d-inline-flex mx-auto mb-4" style="width: 80px; height: 80px; align-items: center; justify-content: center;">
+                            <div class="bg-danger-subtle text-danger p-4 rounded-circle d-inline-flex mx-auto mb-4"
+                                style="width: 80px; height: 80px; align-items: center; justify-content: center;">
                                 <i class="bi bi-shield-slash-fill fs-1"></i>
                             </div>
                             <h3 class="fw-bold text-dark mb-2">Quyền Truy Cập Bị Giới Hạn</h3>
                             <p class="text-muted mb-4">
-                                Bạn cần đăng nhập bằng tài khoản có vai trò <strong>Quản trị viên (ADMIN)</strong> để truy cập Trung tâm điều hành DesignHub.
+                                Bạn cần đăng nhập bằng tài khoản có vai trò <strong>Quản trị viên (ADMIN)</strong> để
+                                truy cập Trung tâm điều hành DesignHub.
                             </p>
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="/" class="btn btn-outline-secondary rounded-pill px-4">
@@ -92,10 +91,9 @@
                 </div>
             </div>
 
-            <!-- 2. State: Active Admin Console -->
             <div id="sectionAdminPortal" class="d-none">
-                <!-- Top Admin Banner -->
-                <div class="admin-banner p-4 p-md-5 rounded-4 text-white mb-4 position-relative overflow-hidden shadow-sm">
+                <div
+                    class="admin-banner p-4 p-md-5 rounded-4 text-white mb-4 position-relative overflow-hidden shadow-sm">
                     <div class="admin-banner-bg"></div>
                     <div class="position-relative z-1">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -104,16 +102,18 @@
                                     <i class="bi bi-shield-check me-1"></i> HỆ THỐNG KIỂM SOÁT TẬP TRUNG
                                 </span>
                                 <h2 class="display-6 fw-bold mb-1">Bảng Điều Khiển Quản Trị Viên</h2>
-                                <p class="text-white-50 mb-0">Theo dõi doanh thu, phê duyệt tác phẩm sáng tạo, quản lý người dùng và danh mục sản phẩm.</p>
+                                <p class="text-white-50 mb-0">Theo dõi doanh thu, phê duyệt tác phẩm sáng tạo, quản lý
+                                    người dùng và danh mục sản phẩm.</p>
                             </div>
-                            <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-dark shadow-sm" id="btnAdminRefreshAll">
+                            <button type="button"
+                                class="btn btn-light rounded-pill px-4 py-2 fw-bold text-dark shadow-sm"
+                                id="btnAdminRefreshAll">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Làm mới toàn bộ
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- KPI Cards (5 Cards) -->
                 <div class="row g-3 g-md-4 mb-4">
                     <div class="col-6 col-md-4 col-xl">
                         <div class="kpi-card p-4 rounded-4 bg-white border shadow-sm h-100">
@@ -124,7 +124,8 @@
                                 </div>
                             </div>
                             <h3 class="fw-bold mb-1 text-dark" id="kpiAdminTotalRevenue">0 ₫</h3>
-                            <small class="text-success fw-medium"><i class="bi bi-graph-up-arrow"></i> Doanh thu luỹ kế</small>
+                            <small class="text-success fw-medium"><i class="bi bi-graph-up-arrow"></i> Doanh thu luỹ
+                                kế</small>
                         </div>
                     </div>
 
@@ -181,32 +182,37 @@
                     </div>
                 </div>
 
-                <!-- Main Tabs Navigation -->
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                     <div class="card-header bg-white border-bottom p-0">
                         <ul class="nav nav-tabs border-0 px-3 pt-2" id="adminTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active px-4 py-3 fw-bold border-0 border-bottom border-3"
-                                    id="tab-moderation-btn" data-bs-toggle="tab" data-bs-target="#tab-moderation" type="button" role="tab">
+                                    id="tab-moderation-btn" data-bs-toggle="tab" data-bs-target="#tab-moderation"
+                                    type="button" role="tab">
                                     <i class="bi bi-check2-circle me-2 text-danger"></i> Kiểm duyệt Thiết kế
-                                    <span class="badge bg-warning text-dark ms-1 rounded-pill" id="badgePendingCount">0</span>
+                                    <span class="badge bg-warning text-dark ms-1 rounded-pill"
+                                        id="badgePendingCount">0</span>
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link px-4 py-3 fw-bold border-0 border-bottom border-3"
-                                    id="tab-analytics-btn" data-bs-toggle="tab" data-bs-target="#tab-analytics" type="button" role="tab">
-                                    <i class="bi bi-bar-chart-line me-2 text-primary"></i> Phân tích Doanh số & Tăng trưởng
+                                    id="tab-analytics-btn" data-bs-toggle="tab" data-bs-target="#tab-analytics"
+                                    type="button" role="tab">
+                                    <i class="bi bi-bar-chart-line me-2 text-primary"></i> Phân tích Doanh số & Tăng
+                                    trưởng
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link px-4 py-3 fw-bold border-0 border-bottom border-3"
-                                    id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories" type="button" role="tab">
+                                    id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories"
+                                    type="button" role="tab">
                                     <i class="bi bi-tags me-2 text-success"></i> Quản lý Danh mục
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link px-4 py-3 fw-bold border-0 border-bottom border-3"
-                                    id="tab-users-btn" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+                                    id="tab-users-btn" data-bs-toggle="tab" data-bs-target="#tab-users" type="button"
+                                    role="tab">
                                     <i class="bi bi-person-gear me-2 text-info"></i> Quản lý Người dùng
                                 </button>
                             </li>
@@ -215,33 +221,39 @@
 
                     <div class="card-body p-4 p-md-5">
                         <div class="tab-content" id="adminTabsContent">
-                            <!-- TAB 1: Kiểm duyệt Thiết kế -->
                             <div class="tab-pane fade show active" id="tab-moderation" role="tabpanel">
                                 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-                                    <!-- Status Filter Pills -->
                                     <div class="d-flex gap-2 flex-wrap" id="moderationStatusFilters">
-                                        <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold filter-status-btn active" data-status="PENDING">
+                                        <button type="button"
+                                            class="btn btn-warning btn-sm rounded-pill px-3 fw-bold filter-status-btn active"
+                                            data-status="PENDING">
                                             <i class="bi bi-hourglass-split me-1"></i> Chờ duyệt (PENDING)
                                         </button>
-                                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold filter-status-btn" data-status="APPROVED">
+                                        <button type="button"
+                                            class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold filter-status-btn"
+                                            data-status="APPROVED">
                                             <i class="bi bi-check-circle me-1"></i> Đã duyệt (APPROVED)
                                         </button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold filter-status-btn" data-status="REJECTED">
+                                        <button type="button"
+                                            class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold filter-status-btn"
+                                            data-status="REJECTED">
                                             <i class="bi bi-x-circle me-1"></i> Bị từ chối (REJECTED)
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold filter-status-btn" data-status="">
+                                        <button type="button"
+                                            class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold filter-status-btn"
+                                            data-status="">
                                             Tất cả trạng thái
                                         </button>
                                     </div>
 
-                                    <!-- Search input -->
                                     <div class="input-group" style="width: 280px;">
-                                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                                        <input type="text" class="form-control" id="moderationSearchInput" placeholder="Tìm theo tên thiết kế...">
+                                        <span class="input-group-text bg-white"><i
+                                                class="bi bi-search text-muted"></i></span>
+                                        <input type="text" class="form-control" id="moderationSearchInput"
+                                            placeholder="Tìm theo tên thiết kế...">
                                     </div>
                                 </div>
 
-                                <!-- Moderation Table -->
                                 <div class="table-responsive rounded-3 border">
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
@@ -259,7 +271,8 @@
                                         <tbody id="moderationTableBody">
                                             <tr>
                                                 <td colspan="8" class="text-center py-5 text-muted">
-                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải danh sách thiết kế...
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải
+                                                    danh sách thiết kế...
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -267,15 +280,14 @@
                                 </div>
                             </div>
 
-                            <!-- TAB 2: Phân tích Doanh số & Tăng trưởng -->
                             <div class="tab-pane fade" id="tab-analytics" role="tabpanel">
                                 <div class="row g-4">
-                                    <!-- Top 10 Bán chạy nhất -->
                                     <div class="col-lg-7">
                                         <div class="card border rounded-4 h-100 shadow-sm overflow-hidden">
                                             <div class="card-header bg-white border-bottom p-3">
                                                 <h5 class="fw-bold mb-0 text-dark">
-                                                    <i class="bi bi-trophy-fill text-warning me-2"></i> Top 10 Thiết Kế Bán Chạy Nhất Toàn Sàn
+                                                    <i class="bi bi-trophy-fill text-warning me-2"></i> Top 10 Thiết Kế
+                                                    Bán Chạy Nhất Toàn Sàn
                                                 </h5>
                                             </div>
                                             <div class="table-responsive">
@@ -292,7 +304,9 @@
                                                     <tbody id="adminTopSellingTableBody">
                                                         <tr>
                                                             <td colspan="5" class="text-center py-4 text-muted">
-                                                                <span class="spinner-border spinner-border-sm me-2"></span> Đang tải...
+                                                                <span
+                                                                    class="spinner-border spinner-border-sm me-2"></span>
+                                                                Đang tải...
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -301,17 +315,18 @@
                                         </div>
                                     </div>
 
-                                    <!-- Tăng trưởng Người dùng theo Tháng -->
                                     <div class="col-lg-5">
                                         <div class="card border rounded-4 h-100 shadow-sm overflow-hidden">
                                             <div class="card-header bg-white border-bottom p-3">
                                                 <h5 class="fw-bold mb-0 text-dark">
-                                                    <i class="bi bi-person-plus-fill text-info me-2"></i> Tăng Trưởng Thành Viên Theo Tháng
+                                                    <i class="bi bi-person-plus-fill text-info me-2"></i> Tăng Trưởng
+                                                    Thành Viên Theo Tháng
                                                 </h5>
                                             </div>
                                             <div class="p-3" id="userGrowthContainer">
                                                 <div class="text-center py-4 text-muted">
-                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải dữ liệu...
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải
+                                                    dữ liệu...
                                                 </div>
                                             </div>
                                         </div>
@@ -319,14 +334,15 @@
                                 </div>
                             </div>
 
-                            <!-- TAB 3: Quản lý Danh mục -->
                             <div class="tab-pane fade" id="tab-categories" role="tabpanel">
                                 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                                     <div>
                                         <h4 class="fw-bold mb-1">Danh Mục Thiết Kế</h4>
-                                        <p class="text-muted small mb-0">Quản lý các phân loại sản phẩm trên toàn hệ thống sàn DesignHub.</p>
+                                        <p class="text-muted small mb-0">Quản lý các phân loại sản phẩm trên toàn hệ
+                                            thống sàn DesignHub.</p>
                                     </div>
-                                    <button type="button" class="btn btn-success rounded-pill px-4 fw-bold" id="btnOpenAddCategoryModal">
+                                    <button type="button" class="btn btn-success rounded-pill px-4 fw-bold"
+                                        id="btnOpenAddCategoryModal">
                                         <i class="bi bi-plus-lg me-1"></i> Thêm danh mục mới
                                     </button>
                                 </div>
@@ -344,7 +360,8 @@
                                         <tbody id="categoriesTableBody">
                                             <tr>
                                                 <td colspan="4" class="text-center py-4 text-muted">
-                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải danh mục...
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải
+                                                    danh mục...
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -352,16 +369,18 @@
                                 </div>
                             </div>
 
-                            <!-- TAB 4: Quản lý Người dùng -->
                             <div class="tab-pane fade" id="tab-users" role="tabpanel">
                                 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
                                     <div>
                                         <h4 class="fw-bold mb-1">Danh Sách Thành Viên</h4>
-                                        <p class="text-muted small mb-0">Phân quyền, kiểm tra thông tin tài khoản và trạng thái người dùng.</p>
+                                        <p class="text-muted small mb-0">Phân quyền, kiểm tra thông tin tài khoản và
+                                            trạng thái người dùng.</p>
                                     </div>
                                     <div class="input-group" style="width: 280px;">
-                                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                                        <input type="text" class="form-control" id="userSearchInput" placeholder="Tìm theo tên, email, username...">
+                                        <span class="input-group-text bg-white"><i
+                                                class="bi bi-search text-muted"></i></span>
+                                        <input type="text" class="form-control" id="userSearchInput"
+                                            placeholder="Tìm theo tên, email, username...">
                                     </div>
                                 </div>
 
@@ -381,7 +400,8 @@
                                         <tbody id="usersTableBody">
                                             <tr>
                                                 <td colspan="7" class="text-center py-4 text-muted">
-                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải người dùng...
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải
+                                                    người dùng...
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -395,26 +415,31 @@
         </div>
     </main>
 
-    <!-- Modal Từ chối thiết kế (Reject Reason) -->
     <div class="modal fade" id="rejectDesignModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-danger text-white border-0 py-3">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Từ chối duyệt thiết kế</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Từ chối duyệt
+                        thiết kế</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-muted small mb-3">Vui lòng cung cấp lý do từ chối để tác giả Designer nắm rõ và cập nhật lại tác phẩm.</p>
+                    <p class="text-muted small mb-3">Vui lòng cung cấp lý do từ chối để tác giả Designer nắm rõ và cập
+                        nhật lại tác phẩm.</p>
                     <form id="rejectDesignForm">
                         <input type="hidden" id="rejectDesignId">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Lý do từ chối <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Lý do từ chối <span
+                                    class="text-danger">*</span></label>
                             <textarea class="form-control" id="rejectReasonInput" rows="4" required
                                 placeholder="VD: Ảnh mockup độ phân giải thấp / Thiếu file vector gốc / Vi phạm bản quyền hình ảnh..."></textarea>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold" id="btnConfirmReject">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                                data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold"
+                                id="btnConfirmReject">
                                 Xác nhận từ chối
                             </button>
                         </div>
@@ -424,7 +449,6 @@
         </div>
     </div>
 
-    <!-- Modal Xem trước Mockup & File thiết kế -->
     <div class="modal fade" id="previewDesignModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -434,26 +458,28 @@
                 </div>
                 <div class="modal-body p-4">
                     <div id="previewDesignContent">
-                        <div class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span> Đang tải...</div>
+                        <div class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span> Đang
+                            tải...</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Thêm / Chỉnh sửa Danh mục -->
     <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-success text-white border-0 py-3">
                     <h5 class="modal-title fw-bold" id="categoryModalTitle">Thêm danh mục mới</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="categoryForm">
                         <input type="hidden" id="categoryEditId">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Tên danh mục <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Tên danh mục <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-lg" id="categoryNameInput" required
                                 placeholder="VD: Branding & Logo">
                         </div>
@@ -463,8 +489,10 @@
                                 placeholder="Mô tả nhóm thiết kế này..."></textarea>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Đóng</button>
-                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold" id="btnSubmitCategory">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                                data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold"
+                                id="btnSubmitCategory">
                                 Lưu danh mục
                             </button>
                         </div>
@@ -474,7 +502,6 @@
         </div>
     </div>
 
-    <!-- Modal Phân quyền / Cập nhật Người dùng -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -502,7 +529,8 @@
                             <input type="tel" class="form-control" id="userEditPhone">
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-semibold">Vai trò hệ thống (Role) <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Vai trò hệ thống (Role) <span
+                                    class="text-danger">*</span></label>
                             <select class="form-select form-select-lg" id="userEditRole" required>
                                 <option value="CUSTOMER">CUSTOMER (Khách hàng thông thường)</option>
                                 <option value="DESIGNER">DESIGNER (Nhà sáng tạo đối tác)</option>
@@ -510,8 +538,10 @@
                             </select>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSubmitUserEdit">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                                data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold"
+                                id="btnSubmitUserEdit">
                                 Cập nhật tài khoản
                             </button>
                         </div>
@@ -521,7 +551,6 @@
         </div>
     </div>
 
-    <!-- Login Modal Reusable -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -559,7 +588,6 @@
         </div>
     </div>
 
-    <!-- Global Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="appToast" class="toast align-items-center text-white border-0 rounded-3 shadow" role="alert"
             aria-live="assertive" aria-atomic="true">
@@ -574,12 +602,9 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Core API & Auth JS -->
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <!-- Admin Portal Controller JS -->
     <script src="/js/admin.js"></script>
 </body>
 
