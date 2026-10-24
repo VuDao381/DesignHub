@@ -70,6 +70,25 @@ public class DesignController {
         );
     }
 
+    @GetMapping("/my")
+    @Operation(summary = "Lấy danh sách thiết kế của chính Designer đang đăng nhập",
+               description = "Trả về tất cả thiết kế (bao gồm PENDING, APPROVED) của tác giả đang đăng nhập.")
+    public ResponseEntity<Page<Design>> getMyDesigns(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false, defaultValue = "createdAt_desc") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        int validPage = Math.max(page, 0);
+        int validSize = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(validPage, validSize);
+
+        return ResponseEntity.ok(
+                designService.getMyDesigns(keyword, categoryId, sortBy, pageable)
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Design> getDesignById(
             @PathVariable Long id) {

@@ -191,7 +191,86 @@ const api = {
             const queryString = query.toString();
             return request(`/api/designs${queryString ? '?' + queryString : ''}`);
         },
-        getById: (id) => request(`/api/designs/${id}`)
+        getById: (id) => request(`/api/designs/${id}`),
+        create: (data) => request('/api/designs', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        update: (id, data) => request(`/api/designs/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        delete: (id) => request(`/api/designs/${id}`, {
+            method: 'DELETE'
+        }),
+        getMyDesigns: (params = {}) => {
+            const query = new URLSearchParams();
+            if (params.keyword) query.append('keyword', params.keyword);
+            if (params.categoryId) query.append('categoryId', params.categoryId);
+            if (params.sortBy) query.append('sortBy', params.sortBy);
+            if (params.page !== undefined) query.append('page', params.page);
+            if (params.size !== undefined) query.append('size', params.size);
+            const queryString = query.toString();
+            return request(`/api/designs/my${queryString ? '?' + queryString : ''}`);
+        },
+        getImages: (designId) => request(`/api/design-images/design/${designId}`),
+        addImage: (designId, imageUrl, isPrimary = false) => request('/api/design-images', {
+            method: 'POST',
+            body: JSON.stringify({
+                design: { id: designId },
+                imageUrl,
+                isPrimary
+            })
+        }),
+        deleteImage: (imageId) => request(`/api/design-images/${imageId}`, {
+            method: 'DELETE'
+        }),
+        getFiles: (designId) => request(`/api/design-files/design/${designId}`),
+        addFile: (designId, fileInfo) => request('/api/design-files', {
+            method: 'POST',
+            body: JSON.stringify({
+                design: { id: designId },
+                fileName: fileInfo.fileName,
+                fileUrl: fileInfo.fileUrl,
+                fileSize: fileInfo.fileSize,
+                fileType: fileInfo.fileType
+            })
+        }),
+        deleteFile: (fileId) => request(`/api/design-files/${fileId}`, {
+            method: 'DELETE'
+        })
+    },
+
+    designer: {
+        getMe: () => request('/api/designers/me'),
+        register: (data) => request('/api/designers/register', {
+            method: 'POST',
+            body: JSON.stringify(data || {})
+        }),
+        update: (id, data) => request(`/api/designers/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        getDashboard: () => request('/api/analytics/designer')
+    },
+
+    upload: {
+        image: async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            return request('/api/upload/image', {
+                method: 'POST',
+                body: formData
+            });
+        },
+        file: async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            return request('/api/upload/file', {
+                method: 'POST',
+                body: formData
+            });
+        }
     },
 
     cart: {

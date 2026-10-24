@@ -686,3 +686,97 @@ a {
     background: #ccc;
     border-radius: 4px;
 }
+
+.designer-portal-body {
+    background-color: #f7f9fc;
+    min-height: 100vh;
+}
+
+.designer-hero-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+    box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.4);
+}
+
+.designer-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.15), transparent 70%);
+}
+
+.portal-feature-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.portal-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+}
+
+.designer-profile-banner {
+    border-color: #e5e7eb !important;
+}
+
+.designer-profile-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+}
+
+.kpi-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.dropzone-area {
+    border-color: #cbd5e1 !important;
+    background-color: #fafbfc;
+    transition: all 0.2s ease;
+}
+
+.dropzone-area:hover {
+    border-color: #7357ff !important;
+    background-color: #f5f3ff;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.max-w-500 {
+    max-width: 500px;
+}
+
+.max-w-700 {
+    max-width: 700px;
+}
+
+.max-w-900 {
+    max-width: 900px;
+}
+
+.transition-all {
+    transition: all 0.25s ease;
+}
+
+.nav-tabs .nav-link {
+    color: #64748b;
+    border-bottom-color: transparent !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: #7357ff !important;
+    border-bottom-color: #7357ff !important;
+    background: transparent;
+}

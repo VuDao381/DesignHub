@@ -47,6 +47,16 @@ public class DesignerService {
         return designerRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Designer> getCurrentDesigner() {
+        try {
+            User me = currentUserService.getCurrentUser();
+            return designerRepository.findByUserId(me.getId());
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
+    }
+
     public Designer createDesigner(Designer designer) {
         if (!currentUserService.isAdmin()) {
             throw new AccessDeniedException("Chỉ ADMIN mới có quyền tạo hồ sơ Designer trực tiếp");

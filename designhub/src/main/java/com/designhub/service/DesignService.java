@@ -50,13 +50,21 @@ public class DesignService {
             String sortBy,
             Pageable pageable) {
 
-        boolean isAdmin = false;
+        boolean canViewAllStatuses = false;
         try {
-            isAdmin = currentUserService.isAdmin();
+            if (currentUserService.isAdmin()) {
+                canViewAllStatuses = true;
+            } else if (designerId != null) {
+                User me = currentUserService.getCurrentUser();
+                Optional<Designer> myDesigner = designerRepository.findByUserId(me.getId());
+                if (myDesigner.isPresent() && myDesigner.get().getId().equals(designerId)) {
+                    canViewAllStatuses = true;
+                }
+            }
         } catch (Exception ignored) {
         }
 
-        String requiredStatus = isAdmin ? null : "APPROVED";
+        String requiredStatus = canViewAllStatuses ? null : "APPROVED";
 
         Sort sort = resolveSort(sortBy);
         Pageable sortedPageable = PageRequest.of(
@@ -71,6 +79,34 @@ public class DesignService {
                 minPrice,
                 maxPrice,
                 requiredStatus);
+
+        return designRepository.findAll(spec, sortedPageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Design> getMyDesigns(
+            String keyword,
+            Long categoryId,
+            String sortBy,
+            Pageable pageable) {
+
+        User me = currentUserService.getCurrentUser();
+        Designer designer = designerRepository.findByUserId(me.getId())
+                .orElseThrow(() -> new AccessDeniedException("Tài khoản chưa có hồ sơ Designer"));
+
+        Sort sort = resolveSort(sortBy);
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        Specification<Design> spec = DesignSpecification.filterDesigns(
+                keyword,
+                categoryId,
+                designer.getId(),
+                null,
+                null,
+                null);
 
         return designRepository.findAll(spec, sortedPageable);
     }

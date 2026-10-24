@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kênh Designer - DesignHub Creator Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="designer-portal-body">
+    <header class="header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <a class="navbar-brand" href="/">
+                    <span class="logo">Design</span><span class="logo-highlight">Hub</span>
+                    <span class="badge bg-primary-subtle text-primary ms-2 fs-6 fw-semibold">Creator Portal</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#designerNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="designerNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/"><i class="bi bi-house me-1"></i> Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/designer"><i class="bi bi-brush me-1 text-primary"></i>
+                                Kênh Designer</a>
+                        </li>
+                    </ul>
+
+                    <div class="header-actions">
+                        <div class="auth-guest d-flex align-items-center gap-3">
+                            <button type="button" class="btn btn-link text-decoration-none text-dark p-0"
+                                data-bs-toggle="modal" data-bs-target="#loginModal">
+                                Đăng nhập
+                            </button>
+                            <button type="button" class="register-btn border-0" data-bs-toggle="modal"
+                                data-bs-target="#registerModal">
+                                Đăng ký
+                            </button>
+                        </div>
+
+                        <div class="auth-logged d-none d-flex align-items-center gap-3">
+                            <a href="/"
+                                class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 text-decoration-none">
+                                <i class="bi bi-shop me-1"></i> Xem sàn bán lẻ
+                            </a>
+                            <div class="dropdown">
+                                <button
+                                    class="btn p-0 border-0 d-flex align-items-center gap-2 dropdown-toggle shadow-none"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="user-avatar-badge" id="userAvatarInitial">D</div>
+                                    <div class="text-start d-none d-md-block">
+                                        <div class="fw-bold small user-display-name text-truncate"
+                                            style="max-width: 120px;">Designer</div>
+                                        <span class="badge bg-primary" id="userRoleBadge"
+                                            style="font-size: 10px;">DESIGNER</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 py-2">
+                                    <li class="px-3 py-1 border-bottom mb-2">
+                                        <small class="text-muted d-block">Tài khoản</small>
+                                        <strong class="user-display-name">Người dùng</strong>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="/">
+                                            <i class="bi bi-house me-2 text-primary"></i> Về trang mua sắm
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2 text-danger action-logout" href="#">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-4">
+        <div class="container">
+            <div id="sectionGuest" class="d-none">
+                <div
+                    class="designer-hero-card p-5 rounded-4 text-center text-white my-4 position-relative overflow-hidden">
+                    <div class="designer-hero-bg"></div>
+                    <div class="position-relative z-1 py-4">
+                        <span class="badge bg-light text-primary px-3 py-2 rounded-pill fw-bold mb-3">
+                            <i class="bi bi-stars me-1"></i> KHỞI ĐẦU KINH DOANH SÁNG TẠO
+                        </span>
+                        <h1 class="display-5 fw-bold mb-3">Đăng bán tác phẩm, nhận thu nhập thụ động cùng DesignHub</h1>
+                        <p class="lead max-w-700 mx-auto text-white-50 mb-4">
+                            Gia nhập cộng đồng hơn hàng nghìn Designer chuyên nghiệp. Tải lên tệp thiết kế gốc (PSD, AI,
+                            Figma, Vector) và nhận 80-90% hoa hồng trực tiếp trên mỗi lượt mua.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <button type="button"
+                                class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold text-primary shadow"
+                                data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập ngay
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold"
+                                data-bs-toggle="modal" data-bs-target="#registerModal">
+                                Đăng ký tài khoản mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 my-5">
+                    <div class="col-md-4">
+                        <div class="portal-feature-card p-4 rounded-4 bg-white border h-100 shadow-sm">
+                            <div
+                                class="feature-icon bg-primary-subtle text-primary rounded-4 d-inline-flex align-items-center justify-content-center mb-3">
+                                <i class="bi bi-shield-lock-fill fs-3"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Bảo vệ File gốc An toàn</h5>
+                            <p class="text-muted small mb-0">Hệ thống lưu trữ bảo mật cao cấp. Tệp thiết kế gốc chỉ cấp
+                                quyền tải về tự động cho khách hàng đã thanh toán thành công.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="portal-feature-card p-4 rounded-4 bg-white border h-100 shadow-sm">
+                            <div
+                                class="feature-icon bg-success-subtle text-success rounded-4 d-inline-flex align-items-center justify-content-center mb-3">
+                                <i class="bi bi-wallet2 fs-3"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Doanh thu minh bạch 100%</h5>
+                            <p class="text-muted small mb-0">Theo dõi doanh thu, số lượt mua và số lượt tải từng phút
+                                qua Dashboard thời gian thực, quản lý thu nhập tức thì.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="portal-feature-card p-4 rounded-4 bg-white border h-100 shadow-sm">
+                            <div
+                                class="feature-icon bg-info-subtle text-info rounded-4 d-inline-flex align-items-center justify-content-center mb-3">
+                                <i class="bi bi-cloud-arrow-up-fill fs-3"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Đăng tải nhanh chóng</h5>
+                            <p class="text-muted small mb-0">Form kéo thả tệp thông minh, hỗ trợ đa định dạng hình ảnh
+                                mockup và file source nén (ZIP, RAR, PSD, AI, FIG) lên tới 100MB.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="sectionRegisterDesigner" class="d-none">
+                <div class="row justify-content-center my-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-header bg-primary text-white p-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-white text-primary rounded-circle p-3 d-inline-flex fs-3">
+                                        <i class="bi bi-brush"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold mb-1">Đăng ký trở thành Designer đối tác</h4>
+                                        <p class="mb-0 text-white-50 small">Điền thông tin giới thiệu hồ sơ sáng tạo của
+                                            bạn để bắt đầu mở bán thiết kế trên DesignHub.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4 p-md-5 bg-white">
+                                <div id="registerDesignerAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                                <form id="registerDesignerForm">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Họ và tên tác giả</label>
+                                        <input type="text" class="form-control form-control-lg bg-light"
+                                            id="regDesignerFullName" readonly>
+                                        <small class="text-muted">Lấy theo tài khoản hiện tại của bạn.</small>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Ảnh đại diện Designer / Logo tác giả
+                                            (URL)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-image"></i></span>
+                                            <input type="url" class="form-control form-control-lg"
+                                                id="regDesignerAvatar" placeholder="https://example.com/avatar.jpg">
+                                        </div>
+                                        <small class="text-muted">Bạn có thể dùng link ảnh hoặc để trống hệ thống sẽ
+                                            dùng avatar mặc định.</small>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Tiểu sử & Phong cách thiết kế <span
+                                                class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="regDesignerBio" rows="4" required
+                                            placeholder="Giới thiệu kinh nghiệm, lĩnh vực chuyên môn (UI/UX, Branding, 3D, Print, Typography, v.v.)..."></textarea>
+                                    </div>
+
+                                    <div class="form-check mb-4">
+                                        <input class="form-check-input" type="checkbox" id="regDesignerTerms" required>
+                                        <label class="form-check-label small text-muted" for="regDesignerTerms">
+                                            Tôi cam kết các sản phẩm đăng tải là tác phẩm thuộc quyền sở hữu trí tuệ hợp
+                                            pháp của tôi và tuân thủ Chính sách nội dung của DesignHub.
+                                        </label>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold"
+                                            id="btnSubmitRegisterDesigner">
+                                            <i class="bi bi-check-circle me-2"></i> Kích hoạt Kênh Designer ngay
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sectionPortal" class="d-none">
+                <div
+                    class="designer-profile-banner p-4 p-md-5 rounded-4 bg-white border shadow-sm mb-4 position-relative">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-auto text-center text-md-start">
+                            <div class="designer-avatar-wrapper position-relative d-inline-block">
+                                <img src="/images/user.png" alt="Designer Avatar" id="designerProfileAvatar"
+                                    class="rounded-circle designer-profile-img border border-3 border-primary shadow-sm"
+                                    onerror="this.src='/images/user.png'">
+                                <span
+                                    class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-2"
+                                    title="Đang hoạt động"></span>
+                            </div>
+                        </div>
+                        <div class="col-md">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                <h3 class="fw-bold mb-0 text-dark" id="designerProfileName">Designer Name</h3>
+                                <span class="badge bg-primary px-3 py-1 rounded-pill" id="designerRoleBadge">DESIGNER
+                                    CHÍNH THỨC</span>
+                            </div>
+                            <p class="text-muted mb-2 small" id="designerProfileEmail">email@example.com</p>
+                            <p class="text-secondary small mb-0 max-w-700" id="designerProfileBio">
+                                Tiểu sử tác giả đang được cập nhật...
+                            </p>
+                        </div>
+                        <div class="col-md-auto text-center text-md-end">
+                            <button type="button" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm"
+                                id="btnGoToUploadTab">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> Đăng tải thiết kế mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 g-md-4 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="kpi-card p-4 rounded-4 bg-white border shadow-sm h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold">Tổng doanh thu</span>
+                                <div class="kpi-icon bg-success-subtle text-success rounded-3 p-2">
+                                    <i class="bi bi-currency-dollar fs-5"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-dark" id="kpiTotalRevenue">0 ₫</h3>
+                            <small class="text-success fw-medium"><i class="bi bi-arrow-up-right"></i> Thu nhập thực
+                                nhận</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-lg-3">
+                        <div class="kpi-card p-4 rounded-4 bg-white border shadow-sm h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold">Đã bán thành công</span>
+                                <div class="kpi-icon bg-primary-subtle text-primary rounded-3 p-2">
+                                    <i class="bi bi-bag-check fs-5"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-dark" id="kpiTotalSold">0</h3>
+                            <small class="text-muted fw-medium">Lượt giao dịch hoàn tất</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-lg-3">
+                        <div class="kpi-card p-4 rounded-4 bg-white border shadow-sm h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold">Lượt tải file gốc</span>
+                                <div class="kpi-icon bg-info-subtle text-info rounded-3 p-2">
+                                    <i class="bi bi-download fs-5"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-dark" id="kpiTotalDownloads">0</h3>
+                            <small class="text-muted fw-medium">Lượt tải tệp an toàn</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-lg-3">
+                        <div class="kpi-card p-4 rounded-4 bg-white border shadow-sm h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold">Lượt yêu thích</span>
+                                <div class="kpi-icon bg-danger-subtle text-danger rounded-3 p-2">
+                                    <i class="bi bi-heart fs-5"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-dark" id="kpiTotalFavorites">0</h3>
+                            <small class="text-muted fw-medium">Người dùng quan tâm</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                    <div class="card-header bg-white border-bottom p-0">
+                        <ul class="nav nav-tabs border-0 px-3 pt-2" id="portalTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-4 py-3 fw-bold border-0 border-bottom border-3"
+                                    id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview"
+                                    type="button" role="tab">
+                                    <i class="bi bi-graph-up me-2 text-primary"></i> Tổng quan & Bán chạy
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-4 py-3 fw-bold border-0 border-bottom border-3"
+                                    id="tab-designs-btn" data-bs-toggle="tab" data-bs-target="#tab-designs"
+                                    type="button" role="tab">
+                                    <i class="bi bi-grid me-2 text-primary"></i> Thiết kế của tôi
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-4 py-3 fw-bold border-0 border-bottom border-3"
+                                    id="tab-upload-btn" data-bs-toggle="tab" data-bs-target="#tab-upload" type="button"
+                                    role="tab">
+                                    <i class="bi bi-cloud-plus me-2 text-primary"></i> Đăng tải thiết kế mới
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <div class="tab-content" id="portalTabsContent">
+                            <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                                    <div>
+                                        <h4 class="fw-bold mb-1">Top Thiết Kế Bán Chạy Nhất</h4>
+                                        <p class="text-muted small mb-0">Xếp hạng các mẫu thiết kế đem lại doanh thu cao
+                                            nhất của bạn.</p>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                                        id="btnRefreshAnalytics">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Làm mới số liệu
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive rounded-3 border">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-3" style="width: 60px;">#</th>
+                                                <th>Mẫu thiết kế</th>
+                                                <th class="text-center">Đơn giá</th>
+                                                <th class="text-center">Lượt bán</th>
+                                                <th class="text-end pe-3">Doanh thu tạo ra</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topSellingTableBody">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">
+                                                    <span class="spinner-border spinner-border-sm me-2"></span> Đang tải
+                                                    số liệu...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-designs" role="tabpanel">
+                                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                                    <div>
+                                        <h4 class="fw-bold mb-1">Kho Tác Phẩm Của Bạn</h4>
+                                        <p class="text-muted small mb-0">Quản lý trạng thái duyệt, file gốc và giá bán
+                                            các tác phẩm.</p>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <div class="input-group" style="width: 250px;">
+                                            <span class="input-group-text bg-white"><i
+                                                    class="bi bi-search text-muted"></i></span>
+                                            <input type="text" class="form-control" id="myDesignSearchKeyword"
+                                                placeholder="Tìm kiếm tác phẩm...">
+                                        </div>
+                                        <button class="btn btn-primary rounded-pill px-3 fw-bold"
+                                            id="btnSwitchToUpload">
+                                            <i class="bi bi-plus-lg me-1"></i> Thêm mới
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="myDesignsContainer" class="row g-4">
+                                    <div class="col-12 text-center py-5">
+                                        <span class="spinner-border text-primary"></span>
+                                        <p class="text-muted mt-2">Đang tải danh sách thiết kế...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-upload" role="tabpanel">
+                                <div class="max-w-900 mx-auto">
+                                    <div class="text-center mb-4">
+                                        <h3 class="fw-bold mb-2">Đăng Tải Thiết Kế Mới</h3>
+                                        <p class="text-muted">Hoàn tất các bước dưới đây để đăng sản phẩm lên sàn
+                                            DesignHub.</p>
+                                    </div>
+
+                                    <div id="uploadDesignAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                                    <form id="formCreateDesign">
+                                        <div class="card p-4 rounded-4 border bg-light mb-4">
+                                            <h5 class="fw-bold text-dark mb-3">
+                                                <span class="badge bg-primary rounded-circle me-2">1</span> Thông tin cơ
+                                                bản
+                                            </h5>
+                                            <div class="row g-3">
+                                                <div class="col-md-8">
+                                                    <label class="form-label fw-semibold">Tên thiết kế <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control form-control-lg bg-white"
+                                                        id="designNameInput"
+                                                        placeholder="VD: Bộ nhận diện thương hiệu Minimalism Cafe"
+                                                        required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold">Danh mục <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-select form-select-lg bg-white"
+                                                        id="designCategorySelect" required>
+                                                        <option value="" disabled selected>Chọn danh mục...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-semibold">Giá bán (VNĐ) <span
+                                                            class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="number"
+                                                            class="form-control form-control-lg bg-white"
+                                                            id="designPriceInput" placeholder="150000" min="1000"
+                                                            step="1000" required>
+                                                        <span class="input-group-text">₫</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label class="form-label fw-semibold">Mô tả chi tiết tác phẩm <span
+                                                            class="text-danger">*</span></label>
+                                                    <textarea class="form-control bg-white" id="designDescriptionInput"
+                                                        rows="3"
+                                                        placeholder="Mô tả phong cách, số lượng artboard, phần mềm tương thích, đối tượng sử dụng..."
+                                                        required></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card p-4 rounded-4 border bg-light mb-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h5 class="fw-bold text-dark mb-0">
+                                                    <span class="badge bg-primary rounded-circle me-2">2</span> Hình ảnh
+                                                    xem trước / Mockup
+                                                </h5>
+                                                <small class="text-muted">Hỗ trợ JPG, PNG, WEBP, SVG (Tối đa
+                                                    10MB/ảnh)</small>
+                                            </div>
+                                            <p class="text-muted small mb-3">Upload ít nhất 1 hình ảnh đại diện để khách
+                                                hàng xem trước sản phẩm trên trang chủ.</p>
+
+                                            <div class="dropzone-area p-4 rounded-4 border border-2 border-dashed bg-white text-center cursor-pointer mb-3"
+                                                id="imageDropzone">
+                                                <input type="file" id="imageFileInput" class="d-none" accept="image/*"
+                                                    multiple>
+                                                <i class="bi bi-images fs-1 text-primary mb-2 d-block"></i>
+                                                <h6 class="fw-bold mb-1">Kéo thả ảnh vào đây hoặc click để chọn tệp</h6>
+                                                <p class="text-muted small mb-0">Có thể chọn nhiều hình ảnh cùng lúc</p>
+                                            </div>
+
+                                            <div class="row g-3" id="uploadedImagesContainer"></div>
+                                        </div>
+
+                                        <div class="card p-4 rounded-4 border bg-light mb-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h5 class="fw-bold text-dark mb-0">
+                                                    <span class="badge bg-primary rounded-circle me-2">3</span> Tệp tin
+                                                    thiết kế gốc (Source File)
+                                                </h5>
+                                                <small class="text-muted">Hỗ trợ ZIP, RAR, PSD, AI, FIG, EPS (Tối đa
+                                                    100MB)</small>
+                                            </div>
+                                            <p class="text-muted small mb-3">Đây là tệp tin khách hàng sẽ tải về sau khi
+                                                mua thành công. Hệ thống bảo mật tuyệt đối đường dẫn tệp gốc.</p>
+
+                                            <div class="dropzone-area p-4 rounded-4 border border-2 border-dashed bg-white text-center cursor-pointer mb-3"
+                                                id="fileDropzone">
+                                                <input type="file" id="designSourceFileInput" class="d-none"
+                                                    accept=".zip,.rar,.7z,.psd,.ai,.fig,.pdf,.eps,.sketch">
+                                                <i
+                                                    class="bi bi-file-earmark-zip-fill fs-1 text-success mb-2 d-block"></i>
+                                                <h6 class="fw-bold mb-1">Kéo thả file thiết kế gốc hoặc click để chọn
+                                                </h6>
+                                                <p class="text-muted small mb-0">Nên đóng gói dạng tệp ZIP/RAR chứa đầy
+                                                    đủ font, vector, mockup</p>
+                                            </div>
+
+                                            <div class="progress d-none mb-3" id="fileUploadProgressBar"
+                                                style="height: 10px;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                    style="width: 100%"></div>
+                                            </div>
+                                            <div id="uploadedSourceFilesContainer"></div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end gap-3">
+                                            <button type="reset"
+                                                class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-medium">
+                                                Làm lại form
+                                            </button>
+                                            <button type="submit"
+                                                class="btn btn-primary btn-lg px-5 py-2 rounded-pill fw-bold shadow"
+                                                id="btnSubmitNewDesign">
+                                                <i class="bi bi-check-lg me-2"></i> Hoàn tất & Gửi duyệt thiết kế
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="manageFilesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-light border-0 py-3">
+                    <h5 class="modal-title fw-bold" id="manageFilesModalTitle">Quản lý tệp tin thiết kế gốc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Danh sách tệp nguồn khách hàng sẽ nhận được khi mua thiết kế này.
+                    </p>
+                    <div id="modalFilesList" class="mb-4">
+                        <div class="text-center py-3 text-muted"><span
+                                class="spinner-border spinner-border-sm me-2"></span> Đang tải file...</div>
+                    </div>
+
+                    <div class="card p-3 rounded-3 border bg-light">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle me-1 text-primary"></i> Tải thêm file gốc
+                            cho thiết kế này</h6>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="modalAddFileInput"
+                                accept=".zip,.rar,.psd,.ai,.fig,.pdf,.eps">
+                            <button class="btn btn-primary fw-medium" type="button" id="btnModalUploadFile">
+                                <i class="bi bi-upload me-1"></i> Tải lên
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 p-md-5 pt-0">
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold">Đăng nhập</h3>
+                        <p class="text-muted small">Chào mừng bạn quay trở lại với DesignHub</p>
+                    </div>
+
+                    <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email hoặc tên đăng nhập</label>
+                            <input type="text" class="form-control form-control-lg" name="email" required
+                                placeholder="name@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Mật khẩu</label>
+                            <input type="password" class="form-control form-control-lg" name="password" required
+                                placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-semibold mt-2">
+                            Đăng nhập
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 p-md-5 pt-0">
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold">Tạo tài khoản mới</h3>
+                        <p class="text-muted small">Tham gia cộng đồng DesignHub để mua và bán thiết kế</p>
+                    </div>
+
+                    <div id="registerAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Họ và tên</label>
+                            <input type="text" class="form-control" name="fullName" required placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tên đăng nhập</label>
+                            <input type="text" class="form-control" name="username" required placeholder="nguyenvana">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Địa chỉ Email</label>
+                            <input type="email" class="form-control" name="email" required
+                                placeholder="name@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Số điện thoại</label>
+                            <input type="tel" class="form-control" name="phone" placeholder="0912345678">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Mật khẩu</label>
+                            <input type="password" class="form-control" name="password" required minlength="6"
+                                placeholder="Tối thiểu 6 ký tự">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-semibold mt-2">
+                            Tạo tài khoản
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="appToast" class="toast align-items-center text-white border-0 rounded-3 shadow" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <span>Thông báo</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/designer.js"></script>
+</body>
+
+</html>

@@ -34,6 +34,13 @@ public class DesignerController {
         );
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<Designer> getCurrentDesigner() {
+        return designerService.getCurrentDesigner()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Designer> getDesignerById(
             @PathVariable Long id) {

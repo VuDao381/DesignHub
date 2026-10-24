@@ -68,6 +68,7 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/",
+                                                                "/designer",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
@@ -83,14 +84,20 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
+                                                                "/api/designs/my")
+                                                .hasAnyRole("ADMIN", "DESIGNER")
+                                                .requestMatchers(
+                                                                "/api/designers/me",
+                                                                "/api/designers/register")
+                                                .authenticated()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
                                                                 "/api/designs/**",
                                                                 "/api/categories/**",
                                                                 "/api/design-images/**",
                                                                 "/api/designers/**",
                                                                 "/api/reviews/design/**")
                                                 .permitAll()
-                                                .requestMatchers("/api/designers/register")
-                                                .authenticated()
                                                 .requestMatchers(HttpMethod.POST, "/api/designers")
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.DELETE, "/api/designers/**")
