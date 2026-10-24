@@ -2,7 +2,6 @@ package com.designhub.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +95,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         Category catUiUx = createCategory("UI/UX & Mobile Apps", "Giao diện Web App, Mobile UI Kit, Dashboard SaaS tối ưu trải nghiệm người dùng.");
         Category catPoster = createCategory("Poster & Quảng Cáo", "Mẫu Poster sự kiện, Banner marketing, Cover mạng xã hội độ phân giải cao.");
         Category catLogo = createCategory("Logo & Brand Identity", "Hệ thống nhận diện thương hiệu, Logo vector, Brand guideline chuyên nghiệp.");
-        Category catTemplate = createCategory("Template & Slide", "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
+        createCategory("Template & Slide", "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
         Category cat3d = createCategory("Vector & 3D Artwork", "Gói icon 3D sống động, minh họa vector Isometric, texture thiết kế.");
 
         // 2. Tạo Tài khoản Người dùng (Users & Designers)

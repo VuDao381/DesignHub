@@ -109,7 +109,8 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
-                                                                "/api/designs/my")
+                                                                "/api/designs/my",
+                                                                "/api/designs/me")
                                                 .hasAnyRole("ADMIN", "DESIGNER")
                                                 .requestMatchers(
                                                                 "/api/designers/me",
