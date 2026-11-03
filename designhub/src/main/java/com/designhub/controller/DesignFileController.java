@@ -41,8 +41,15 @@ public class DesignFileController {
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
         DesignFileService.DownloadableFile downloadableFile = designFileService.getFileForDownload(id);
 
+        MediaType mediaType;
+        try {
+            mediaType = MediaType.parseMediaType(downloadableFile.contentType());
+        } catch (Exception ex) {
+            mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        }
+
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(downloadableFile.contentType()))
+                .contentType(mediaType)
                 .contentLength(downloadableFile.contentLength())
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()

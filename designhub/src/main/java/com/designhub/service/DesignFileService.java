@@ -34,7 +34,7 @@ public class DesignFileService {
     private static final Logger log = LoggerFactory.getLogger(DesignFileService.class);
 
     @Value("${file.upload-dir:uploads}")
-    private String baseUploadDir;
+    private String baseUploadDir = "uploads";
 
     private final DesignFileRepository designFileRepository;
     private final DesignRepository designRepository;
@@ -169,13 +169,7 @@ public class DesignFileService {
         try {
             Resource resource = new UrlResource(filePath.toUri());
             long contentLength = Files.size(filePath);
-            String contentType = file.getFileType();
-            if (contentType == null || contentType.isBlank()) {
-                contentType = Files.probeContentType(filePath);
-            }
-            if (contentType == null || contentType.isBlank()) {
-                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-            }
+            String contentType = resolveValidMimeType(file.getFileType(), filePath);
 
             try {
                 downloadHistoryService.createDownloadHistory(file.getDesign().getId());
@@ -189,6 +183,48 @@ public class DesignFileService {
         } catch (IOException ex) {
             throw new IllegalStateException("Không thể đọc tệp tin: " + ex.getMessage(), ex);
         }
+    }
+
+    private String resolveValidMimeType(String rawType, Path filePath) {
+        if (rawType != null && !rawType.isBlank()) {
+            String trimmed = rawType.trim();
+            if (trimmed.contains("/")) {
+                try {
+                    MediaType.parseMediaType(trimmed);
+                    return trimmed;
+                } catch (Exception ignored) {
+                }
+            }
+            String upper = trimmed.toUpperCase();
+            switch (upper) {
+                case "ZIP" -> {
+                    return "application/zip";
+                }
+                case "PDF" -> {
+                    return MediaType.APPLICATION_PDF_VALUE;
+                }
+                case "PNG" -> {
+                    return MediaType.IMAGE_PNG_VALUE;
+                }
+                case "JPG", "JPEG" -> {
+                    return MediaType.IMAGE_JPEG_VALUE;
+                }
+                case "SVG" -> {
+                    return "image/svg+xml";
+                }
+                default -> {
+                }
+            }
+        }
+        try {
+            String probed = Files.probeContentType(filePath);
+            if (probed != null && !probed.isBlank()) {
+                MediaType.parseMediaType(probed);
+                return probed;
+            }
+        } catch (Exception ignored) {
+        }
+        return MediaType.APPLICATION_OCTET_STREAM_VALUE;
     }
 
     private void checkAccessPermission(Long designId) {

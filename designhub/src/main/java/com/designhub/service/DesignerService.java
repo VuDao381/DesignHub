@@ -52,11 +52,21 @@ public class DesignerService {
         return designerRepository.findByUserId(userId);
     }
 
-    @Transactional(readOnly = true)
     public Optional<Designer> getCurrentDesigner() {
         try {
             User me = currentUserService.getCurrentUser();
-            return designerRepository.findByUserId(me.getId());
+            return designerRepository.findByUserId(me.getId())
+                    .or(() -> {
+                        if (me.getRole() == Role.ADMIN || me.getRole() == Role.DESIGNER) {
+                            Designer autoProfile = new Designer();
+                            autoProfile.setUser(me);
+                            autoProfile.setBio(me.getRole() == Role.ADMIN
+                                    ? "Quản trị viên & Nhà thiết kế trên DesignHub"
+                                    : "Nhà thiết kế sáng tạo trên DesignHub");
+                            return Optional.of(designerRepository.save(autoProfile));
+                        }
+                        return Optional.empty();
+                    });
         } catch (Exception ex) {
             return Optional.empty();
         }

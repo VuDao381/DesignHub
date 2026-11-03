@@ -144,8 +144,14 @@ public class DesignService {
             Pageable pageable) {
 
         User me = currentUserService.getCurrentUser();
-        Designer designer = designerRepository.findByUserId(me.getId())
-                .orElseThrow(() -> new AccessDeniedException("Tài khoản chưa có hồ sơ Designer"));
+        Optional<Designer> designerOpt = designerRepository.findByUserId(me.getId());
+        if (designerOpt.isEmpty()) {
+            if (currentUserService.isAdmin() || me.getRole() == com.designhub.entity.Role.DESIGNER) {
+                return Page.empty(pageable);
+            }
+            throw new AccessDeniedException("Tài khoản chưa có hồ sơ Designer");
+        }
+        Designer designer = designerOpt.get();
 
         Sort sort = resolveSort(sortBy);
         Pageable sortedPageable = PageRequest.of(

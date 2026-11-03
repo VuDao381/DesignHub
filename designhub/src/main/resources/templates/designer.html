@@ -236,9 +236,10 @@
                     <div class="row align-items-center g-4">
                         <div class="col-md-auto text-center text-md-start">
                             <div class="designer-avatar-wrapper position-relative d-inline-block">
-                                <img src="/images/user.png" alt="Designer Avatar" id="designerProfileAvatar"
+                                <img src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%236366f1'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='44' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E"
+                                    alt="Designer Avatar" id="designerProfileAvatar"
                                     class="rounded-circle designer-profile-img border border-3 border-primary shadow-sm"
-                                    onerror="this.src='/images/user.png'">
+                                    onerror="this.onerror=null; this.src=&quot;data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%236366f1'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='44' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E&quot;">
                                 <span
                                     class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-2"
                                     title="Đang hoạt động"></span>
@@ -631,7 +632,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Tên đăng nhập</label>
-                            <input type="text" class="form-control" name="username" required placeholder="nguyenvana">
+                            <input type="text" class="form-control" name="username" minlength="3" maxlength="50"
+                                required placeholder="nguyenvana">
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Địa chỉ Email</label>
@@ -643,9 +645,9 @@
                             <input type="tel" class="form-control" name="phone" placeholder="0912345678">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold">Mật khẩu</label>
-                            <input type="password" class="form-control" name="password" required minlength="6"
-                                placeholder="Tối thiểu 6 ký tự">
+                            <label class="form-label small fw-semibold">Mật khẩu (8 - 72 ký tự)</label>
+                            <input type="password" class="form-control" name="password" required minlength="8"
+                                maxlength="72" placeholder="Tối thiểu 8 ký tự">
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-semibold mt-2">
                             Tạo tài khoản

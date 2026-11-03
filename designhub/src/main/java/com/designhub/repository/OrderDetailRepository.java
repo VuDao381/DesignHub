@@ -25,7 +25,8 @@ public interface OrderDetailRepository
             od.design.price,
             od.design.designer.user.fullName,
             COALESCE(SUM(od.quantity), 0),
-            COALESCE(SUM(od.price * od.quantity), 0)
+            COALESCE(SUM(od.price * od.quantity), 0),
+            (SELECT MAX(img.imageUrl) FROM DesignImage img WHERE img.design = od.design)
         )
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'
@@ -57,7 +58,8 @@ public interface OrderDetailRepository
             od.design.price,
             od.design.designer.user.fullName,
             COALESCE(SUM(od.quantity), 0),
-            COALESCE(SUM(od.price * od.quantity), 0)
+            COALESCE(SUM(od.price * od.quantity), 0),
+            (SELECT MAX(img.imageUrl) FROM DesignImage img WHERE img.design = od.design)
         )
         FROM OrderDetail od
         WHERE od.order.status = 'PAID'

@@ -1,10 +1,15 @@
 package com.designhub.config;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -40,6 +45,9 @@ import com.designhub.repository.UserRepository;
 public class DemoDataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
+
+    @Value("${file.upload-dir:uploads}")
+    private String baseUploadDir = "uploads";
 
     private final UserRepository userRepository;
     private final DesignerRepository designerRepository;
@@ -85,6 +93,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (categoryRepository.count() > 0 && designRepository.count() > 0) {
+            ensurePhysicalDemoFilesExist();
             log.info("Dữ liệu mẫu (Demo Data) đã tồn tại. Bỏ qua bước nạp tự động.");
             return;
         }
@@ -100,7 +109,7 @@ public class DemoDataSeeder implements CommandLineRunner {
 
         // 2. Tạo Tài khoản Người dùng (Users & Designers)
         User alexUser = createUserIfNotExist("vu", "vu@designhub.com", "123456", "Vũ Đào", "0901234567", Role.DESIGNER);
-        Designer alexDesigner = createDesignerIfNotExist(alexUser, 
+        Designer alexDesigner = createDesignerIfNotExist(alexUser,
                 "Senior UI/UX & Brand Identity Designer với 5+ năm kinh nghiệm. Tác giả của nhiều bộ Design System và Mobile Kits chất lượng cao.",
                 "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
 
@@ -186,7 +195,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         createDesignImage(d6, "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop", true);
         createDesignFile(d6, "retro-typography-badges.zip", "/uploads/files/retro-typography-badges.zip", 15728640L, "ZIP");
 
-        // 4. Tạo Đơn hàng đã mua (Order) cho John Đặng để test "Kho của tôi" và Tải file
+        // 4. Tạo Đơn hàng đã mua (Order) cho Quân Nguyễn để test "Kho của tôi" và Tải file
         createCompletedOrder(johnUser, d1);
 
         // 5. Tạo Đánh giá mẫu (Reviews)
@@ -258,6 +267,37 @@ public class DemoDataSeeder implements CommandLineRunner {
         file.setFileSize(size);
         file.setFileType(type);
         designFileRepository.save(file);
+
+        try {
+            ensurePhysicalFileForRecord(file);
+        } catch (Exception ex) {
+            log.warn("Không thể tạo tệp mẫu vật lý cho {}: {}", fileName, ex.getMessage());
+        }
+    }
+
+    private void ensurePhysicalDemoFilesExist() {
+        for (DesignFile file : designFileRepository.findAll()) {
+            try {
+                ensurePhysicalFileForRecord(file);
+            } catch (Exception ex) {
+                log.warn("Không thể bổ sung tệp mẫu vật lý cho {}: {}", file.getFileName(), ex.getMessage());
+            }
+        }
+    }
+
+    private void ensurePhysicalFileForRecord(DesignFile file) throws java.io.IOException {
+        if (file.getFileUrl() == null || file.getFileUrl().isBlank()) {
+            return;
+        }
+        Path filesDir = Paths.get(baseUploadDir, "files").toAbsolutePath().normalize();
+        Files.createDirectories(filesDir);
+        String storedFileName = Paths.get(file.getFileUrl()).getFileName().toString();
+        Path targetPath = filesDir.resolve(storedFileName).normalize();
+        if (targetPath.startsWith(filesDir) && !Files.exists(targetPath)) {
+            String designName = file.getDesign() != null ? file.getDesign().getName() : "DesignHub";
+            String demoContent = "DesignHub Demo Source File - " + designName + " (" + file.getFileName() + ")\n";
+            Files.writeString(targetPath, demoContent, StandardCharsets.UTF_8);
+        }
     }
 
     private void createCompletedOrder(User user, Design design) {

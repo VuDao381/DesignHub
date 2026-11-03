@@ -3,6 +3,8 @@ let currentModerationStatus = 'PENDING';
 let allLoadedUsers = [];
 let allLoadedCategories = [];
 
+const DEFAULT_THUMBNAIL = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23eef2ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236366f1' font-family='sans-serif' font-size='14' font-weight='bold'%3EDesignHub%3C/text%3E%3C/svg%3E";
+
 // Format Currency VND
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return '0 ₫';
@@ -110,12 +112,12 @@ async function loadAdminDashboard() {
                         <td class="ps-3 fw-bold text-muted">${idx + 1}</td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <img src="${item.imageUrl || '/images/card.png'}" alt="${item.designName}"
+                                <img src="${item.imageUrl || DEFAULT_THUMBNAIL}" alt="${escapeHtml(item.designName)}"
                                     class="rounded border object-fit-cover" style="width: 44px; height: 44px;"
-                                    onerror="this.src='/images/card.png'">
+                                    onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                                 <div>
-                                    <div class="fw-bold text-dark text-truncate" style="max-width: 220px;" title="${item.designName}">
-                                        ${item.designName}
+                                    <div class="fw-bold text-dark text-truncate" style="max-width: 220px;" title="${escapeHtml(item.designName)}">
+                                        ${escapeHtml(item.designName)}
                                     </div>
                                     <small class="text-muted">Mã: #${item.designId}</small>
                                 </div>
@@ -139,14 +141,16 @@ async function loadAdminDashboard() {
             if (!stats.userGrowth || stats.userGrowth.length === 0) {
                 growthContainer.innerHTML = '<div class="text-center py-4 text-muted">Chưa có dữ liệu tăng trưởng.</div>';
             } else {
-                const maxCount = Math.max(...stats.userGrowth.map(g => g.userCount || 1), 1);
+                const maxCount = Math.max(...stats.userGrowth.map(g => (g.userCount ?? g.count ?? 1)), 1);
                 growthContainer.innerHTML = stats.userGrowth.map(item => {
-                    const percent = Math.min(Math.round((item.userCount / maxCount) * 100), 100);
+                    const userCount = item.userCount ?? item.count ?? 0;
+                    const percent = Math.min(Math.round((userCount / maxCount) * 100), 100);
+                    const monthLabel = item.year ? `Tháng ${item.month}/${item.year}` : `Tháng ${item.month}`;
                     return `
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-semibold small text-dark"><i class="bi bi-calendar3 me-1 text-muted"></i> Tháng ${item.month}</span>
-                                <span class="badge bg-info-subtle text-info fw-bold">${item.userCount} thành viên</span>
+                                <span class="fw-semibold small text-dark"><i class="bi bi-calendar3 me-1 text-muted"></i> ${monthLabel}</span>
+                                <span class="badge bg-info-subtle text-info fw-bold">${userCount} thành viên</span>
                             </div>
                             <div class="progress" style="height: 8px;">
                                 <div class="progress-bar bg-info progress-bar-striped" style="width: ${percent}%;"></div>
@@ -210,7 +214,7 @@ async function loadModerationDesigns() {
         tbody.innerHTML = designs.map(design => {
             const primaryImg = (design.images && design.images.length > 0)
                 ? (design.images.find(i => i.isPrimary) || design.images[0]).imageUrl
-                : '/images/card.png';
+                : DEFAULT_THUMBNAIL;
 
             const statusBadge = getStatusBadge(design.status);
             const authorName = design.designer?.user?.fullName || design.designer?.user?.username || 'N/A';
@@ -222,9 +226,9 @@ async function loadModerationDesigns() {
                 <tr>
                     <td class="ps-3">
                         <img src="${primaryImg}" class="rounded-3 border object-fit-cover cursor-pointer"
-                            style="width: 60px; height: 60px;" alt="${design.name}"
+                            style="width: 60px; height: 60px;" alt="${escapeHtml(design.name)}"
                             onclick="openPreviewModal(${design.id})" title="Bấm để phóng to xem chi tiết"
-                            onerror="this.src='/images/card.png'">
+                            onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                     </td>
                     <td>
                         <div class="fw-bold text-dark">${escapeHtml(design.name)}</div>
@@ -394,7 +398,8 @@ async function openPreviewModal(designId) {
                     ${images.map(img => `
                         <div class="col-4 col-md-3">
                             <div class="border rounded-3 overflow-hidden position-relative" style="height: 120px;">
-                                <img src="${img.imageUrl}" class="w-100 h-100 object-fit-cover" alt="Mockup">
+                                <img src="${img.imageUrl}" class="w-100 h-100 object-fit-cover" alt="Mockup"
+                                    onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                                 ${img.isPrimary ? '<span class="position-absolute top-0 start-0 badge bg-primary m-1">Ảnh bìa</span>' : ''}
                             </div>
                         </div>

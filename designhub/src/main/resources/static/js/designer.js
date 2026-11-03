@@ -3,6 +3,9 @@ let uploadedImages = [];
 let uploadedSourceFiles = [];
 let selectedDesignForFiles = null;
 
+const DEFAULT_THUMBNAIL = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23eef2ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236366f1' font-family='sans-serif' font-size='14' font-weight='bold'%3EDesignHub%3C/text%3E%3C/svg%3E";
+const DEFAULT_AVATAR = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%236366f1'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='44' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E";
+
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -98,8 +101,8 @@ function renderDesignerHeader(user, designer) {
     if (nameEl) nameEl.textContent = user.fullName || user.username || 'Designer';
     if (emailEl) emailEl.textContent = user.email || '';
     if (bioEl) bioEl.textContent = designer.bio || 'Chưa có thông tin giới thiệu.';
-    if (avatarEl && designer.avatar) {
-        avatarEl.src = designer.avatar;
+    if (avatarEl) {
+        avatarEl.src = designer.avatar || DEFAULT_AVATAR;
     }
 
     if (roleBadge) {
@@ -142,11 +145,11 @@ async function loadDesignerDashboard() {
                 <td class="ps-3 fw-bold text-muted">${index + 1}</td>
                 <td>
                     <div class="d-flex align-items-center gap-3">
-                        <img src="${item.imageUrl || '/images/card.png'}" alt="${item.designName}"
+                        <img src="${item.imageUrl || DEFAULT_THUMBNAIL}" alt="${escapeHtml(item.designName)}"
                             class="rounded-3 border object-fit-cover" style="width: 50px; height: 50px;"
-                            onerror="this.src='/images/card.png'">
+                            onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                         <div>
-                            <div class="fw-bold text-dark">${item.designName}</div>
+                            <div class="fw-bold text-dark">${escapeHtml(item.designName)}</div>
                             <small class="text-muted">Mã thiết kế: #${item.designId}</small>
                         </div>
                     </div>
@@ -171,9 +174,10 @@ async function loadCategories() {
     if (!select) return;
 
     try {
-        const categories = await api.categories.getAll();
+        const res = await api.categories.getAll();
+        const categories = Array.isArray(res) ? res : (res && Array.isArray(res.content) ? res.content : []);
         select.innerHTML = '<option value="" disabled selected>Chọn danh mục thiết kế...</option>' +
-            categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+            categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
     } catch (err) {
         console.warn('Lỗi tải danh mục:', err);
     }
@@ -214,19 +218,28 @@ async function loadMyDesigns() {
 
         // Lấy danh sách ảnh & files cho từng design
         const cardsHtml = await Promise.all(designs.map(async (design) => {
-            let primaryImg = '/images/card.png';
+            let primaryImg = DEFAULT_THUMBNAIL;
             try {
-                const images = await api.designs.getImages(design.id);
-                if (images && images.length > 0) {
-                    const primary = images.find(img => img.isPrimary) || images[0];
+                if (design.images && design.images.length > 0) {
+                    const primary = design.images.find(img => img.isPrimary) || design.images[0];
                     primaryImg = primary.imageUrl;
+                } else {
+                    const images = await api.designs.getImages(design.id);
+                    if (images && images.length > 0) {
+                        const primary = images.find(img => img.isPrimary) || images[0];
+                        primaryImg = primary.imageUrl;
+                    }
                 }
             } catch { }
 
             let filesCount = 0;
             try {
-                const files = await api.designs.getFiles(design.id);
-                filesCount = files ? files.length : 0;
+                if (design.files && design.files.length > 0) {
+                    filesCount = design.files.length;
+                } else {
+                    const files = await api.designs.getFiles(design.id);
+                    filesCount = files ? files.length : 0;
+                }
             } catch { }
 
             const statusBadge = getStatusBadge(design.status);
@@ -235,8 +248,8 @@ async function loadMyDesigns() {
                 <div class="col-sm-6 col-lg-4 col-xl-3">
                     <div class="card h-100 border rounded-4 overflow-hidden shadow-sm product-card transition-all">
                         <div class="position-relative overflow-hidden" style="height: 180px; background: #f8f9fa;">
-                            <img src="${primaryImg}" class="w-100 h-100 object-fit-cover" alt="${design.name}"
-                                onerror="this.src='/images/card.png'">
+                            <img src="${primaryImg}" class="w-100 h-100 object-fit-cover" alt="${escapeHtml(design.name)}"
+                                onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                             <div class="position-absolute top-0 end-0 m-2">
                                 ${statusBadge}
                             </div>
@@ -248,9 +261,9 @@ async function loadMyDesigns() {
                         </div>
                         <div class="card-body p-3 d-flex flex-column">
                             <span class="badge bg-secondary-subtle text-secondary align-self-start mb-2" style="font-size: 11px;">
-                                ${design.category?.name || 'Khác'}
+                                ${escapeHtml(design.category?.name || 'Khác')}
                             </span>
-                            <h6 class="fw-bold mb-1 text-truncate" title="${design.name}">${design.name}</h6>
+                            <h6 class="fw-bold mb-1 text-truncate" title="${escapeHtml(design.name)}">${escapeHtml(design.name)}</h6>
                             <p class="text-primary fw-bold fs-6 mb-3">${formatCurrency(design.price)}</p>
 
                             <div class="mt-auto d-flex gap-2">
@@ -372,7 +385,8 @@ function renderUploadedImages() {
         <div class="col-6 col-sm-4 col-md-3">
             <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm ${img.isPrimary ? 'border-primary border-2' : ''}">
                 <div style="height: 120px; background: #f8f9fa;">
-                    <img src="${img.fileUrl}" class="w-100 h-100 object-fit-cover" alt="Preview">
+                    <img src="${img.fileUrl}" class="w-100 h-100 object-fit-cover" alt="Preview"
+                        onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
                 </div>
                 <div class="p-2 bg-white d-flex justify-content-between align-items-center">
                     <div class="form-check mb-0">
@@ -449,8 +463,8 @@ function renderUploadedSourceFiles() {
                         <i class="bi bi-file-earmark-zip fs-4"></i>
                     </div>
                     <div>
-                        <div class="fw-bold text-dark text-truncate" style="max-width: 350px;">${file.fileName}</div>
-                        <small class="text-muted">${formatFileSize(file.fileSize)} • ${file.fileType}</small>
+                        <div class="fw-bold text-dark text-truncate" style="max-width: 350px;">${escapeHtml(file.fileName)}</div>
+                        <small class="text-muted">${formatFileSize(file.fileSize)} • ${escapeHtml(file.fileType)}</small>
                     </div>
                 </div>
                 <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-2" title="Xóa file này"
@@ -606,8 +620,8 @@ async function refreshModalFilesList(designId) {
                             <i class="bi bi-file-earmark-code fs-4"></i>
                         </div>
                         <div>
-                            <div class="fw-bold text-dark">${file.fileName}</div>
-                            <small class="text-muted">${formatFileSize(file.fileSize)} • ${file.fileType || 'N/A'}</small>
+                            <div class="fw-bold text-dark">${escapeHtml(file.fileName)}</div>
+                            <small class="text-muted">${formatFileSize(file.fileSize)} • ${escapeHtml(file.fileType || 'N/A')}</small>
                         </div>
                     </div>
                     <div class="d-flex gap-2">
