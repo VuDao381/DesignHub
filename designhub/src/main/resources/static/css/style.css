@@ -843,3 +843,271 @@ a {
 .filter-status-btn {
     transition: all 0.2s ease;
 }
+
+/* =========================================================================
+   3D STUDIO VIEWER, 3D MOVIE RECORDER & DRM WATERMARK STYLES
+   ========================================================================= */
+.viewer3d-studio-wrapper {
+    background: linear-gradient(145deg, #090d16 0%, #111827 50%, #1e1b4b 100%);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+.viewer3d-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.viewer3d-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-3d-live {
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.4px;
+}
+
+.badge-3d-hint {
+    color: #94a3b8;
+    font-size: 11.5px;
+}
+
+.viewer3d-mockup-select {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.v3d-type-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.v3d-type-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    color: #fff;
+}
+
+.v3d-type-btn.active {
+    background: #6366f1;
+    color: #fff;
+    border-color: #818cf8;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+}
+
+.viewer3d-canvas-Stage {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 42%, rgba(99, 102, 241, 0.22), rgba(9, 13, 22, 0.95) 72%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.viewer3d-rec-indicator {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    background: rgba(220, 38, 38, 0.9);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+}
+
+.rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    animation: pulseRec 0.9s infinite alternate;
+}
+
+@keyframes pulseRec {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0.3; transform: scale(0.8); }
+}
+
+.viewer3d-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.viewer3d-angle-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.v3d-ctrl-btn {
+    background: rgba(255, 255, 255, 0.07);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.v3d-ctrl-btn:hover, .v3d-ctrl-btn.active {
+    background: rgba(99, 102, 241, 0.28);
+    border-color: #6366f1;
+    color: #fff;
+}
+
+.v3d-flip-btn {
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #6ee7b7;
+}
+
+.v3d-flip-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #10b981;
+    color: #fff;
+}
+
+.btn-record-movie3d {
+    background: linear-gradient(135deg, #ef4444, #db2777);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-record-movie3d:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5);
+}
+
+.btn-record-movie3d:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.movie3d-preview-card {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.movie3d-preview-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Watermark Overlay cho ảnh 2D chưa mua */
+.watermark-protected-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    user-select: none;
+}
+
+.watermark-diagonal-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    background-image: repeating-linear-gradient(
+        -28deg,
+        rgba(255, 255, 255, 0.0) 0px,
+        rgba(255, 255, 255, 0.0) 70px,
+        rgba(99, 102, 241, 0.12) 70px,
+        rgba(99, 102, 241, 0.12) 105px
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.watermark-stamp-pill {
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    transform: rotate(-14deg);
+    backdrop-filter: blur(3px);
+}
+
+.card-badge-3d {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 4;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(99, 102, 241, 0.6);
+    color: #e0e7ff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.card-badge-3d:hover {
+    background: #6366f1;
+    color: #fff;
+}
+
+.security-layer-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+}
+
+.security-layer-card:hover {
+    border-color: var(--primary);
+}

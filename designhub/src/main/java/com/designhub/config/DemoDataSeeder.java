@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import com.designhub.entity.Category;
 import com.designhub.entity.Design;
 import com.designhub.entity.DesignFile;
 import com.designhub.entity.DesignImage;
+import com.designhub.entity.DesignRequest;
 import com.designhub.entity.Designer;
 import com.designhub.entity.DownloadHistory;
 import com.designhub.entity.Order;
@@ -32,6 +34,7 @@ import com.designhub.repository.CategoryRepository;
 import com.designhub.repository.DesignFileRepository;
 import com.designhub.repository.DesignImageRepository;
 import com.designhub.repository.DesignRepository;
+import com.designhub.repository.DesignRequestRepository;
 import com.designhub.repository.DesignerRepository;
 import com.designhub.repository.DownloadHistoryRepository;
 import com.designhub.repository.OrderDetailRepository;
@@ -60,6 +63,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final ReviewRepository reviewRepository;
     private final DownloadHistoryRepository downloadHistoryRepository;
+    private final DesignRequestRepository designRequestRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DemoDataSeeder(
@@ -74,6 +78,7 @@ public class DemoDataSeeder implements CommandLineRunner {
             PaymentRepository paymentRepository,
             ReviewRepository reviewRepository,
             DownloadHistoryRepository downloadHistoryRepository,
+            DesignRequestRepository designRequestRepository,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.designerRepository = designerRepository;
@@ -86,6 +91,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         this.paymentRepository = paymentRepository;
         this.reviewRepository = reviewRepository;
         this.downloadHistoryRepository = downloadHistoryRepository;
+        this.designRequestRepository = designRequestRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -94,6 +100,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (categoryRepository.count() > 0 && designRepository.count() > 0) {
             ensurePhysicalDemoFilesExist();
+            seedDemoDesignRequestsIfNeeded();
             log.info("Dữ liệu mẫu (Demo Data) đã tồn tại. Bỏ qua bước nạp tự động.");
             return;
         }
@@ -101,11 +108,16 @@ public class DemoDataSeeder implements CommandLineRunner {
         log.info(">>> Đang bắt đầu nạp dữ liệu mẫu (Seeding Demo Data) cho DesignHub...");
 
         // 1. Tạo Danh mục (Categories)
-        Category catUiUx = createCategory("UI/UX & Mobile Apps", "Giao diện Web App, Mobile UI Kit, Dashboard SaaS tối ưu trải nghiệm người dùng.");
-        Category catPoster = createCategory("Poster & Quảng Cáo", "Mẫu Poster sự kiện, Banner marketing, Cover mạng xã hội độ phân giải cao.");
-        Category catLogo = createCategory("Logo & Brand Identity", "Hệ thống nhận diện thương hiệu, Logo vector, Brand guideline chuyên nghiệp.");
-        createCategory("Template & Slide", "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
-        Category cat3d = createCategory("Vector & 3D Artwork", "Gói icon 3D sống động, minh họa vector Isometric, texture thiết kế.");
+        Category catUiUx = createCategory("UI/UX & Mobile Apps",
+                "Giao diện Web App, Mobile UI Kit, Dashboard SaaS tối ưu trải nghiệm người dùng.");
+        Category catPoster = createCategory("Poster & Quảng Cáo",
+                "Mẫu Poster sự kiện, Banner marketing, Cover mạng xã hội độ phân giải cao.");
+        Category catLogo = createCategory("Logo & Brand Identity",
+                "Hệ thống nhận diện thương hiệu, Logo vector, Brand guideline chuyên nghiệp.");
+        createCategory("Template & Slide",
+                "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
+        Category cat3d = createCategory("Vector & 3D Artwork",
+                "Gói icon 3D sống động, minh họa vector Isometric, texture thiết kế.");
 
         // 2. Tạo Tài khoản Người dùng (Users & Designers)
         User alexUser = createUserIfNotExist("vu", "vu@designhub.com", "123456", "Vũ Đào", "0901234567", Role.DESIGNER);
@@ -113,13 +125,16 @@ public class DemoDataSeeder implements CommandLineRunner {
                 "Senior UI/UX & Brand Identity Designer với 5+ năm kinh nghiệm. Tác giả của nhiều bộ Design System và Mobile Kits chất lượng cao.",
                 "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
 
-        User mayaUser = createUserIfNotExist("hoang", "hoang@designhub.com", "123456", "Hoàng Lê", "0908765432", Role.DESIGNER);
+        User mayaUser = createUserIfNotExist("hoang", "hoang@designhub.com", "123456", "Hoàng Lê", "0908765432",
+                Role.DESIGNER);
         Designer mayaDesigner = createDesignerIfNotExist(mayaUser,
                 "Digital Artist & Visual Designer đam mê phong cách Cyberpunk, Typography nghệ thuật và Poster sự kiện âm nhạc.",
                 "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200");
 
-        User johnUser = createUserIfNotExist("quan", "quan@gmail.com", "123456", "Quân Nguyễn", "0912334455", Role.CUSTOMER);
-        User lisaUser = createUserIfNotExist("tuan", "tuan@gmail.com", "123456", "Tuấn Vũ", "0933445566", Role.CUSTOMER);
+        User johnUser = createUserIfNotExist("quan", "quan@gmail.com", "123456", "Quân Nguyễn", "0912334455",
+                Role.CUSTOMER);
+        User lisaUser = createUserIfNotExist("tuan", "tuan@gmail.com", "123456", "Tuấn Vũ", "0933445566",
+                Role.CUSTOMER);
 
         // 3. Tạo Bản Thiết Kế (Designs)
         // Design 1: APPROVED - SaaS Dashboard
@@ -131,9 +146,12 @@ public class DemoDataSeeder implements CommandLineRunner {
                 null,
                 catUiUx,
                 alexDesigner);
-        createDesignImage(d1, "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop", true);
-        createDesignImage(d1, "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop", false);
-        createDesignFile(d1, "saas-analytics-dashboard-v2.fig", "/uploads/files/saas-analytics-dashboard-v2.fig", 25165824L, "FIG");
+        createDesignImage(d1, "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop",
+                true);
+        createDesignImage(d1,
+                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop", false);
+        createDesignFile(d1, "saas-analytics-dashboard-v2.fig", "/uploads/files/saas-analytics-dashboard-v2.fig",
+                25165824L, "FIG");
 
         // Design 2: APPROVED - Cyberpunk Poster
         Design d2 = createDesign(
@@ -144,8 +162,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                 null,
                 catPoster,
                 mayaDesigner);
-        createDesignImage(d2, "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d2, "cyberpunk-neon-poster-cmyk.psd", "/uploads/files/cyberpunk-neon-poster-cmyk.psd", 88080384L, "PSD");
+        createDesignImage(d2,
+                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop", true);
+        createDesignFile(d2, "cyberpunk-neon-poster-cmyk.psd", "/uploads/files/cyberpunk-neon-poster-cmyk.psd",
+                88080384L, "PSD");
 
         // Design 3: APPROVED - Coffee Brand Identity
         Design d3 = createDesign(
@@ -156,8 +176,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                 null,
                 catLogo,
                 alexDesigner);
-        createDesignImage(d3, "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d3, "coffee-brand-identity-pack.ai", "/uploads/files/coffee-brand-identity-pack.ai", 33554432L, "AI");
+        createDesignImage(d3,
+                "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop", true);
+        createDesignFile(d3, "coffee-brand-identity-pack.ai", "/uploads/files/coffee-brand-identity-pack.ai", 33554432L,
+                "AI");
 
         // Design 4: APPROVED - Fintech Mobile Banking App
         Design d4 = createDesign(
@@ -168,8 +190,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                 null,
                 catUiUx,
                 alexDesigner);
-        createDesignImage(d4, "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d4, "fintech-mobile-banking.fig", "/uploads/files/fintech-mobile-banking.fig", 18874368L, "FIG");
+        createDesignImage(d4,
+                "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&auto=format&fit=crop", true);
+        createDesignFile(d4, "fintech-mobile-banking.fig", "/uploads/files/fintech-mobile-banking.fig", 18874368L,
+                "FIG");
 
         // Design 5: PENDING - Mẫu chờ Admin duyệt
         Design d5 = createDesign(
@@ -180,7 +204,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 null,
                 catLogo,
                 mayaDesigner);
-        createDesignImage(d5, "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop", true);
+        createDesignImage(d5,
+                "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop", true);
         createDesignFile(d5, "eco-life-farm-branding.ai", "/uploads/files/eco-life-farm-branding.ai", 23068672L, "AI");
 
         // Design 6: REJECTED - Mẫu bị từ chối kèm lý do
@@ -192,21 +217,126 @@ public class DemoDataSeeder implements CommandLineRunner {
                 "Ảnh xem trước kích thước nhỏ và bị mờ. Vui lòng tải lại ảnh mockup độ phân giải tối thiểu 1200x800px và kiểm tra lại font chữ đính kèm.",
                 cat3d,
                 mayaDesigner);
-        createDesignImage(d6, "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d6, "retro-typography-badges.zip", "/uploads/files/retro-typography-badges.zip", 15728640L, "ZIP");
+        createDesignImage(d6,
+                "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop", true);
+        createDesignFile(d6, "retro-typography-badges.zip", "/uploads/files/retro-typography-badges.zip", 15728640L,
+                "ZIP");
 
-        // 4. Tạo Đơn hàng đã mua (Order) cho Quân Nguyễn để test "Kho của tôi" và Tải file
+        // 4. Tạo Đơn hàng đã mua (Order) cho Quân Nguyễn để test "Kho của tôi" và Tải
+        // file
         createCompletedOrder(johnUser, d1);
 
         // 5. Tạo Đánh giá mẫu (Reviews)
-        createReview(johnUser, d1, 5, "Sản phẩm cực kỳ chất lượng, các component tổ chức mạch lạc, chuẩn auto-layout, tiết kiệm được rất nhiều thời gian!");
-        createReview(lisaUser, d2, 5, "Poster in ra rất nét và màu sắc chuẩn Neon, layer Photoshop phân chia gọn gàng dễ chỉnh sửa chữ.");
+        createReview(johnUser, d1, 5,
+                "Sản phẩm cực kỳ chất lượng, các component tổ chức mạch lạc, chuẩn auto-layout, tiết kiệm được rất nhiều thời gian!");
+        createReview(lisaUser, d2, 5,
+                "Poster in ra rất nét và màu sắc chuẩn Neon, layer Photoshop phân chia gọn gàng dễ chỉnh sửa chữ.");
 
-        log.info(">>> Nạp dữ liệu mẫu hoàn tất thành công! 5 danh mục, 6 thiết kế (APPROVED, PENDING, REJECTED), 1 đơn hàng đã mua và 2 đánh giá.");
+        // 6. Tạo Yêu cầu đặt thiết kế riêng mẫu (Custom Design Requests)
+        seedDemoDesignRequestsIfNeeded();
+
+        log.info(
+                ">>> Nạp dữ liệu mẫu hoàn tất thành công! 5 danh mục, 6 thiết kế (APPROVED, PENDING, REJECTED), 1 đơn hàng đã mua và 2 đánh giá.");
+    }
+
+    private void seedDemoDesignRequestsIfNeeded() {
+        List<DesignRequest> existing = designRequestRepository.findAll();
+        if (!existing.isEmpty()) {
+            for (DesignRequest r : existing) {
+                boolean changed = false;
+                if (r.getTransactionCode() == null || r.getTransactionCode().isBlank()) {
+                    r.setPaymentStatus("APPROVED".equalsIgnoreCase(r.getStatus()) ? "RELEASED" : "ESCROW_HELD");
+                    r.setPaymentMethod("VNPAY");
+                    r.setTransactionCode("ESCROW-DH-DEMO-" + r.getId());
+                    r.setPaidAt(LocalDateTime.now().minusHours(5));
+                    changed = true;
+                }
+                if (r.getSystemNotification() == null || r.getSystemNotification().isBlank()) {
+                    if ("PREVIEW_READY".equalsIgnoreCase(r.getStatus())) {
+                        r.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.zip");
+                        r.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
+                        r.setDeliveredAt(LocalDateTime.now());
+                        r.setAcceptedAt(LocalDateTime.now().minusHours(2));
+                        r.setCustomerUnread(true);
+                        r.setSystemNotification(
+                                "Hệ thống thông báo: Hệ thống đã nhận được sản phẩm hoàn thiện từ Designer Vũ Đào cho yêu cầu #"
+                                        + r.getId() + " (\"" + r.getTitle()
+                                        + "\") và đã chuyển sản phẩm về tài khoản của bạn!");
+                    } else if ("IN_PROGRESS".equalsIgnoreCase(r.getStatus())) {
+                        r.setAcceptedAt(LocalDateTime.now().minusHours(1));
+                        r.setCustomerUnread(true);
+                        r.setSystemNotification("Hệ thống thông báo: Yêu cầu #" + r.getId() + " (\"" + r.getTitle()
+                                + "\") của bạn đã được Designer tiếp nhận và đang tiến hành thiết kế!");
+                    } else {
+                        r.setSystemNotification(
+                                "Hệ thống đã nhận & tạm giữ 100% tiền bảo đảm (Escrow). Yêu cầu của bạn đang mở trên hệ thống để các Designer phù hợp nhận làm.");
+                    }
+                    changed = true;
+                }
+                if (changed) {
+                    designRequestRepository.save(r);
+                }
+            }
+            return;
+        }
+        User customer1 = userRepository.findByEmail("quan@gmail.com").orElse(null);
+        User customer2 = userRepository.findByEmail("tuan@gmail.com").orElse(null);
+        User designerUser = userRepository.findByEmail("vu@designhub.com").orElse(null);
+        Designer designer1 = designerUser != null ? designerRepository.findByUserId(designerUser.getId()).orElse(null)
+                : null;
+        Category catLogo = categoryRepository.findAll().stream().findFirst().orElse(null);
+
+        if (customer1 != null) {
+            DesignRequest req1 = new DesignRequest();
+            req1.setCustomer(customer1);
+            req1.setDesigner(designer1);
+            req1.setCategory(catLogo);
+            req1.setTitle("Thiết kế Bộ nhận diện & Bao bì Trà Thảo Mộc Organic");
+            req1.setProductDescription(
+                    "Tôi cần thiết kế bộ nhận diện thương hiệu và bao bì cho dòng trà thảo mộc đóng hộp. Tông màu xanh lá tự nhiên, sang trọng, bàn giao đầy đủ file gốc in ấn và hình ảnh sản phẩm.");
+            req1.setReferenceImageUrl(
+                    "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop");
+            req1.setBudget(new BigDecimal("450000"));
+            req1.setDeadline("2026-12-15");
+            req1.setMockupType("BOX_3D");
+            req1.setStatus("PREVIEW_READY");
+            req1.setPreviewImageUrl(
+                    "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop");
+            req1.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.ai");
+            req1.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
+            req1.setAcceptedAt(LocalDateTime.now().minusHours(3));
+            req1.setDeliveredAt(LocalDateTime.now().minusMinutes(30));
+            req1.setCustomerUnread(true);
+            req1.setDesignerNote(
+                    "Mình đã hoàn thiện sản phẩm thiết kế và gửi trả về hệ thống (kèm file gốc .AI và ảnh kết xuất). Mời bạn kiểm tra và tải sản phẩm về nhé!");
+            req1.setSystemNotification(
+                    "Hệ thống thông báo: Hệ thống đã nhận được sản phẩm hoàn thiện từ Designer Vũ Đào và đã chuyển sản phẩm về tài khoản của bạn. Vui lòng kiểm tra và tải sản phẩm!");
+            designRequestRepository.save(req1);
+        }
+
+        if (customer2 != null) {
+            DesignRequest req2 = new DesignRequest();
+            req2.setCustomer(customer2);
+            req2.setCategory(catLogo);
+            req2.setTitle("Thiết kế Logo & Nhãn Chai Cà Phê Cold Brew");
+            req2.setProductDescription(
+                    "Quán cà phê của mình chuẩn bị ra mắt dòng Cold Brew đóng chai. Mình gửi ảnh chụp sản phẩm thực tế, cần Designer thiết kế nhãn dán và bộ menu đồng bộ.");
+            req2.setReferenceImageUrl(
+                    "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop");
+            req2.setBudget(new BigDecimal("300000"));
+            req2.setDeadline("2026-12-20");
+            req2.setMockupType("CUP_3D");
+            req2.setStatus("OPEN");
+            req2.setCustomerUnread(false);
+            req2.setSystemNotification(
+                    "Yêu cầu của bạn đã được đẩy lên hệ thống thành công. Hệ thống đang hiển thị yêu cầu để các Designer phù hợp xem và tiếp nhận.");
+            designRequestRepository.save(req2);
+        }
     }
 
     private Category createCategory(String name, String desc) {
-        return categoryRepository.findByNameContainingIgnoreCase(name, org.springframework.data.domain.Pageable.unpaged())
+        return categoryRepository
+                .findByNameContainingIgnoreCase(name, org.springframework.data.domain.Pageable.unpaged())
                 .stream().findFirst()
                 .orElseGet(() -> {
                     Category cat = new Category();
@@ -216,7 +346,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 });
     }
 
-    private User createUserIfNotExist(String username, String email, String rawPassword, String fullName, String phone, Role role) {
+    private User createUserIfNotExist(String username, String email, String rawPassword, String fullName, String phone,
+            Role role) {
         return userRepository.findByEmail(email).orElseGet(() -> {
             User u = new User();
             u.setUsername(username);

@@ -764,3 +764,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('auth:login_success', () => {
     initAdminPortal();
 });
+

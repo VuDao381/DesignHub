@@ -100,7 +100,7 @@ public class SecurityConfig {
                                                                 "/images/**",
                                                                 "/favicon.ico",
                                                                 "/error",
-                                                                "/uploads/images/**",
+                                                                "/uploads/**",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html")
@@ -153,7 +153,14 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/upload/image")
-                                                .hasAnyRole("ADMIN", "DESIGNER")
+                                                .authenticated()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/analytics/security-audit")
+                                                .permitAll()
+                                                .requestMatchers(
+                                                                "/api/design-requests/**")
+                                                .authenticated()
                                                 .requestMatchers(
                                                                 "/api/users/me",
                                                                 "/api/users/change-password")

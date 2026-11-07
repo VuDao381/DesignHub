@@ -217,7 +217,50 @@ const api = {
 
     analytics: {
         getAdminDashboard: () => request('/api/analytics/admin'),
-        getDesignerDashboard: () => request('/api/analytics/designer')
+        getDesignerDashboard: () => request('/api/analytics/designer'),
+        getSecurityAudit: () => request('/api/analytics/security-audit')
+    },
+
+    designRequests: {
+        getMyRequests: () => request('/api/design-requests/my'),
+        getDesignerRequests: () => request('/api/design-requests/designer'),
+        getAll: () => request('/api/design-requests'),
+        create: (data) => request('/api/design-requests', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        accept: (id) => request(`/api/design-requests/${id}/accept`, {
+            method: 'PATCH'
+        }),
+        submitPreview: (id, data) => request(`/api/design-requests/${id}/submit-preview`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        }),
+        approve: (id) => request(`/api/design-requests/${id}/approve`, {
+            method: 'PATCH'
+        }),
+        payEscrow: (id, data) => request(`/api/design-requests/${id}/pay-escrow`, {
+            method: 'PATCH',
+            body: JSON.stringify(data || {})
+        }),
+        requestRevision: (id, data) => request(`/api/design-requests/${id}/request-revision`, {
+            method: 'PATCH',
+            body: JSON.stringify(data || {})
+        }),
+        rejectRefund: (id, data) => request(`/api/design-requests/${id}/reject-refund`, {
+            method: 'PATCH',
+            body: JSON.stringify(data || {})
+        }),
+        forceRelease: (id, data) => request(`/api/design-requests/${id}/force-release`, {
+            method: 'PATCH',
+            body: JSON.stringify(data || {})
+        }),
+        cancel: (id) => request(`/api/design-requests/${id}/cancel`, {
+            method: 'PATCH'
+        }),
+        markRead: () => request('/api/design-requests/mark-read', {
+            method: 'POST'
+        })
     },
 
     designs: {

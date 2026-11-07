@@ -57,7 +57,7 @@ public class Review {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "des ign_id", nullable = false) 
+    @JoinColumn(name = "design_id", nullable = false)
     private Design design;
 
     private LocalDateTime createdAt;

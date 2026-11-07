@@ -36,4 +36,11 @@ public class AnalyticsController {
     public ResponseEntity<DesignerDashboardResponse> getDesignerDashboard() {
         return ResponseEntity.ok(analyticsService.getDesignerDashboard());
     }
+
+    @GetMapping("/security-audit")
+    @Operation(summary = "Báo cáo đánh giá an toàn bảo mật hệ thống (Security Audit)",
+               description = "Trả về bảng điểm đánh giá các lớp bảo mật OWASP, JWT, RBAC, DRM Watermark và bảo vệ giao dịch.")
+    public ResponseEntity<java.util.Map<String, Object>> getSecurityAudit() {
+        return ResponseEntity.ok(analyticsService.getSecurityAuditReport());
+    }
 }
