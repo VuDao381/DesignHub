@@ -75,6 +75,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.approveOrder(id));
     }
 
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Order> cancelOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Order> updateOrder(
             @PathVariable Long id,

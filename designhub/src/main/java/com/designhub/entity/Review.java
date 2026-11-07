@@ -18,7 +18,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,21 +26,15 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(
-        name = "reviews",
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uk_review_user_design",
-                    columnNames = {"user_id", "design_id"}
-            )
-        }
-)
+@Table(name = "reviews", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_review_user_design", columnNames = { "user_id", "design_id" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"user", "design"})
+@ToString(exclude = { "user", "design" })
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Review {
 
     @Id
@@ -58,14 +51,13 @@ public class Review {
     @Column(length = 1000)
     private String comment;
 
-    @JsonIgnoreProperties({"password", "phone", "email", "role", "createdAt", "updatedAt"})
+    @JsonIgnoreProperties({ "password", "phone", "email", "role", "createdAt", "updatedAt" })
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @NotNull(message = "Design không được để trống")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "design_id", nullable = false)
+    @JoinColumn(name = "des ign_id", nullable = false) 
     private Design design;
 
     private LocalDateTime createdAt;

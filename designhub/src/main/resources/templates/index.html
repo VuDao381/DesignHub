@@ -77,6 +77,11 @@
                                 <span class="d-none d-sm-inline">Kho của tôi</span>
                             </button>
 
+                            <button type="button" class="cart-icon-btn action-open-favorites" id="btnOpenFavorites" title="Thiết kế yêu thích">
+                                <i class="bi bi-heart"></i>
+                                <span class="cart-badge-count d-none" id="favoritesBadge">0</span>
+                            </button>
+
                             <button type="button" class="cart-icon-btn" id="btnOpenCart" title="Xem giỏ hàng">
                                 <i class="bi bi-bag"></i>
                                 <span class="cart-badge-count d-none" id="cartBadge">0</span>
@@ -110,12 +115,17 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item py-2 action-open-purchased" href="#">
-                                            <i class="bi bi-cloud-arrow-down me-2 text-success"></i> Kho thiết kế đã mua
+                                            <i class="bi bi-cloud-arrow-down me-2 text-success"></i> Kho thiết kế & Đơn hàng
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item py-2" href="#designsSection">
-                                            <i class="bi bi-compass me-2 text-info"></i> Khám phá sản phẩm
+                                        <a class="dropdown-item py-2 action-open-favorites" href="#">
+                                            <i class="bi bi-heart-fill me-2 text-danger"></i> Thiết kế yêu thích
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2 action-open-profile" href="#">
+                                            <i class="bi bi-person-gear me-2 text-secondary"></i> Tài khoản & Đổi mật khẩu
                                         </a>
                                     </li>
                                     <li>
@@ -252,6 +262,24 @@
                                     <option value="price_desc">Giá giảm dần</option>
                                     <option value="name_asc">Tên (A-Z)</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 border-top pt-2 mt-2">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="small text-muted fw-semibold"><i class="bi bi-funnel me-1"></i>Khoảng giá (VNĐ):</span>
+                                    <input type="number" id="minPriceInput" class="form-control form-control-sm" placeholder="Từ (VD: 50000)" min="0" step="10000" style="width: 145px;">
+                                    <span class="text-muted">-</span>
+                                    <input type="number" id="maxPriceInput" class="form-control form-control-sm" placeholder="Đến (VD: 500000)" min="0" step="10000" style="width: 155px;">
+                                    <button type="button" class="btn btn-sm btn-primary px-3" id="btnApplyPriceFilter">
+                                        Lọc
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetFilters()" title="Xóa tất cả bộ lọc">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                                    </button>
+                                </div>
+                                <div id="activeFiltersBar" class="d-flex flex-wrap align-items-center gap-2"></div>
                             </div>
                         </div>
                     </div>
@@ -500,14 +528,31 @@
                 <div class="modal-header border-0 pb-2">
                     <div>
                         <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="purchasedModalLabel">
-                            <i class="bi bi-cloud-arrow-down-fill text-success"></i> Kho thiết kế đã sở hữu
+                            <i class="bi bi-folder-check text-primary"></i> Kho thiết kế & Lịch sử giao dịch
                         </h5>
-                        <small class="text-muted">Các bản thiết kế bạn đã thanh toán thành công và được cấp quyền tải
-                            file gốc an toàn.</small>
+                        <small class="text-muted">Quản lý các bản thiết kế đã sở hữu, theo dõi đơn hàng và lịch sử tải file gốc.</small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4" id="purchasedModalBody">
+                <div class="modal-body p-4 pt-2" id="purchasedModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="favoritesModal" tabindex="-1" aria-labelledby="favoritesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-2">
+                    <div>
+                        <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="favoritesModalLabel">
+                            <i class="bi bi-heart-fill text-danger"></i> Thiết kế yêu thích của bạn
+                        </h5>
+                        <small class="text-muted">Danh sách các bản thiết kế bạn đã lưu lại để tham khảo hoặc mua sau.</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="favoritesModalBody">
                 </div>
             </div>
         </div>
@@ -523,6 +568,7 @@
                 <div class="modal-body p-4">
                     <form id="reviewForm">
                         <input type="hidden" name="designId" id="reviewDesignId">
+                        <input type="hidden" name="reviewId" id="reviewIdInput">
                         <div class="mb-3">
                             <label class="form-label small text-muted">Sản phẩm:</label>
                             <h6 class="fw-bold" id="reviewDesignTitle"></h6>

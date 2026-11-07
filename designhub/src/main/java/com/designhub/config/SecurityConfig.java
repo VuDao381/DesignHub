@@ -197,6 +197,8 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.POST, "/api/orders/*/approve")
                                                 .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel")
+                                                .authenticated()
                                                 .requestMatchers(HttpMethod.POST, "/api/payments/*/confirm")
                                                 .authenticated()
                                                 .requestMatchers(HttpMethod.GET, "/api/payments")

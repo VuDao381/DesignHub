@@ -195,6 +195,15 @@ const api = {
     },
 
     users: {
+        getMe: () => request('/api/users/me'),
+        updateMe: (data) => request('/api/users/me', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        changePassword: (currentPassword, newPassword) => request('/api/users/change-password', {
+            method: 'POST',
+            body: JSON.stringify({ currentPassword, newPassword })
+        }),
         getAll: () => request('/api/users'),
         getById: (id) => request(`/api/users/${id}`),
         update: (id, data) => request(`/api/users/${id}`, {
@@ -337,10 +346,14 @@ const api = {
             method: 'POST'
         }),
         getMyOrders: () => request('/api/orders/me'),
-        getById: (id) => request(`/api/orders/${id}`)
+        getById: (id) => request(`/api/orders/${id}`),
+        cancel: (id) => request(`/api/orders/${id}/cancel`, {
+            method: 'POST'
+        })
     },
 
     payments: {
+        getByOrder: (orderId) => request(`/api/payments/order/${orderId}`),
         create: (orderId, amount, paymentMethod = 'VNPAY') => request('/api/payments', {
             method: 'POST',
             body: JSON.stringify({
@@ -358,6 +371,23 @@ const api = {
         }
     },
 
+    favorites: {
+        getMyFavorites: () => request('/api/favorites/me'),
+        add: (designId) => request('/api/favorites', {
+            method: 'POST',
+            body: JSON.stringify({
+                design: { id: designId }
+            })
+        }),
+        remove: (favoriteId) => request(`/api/favorites/${favoriteId}`, {
+            method: 'DELETE'
+        })
+    },
+
+    downloadHistory: {
+        getMyHistory: () => request('/api/download-history/me')
+    },
+
     files: {
         getDownloadUrl: (fileId) => {
             const token = TokenStorage.getAccessToken();
@@ -367,6 +397,7 @@ const api = {
 
     reviews: {
         getByDesign: (designId) => request(`/api/reviews/design/${designId}`),
+        getMyReviews: () => request('/api/reviews/me'),
         create: (designId, rating, comment) => request('/api/reviews', {
             method: 'POST',
             body: JSON.stringify({
@@ -374,6 +405,17 @@ const api = {
                 rating,
                 comment
             })
+        }),
+        update: (id, designId, rating, comment) => request(`/api/reviews/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                design: { id: designId },
+                rating,
+                comment
+            })
+        }),
+        delete: (id) => request(`/api/reviews/${id}`, {
+            method: 'DELETE'
         })
     }
 };

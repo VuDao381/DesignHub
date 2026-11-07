@@ -83,6 +83,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item py-2 action-open-profile" href="#">
+                                            <i class="bi bi-person-gear me-2 text-secondary"></i> Tài khoản & Đổi mật khẩu
+                                        </a>
+                                    </li>
+                                    <li>
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
@@ -256,7 +261,11 @@
                                 Tiểu sử tác giả đang được cập nhật...
                             </p>
                         </div>
-                        <div class="col-md-auto text-center text-md-end">
+                        <div class="col-md-auto text-center text-md-end d-flex flex-wrap gap-2 justify-content-center justify-content-md-end">
+                            <button type="button" class="btn btn-outline-primary px-3 py-2 rounded-pill fw-semibold"
+                                id="btnEditDesignerProfile">
+                                <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa hồ sơ
+                            </button>
                             <button type="button" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm"
                                 id="btnGoToUploadTab">
                                 <i class="bi bi-cloud-arrow-up-fill me-2"></i> Đăng tải thiết kế mới
@@ -572,6 +581,113 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editDesignerProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-light border-0 py-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Cập nhật hồ sơ Designer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="editDesignerProfileAlert" class="alert alert-danger d-none py-2 small"></div>
+                    <form id="editDesignerProfileForm">
+                        <div class="text-center mb-3">
+                            <img src="" alt="Avatar Preview" id="editDesignerAvatarPreview"
+                                class="rounded-circle border border-3 border-primary shadow-sm object-fit-cover mb-2"
+                                style="width: 88px; height: 88px;">
+                            <div>
+                                <label class="btn btn-sm btn-outline-primary rounded-pill px-3 cursor-pointer">
+                                    <i class="bi bi-upload me-1"></i> Tải ảnh đại diện mới
+                                    <input type="file" id="editDesignerAvatarFileInput" class="d-none" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Hoặc nhập URL ảnh đại diện</label>
+                            <input type="text" class="form-control" id="editDesignerAvatarUrl" maxlength="255"
+                                placeholder="https://example.com/avatar.jpg hoặc /uploads/images/...">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold">Tiểu sử & Giới thiệu phong cách thiết kế <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="editDesignerBioInput" rows="4" maxlength="1000" required
+                                placeholder="Giới thiệu kinh nghiệm, phong cách sáng tạo và chuyên môn của bạn..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSaveDesignerProfile">
+                                <i class="bi bi-check2-circle me-1"></i> Lưu hồ sơ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editDesignModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-light border-0 py-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh sửa thông tin thiết kế</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="editDesignRejectNotice" class="alert alert-danger d-none py-2 small mb-3"></div>
+                    <div class="alert alert-info py-2 small mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Sau khi cập nhật thông tin, thiết kế sẽ được chuyển về trạng thái <strong>Chờ duyệt (PENDING)</strong> để Quản trị viên kiểm duyệt lại.
+                    </div>
+                    <div id="editDesignAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
+
+                    <form id="editDesignForm">
+                        <input type="hidden" id="editDesignIdInput">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Tên thiết kế <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editDesignNameInput" required maxlength="150">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Danh mục <span class="text-danger">*</span></label>
+                                <select class="form-select" id="editDesignCategorySelect" required></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="editDesignPriceInput" min="1000" step="1000" required>
+                                    <span class="input-group-text">₫</span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Mô tả chi tiết <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="editDesignDescriptionInput" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card p-3 rounded-3 border bg-light mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0"><i class="bi bi-images text-primary me-1"></i> Hình ảnh xem trước (Mockup)</h6>
+                                <label class="btn btn-sm btn-outline-primary rounded-pill px-3 mb-0 cursor-pointer">
+                                    <i class="bi bi-plus-lg me-1"></i> Thêm ảnh mới
+                                    <input type="file" id="editDesignAddImageInput" class="d-none" accept="image/*" multiple>
+                                </label>
+                            </div>
+                            <div class="row g-2" id="editDesignImagesList"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSaveEditedDesign">
+                                <i class="bi bi-check2-circle me-1"></i> Lưu & Gửi duyệt lại
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

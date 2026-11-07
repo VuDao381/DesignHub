@@ -202,6 +202,30 @@ public class OrderService {
         return savedOrder;
     }
 
+    public Order cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+
+        currentUserService.checkOwnerOrAdmin(order.getUser().getId());
+
+        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng đang ở trạng thái PENDING. Trạng thái hiện tại: " + order.getStatus());
+        }
+
+        order.setStatus("CANCELLED");
+        Order savedOrder = orderRepository.save(order);
+
+        List<Payment> payments = paymentRepository.findByOrderId(orderId);
+        for (Payment p : payments) {
+            if (PaymentStatus.PENDING.equals(p.getStatus())) {
+                p.setStatus(PaymentStatus.CANCELLED);
+                paymentRepository.save(p);
+            }
+        }
+
+        return savedOrder;
+    }
+
     public Order approveOrder(Long orderId) {
         if (!currentUserService.isAdmin()) {
             throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên (ADMIN) mới có quyền duyệt đơn hàng");

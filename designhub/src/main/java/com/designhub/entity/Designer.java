@@ -14,7 +14,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -43,7 +42,6 @@ public class Designer {
     @Size(max = 255, message = "Avatar không được vượt quá 255 ký tự")
     private String avatar;
 
-    @NotNull(message = "User không được để trống")
     @JsonIgnoreProperties({"password", "phone", "email", "role", "createdAt", "updatedAt"})
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)

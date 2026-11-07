@@ -171,13 +171,18 @@ async function loadDesignerDashboard() {
 
 async function loadCategories() {
     const select = document.getElementById('designCategorySelect');
-    if (!select) return;
+    const editSelect = document.getElementById('editDesignCategorySelect');
 
     try {
         const res = await api.categories.getAll();
         const categories = Array.isArray(res) ? res : (res && Array.isArray(res.content) ? res.content : []);
-        select.innerHTML = '<option value="" disabled selected>Chọn danh mục thiết kế...</option>' +
-            categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
+        const optionsHtml = categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
+        if (select) {
+            select.innerHTML = '<option value="" disabled selected>Chọn danh mục thiết kế...</option>' + optionsHtml;
+        }
+        if (editSelect) {
+            editSelect.innerHTML = optionsHtml;
+        }
     } catch (err) {
         console.warn('Lỗi tải danh mục:', err);
     }
@@ -243,6 +248,12 @@ async function loadMyDesigns() {
             } catch { }
 
             const statusBadge = getStatusBadge(design.status);
+            const isRejected = String(design.status || '').toUpperCase() === 'REJECTED';
+            const rejectBox = (isRejected && design.rejectReason) ? `
+                <div class="alert alert-danger py-2 px-2 small mb-2 border-danger-subtle">
+                    <i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Lý do từ chối:</strong> ${escapeHtml(design.rejectReason)}
+                </div>
+            ` : '';
 
             return `
                 <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -264,9 +275,14 @@ async function loadMyDesigns() {
                                 ${escapeHtml(design.category?.name || 'Khác')}
                             </span>
                             <h6 class="fw-bold mb-1 text-truncate" title="${escapeHtml(design.name)}">${escapeHtml(design.name)}</h6>
-                            <p class="text-primary fw-bold fs-6 mb-3">${formatCurrency(design.price)}</p>
+                            <p class="text-primary fw-bold fs-6 mb-2">${formatCurrency(design.price)}</p>
+                            ${rejectBox}
 
                             <div class="mt-auto d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm flex-fill rounded-pill"
+                                    onclick="openEditDesignModal(${design.id})" title="Chỉnh sửa thông tin thiết kế">
+                                    <i class="bi bi-pencil-square me-1"></i> Sửa
+                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm flex-fill rounded-pill"
                                     onclick="openManageFilesModal(${design.id}, '${escapeHtml(design.name)}')">
                                     <i class="bi bi-folder-fill me-1"></i> File gốc
@@ -656,12 +672,244 @@ async function handleDeleteFileInModal(fileId) {
     }
 }
 
+function openEditDesignerProfileModal() {
+    if (!currentDesigner) return;
+
+    const alertBox = document.getElementById('editDesignerProfileAlert');
+    if (alertBox) alertBox.classList.add('d-none');
+
+    const avatarUrlInput = document.getElementById('editDesignerAvatarUrl');
+    const avatarPreview = document.getElementById('editDesignerAvatarPreview');
+    const bioInput = document.getElementById('editDesignerBioInput');
+
+    if (avatarUrlInput) avatarUrlInput.value = currentDesigner.avatar || '';
+    if (avatarPreview) avatarPreview.src = currentDesigner.avatar || DEFAULT_AVATAR;
+    if (bioInput) bioInput.value = currentDesigner.bio || '';
+
+    const modalEl = document.getElementById('editDesignerProfileModal');
+    if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+window.openEditDesignerProfileModal = openEditDesignerProfileModal;
+
+async function handleUpdateDesignerProfile(e) {
+    e.preventDefault();
+    if (!currentDesigner) return;
+
+    const alertBox = document.getElementById('editDesignerProfileAlert');
+    const btn = document.getElementById('btnSaveDesignerProfile');
+    const bio = document.getElementById('editDesignerBioInput').value.trim();
+    const avatar = document.getElementById('editDesignerAvatarUrl').value.trim();
+
+    if (alertBox) alertBox.classList.add('d-none');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+
+    try {
+        const user = TokenStorage.getUser();
+        const updated = await api.designer.update(currentDesigner.id, {
+            bio,
+            avatar: avatar || null,
+            user: user && user.id ? { id: user.id } : undefined
+        });
+        currentDesigner = { ...currentDesigner, ...updated };
+        renderDesignerHeader(user || {}, currentDesigner);
+        showToast('Cập nhật hồ sơ Designer thành công!', 'success');
+
+        const modalEl = document.getElementById('editDesignerProfileModal');
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+    } catch (err) {
+        if (alertBox) {
+            alertBox.textContent = err.message || 'Không thể cập nhật hồ sơ Designer';
+            alertBox.classList.remove('d-none');
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Lưu hồ sơ';
+    }
+}
+
+async function openEditDesignModal(designId) {
+    const modalEl = document.getElementById('editDesignModal');
+    if (!modalEl) return;
+
+    const alertBox = document.getElementById('editDesignAlert');
+    const rejectNotice = document.getElementById('editDesignRejectNotice');
+    if (alertBox) alertBox.classList.add('d-none');
+    if (rejectNotice) rejectNotice.classList.add('d-none');
+
+    const catSelect = document.getElementById('editDesignCategorySelect');
+    if (catSelect && catSelect.options.length === 0) {
+        await loadCategories();
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+    try {
+        const design = await api.designs.getById(designId);
+        document.getElementById('editDesignIdInput').value = design.id;
+        document.getElementById('editDesignNameInput').value = design.name || '';
+        document.getElementById('editDesignPriceInput').value = design.price || 0;
+        document.getElementById('editDesignDescriptionInput').value = design.description || '';
+        if (design.category && design.category.id && catSelect) {
+            catSelect.value = String(design.category.id);
+        }
+
+        if (String(design.status || '').toUpperCase() === 'REJECTED' && design.rejectReason && rejectNotice) {
+            rejectNotice.innerHTML = `<i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Lý do bị từ chối trước đó:</strong> ${escapeHtml(design.rejectReason)}`;
+            rejectNotice.classList.remove('d-none');
+        }
+
+        await refreshEditDesignImages(designId);
+    } catch (err) {
+        showToast('Không thể tải thông tin thiết kế: ' + err.message, 'danger');
+    }
+}
+window.openEditDesignModal = openEditDesignModal;
+
+async function refreshEditDesignImages(designId) {
+    const listEl = document.getElementById('editDesignImagesList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="col-12 text-center py-2 text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Đang tải ảnh...</div>';
+
+    try {
+        const images = await api.designs.getImages(designId);
+        if (!images || images.length === 0) {
+            listEl.innerHTML = '<div class="col-12 text-muted small py-2 text-center">Chưa có hình ảnh xem trước nào.</div>';
+            return;
+        }
+
+        listEl.innerHTML = images.map(img => `
+            <div class="col-4 col-sm-3">
+                <div class="position-relative border rounded-3 overflow-hidden bg-white" style="height: 85px;">
+                    <img src="${img.imageUrl}" class="w-100 h-100 object-fit-cover" onerror="this.onerror=null; this.src='${DEFAULT_THUMBNAIL}'">
+                    ${img.isPrimary ? '<span class="badge bg-primary position-absolute top-0 start-0 m-1" style="font-size:10px;">Bìa</span>' : ''}
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 p-0 px-1" onclick="handleDeleteEditDesignImage(${img.id}, ${designId})" title="Xóa ảnh">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        listEl.innerHTML = `<div class="col-12 text-danger small">${err.message}</div>`;
+    }
+}
+
+async function handleDeleteEditDesignImage(imageId, designId) {
+    if (!confirm('Xóa hình ảnh xem trước này?')) return;
+    try {
+        await api.designs.deleteImage(imageId);
+        showToast('Đã xóa hình ảnh', 'info');
+        await refreshEditDesignImages(designId);
+        await loadMyDesigns();
+    } catch (err) {
+        showToast('Không thể xóa ảnh: ' + err.message, 'danger');
+    }
+}
+window.handleDeleteEditDesignImage = handleDeleteEditDesignImage;
+
+async function handleUpdateDesignSubmit(e) {
+    e.preventDefault();
+    const designId = Number(document.getElementById('editDesignIdInput').value);
+    const name = document.getElementById('editDesignNameInput').value.trim();
+    const categoryId = Number(document.getElementById('editDesignCategorySelect').value);
+    const price = parseFloat(document.getElementById('editDesignPriceInput').value);
+    const description = document.getElementById('editDesignDescriptionInput').value.trim();
+    const alertBox = document.getElementById('editDesignAlert');
+    const btn = document.getElementById('btnSaveEditedDesign');
+
+    if (alertBox) alertBox.classList.add('d-none');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+
+    try {
+        await api.designs.update(designId, {
+            name,
+            description,
+            price,
+            category: { id: categoryId }
+        });
+        showToast('Cập nhật thiết kế thành công! Tác phẩm đã được gửi duyệt lại.', 'success');
+        const modalEl = document.getElementById('editDesignModal');
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+        await loadMyDesigns();
+    } catch (err) {
+        if (alertBox) {
+            alertBox.textContent = err.message || 'Không thể cập nhật thiết kế';
+            alertBox.classList.remove('d-none');
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Lưu & Gửi duyệt lại';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initDesignerPortal();
 
     // Form đăng ký Designer
     const regForm = document.getElementById('registerDesignerForm');
     if (regForm) regForm.addEventListener('submit', handleRegisterDesigner);
+
+    // Chỉnh sửa hồ sơ Designer
+    const btnEditProfile = document.getElementById('btnEditDesignerProfile');
+    if (btnEditProfile) btnEditProfile.addEventListener('click', openEditDesignerProfileModal);
+
+    const editProfileForm = document.getElementById('editDesignerProfileForm');
+    if (editProfileForm) editProfileForm.addEventListener('submit', handleUpdateDesignerProfile);
+
+    const avatarUrlInput = document.getElementById('editDesignerAvatarUrl');
+    if (avatarUrlInput) {
+        avatarUrlInput.addEventListener('input', () => {
+            const preview = document.getElementById('editDesignerAvatarPreview');
+            if (preview) preview.src = avatarUrlInput.value.trim() || DEFAULT_AVATAR;
+        });
+    }
+
+    const avatarFileInput = document.getElementById('editDesignerAvatarFileInput');
+    if (avatarFileInput) {
+        avatarFileInput.addEventListener('change', async () => {
+            if (!avatarFileInput.files || avatarFileInput.files.length === 0) return;
+            const file = avatarFileInput.files[0];
+            try {
+                showToast('Đang tải ảnh đại diện lên...', 'info');
+                const res = await api.upload.image(file);
+                const urlInput = document.getElementById('editDesignerAvatarUrl');
+                const preview = document.getElementById('editDesignerAvatarPreview');
+                if (urlInput) urlInput.value = res.fileUrl;
+                if (preview) preview.src = res.fileUrl;
+                showToast('Đã tải ảnh đại diện thành công!', 'success');
+            } catch (err) {
+                showToast('Không thể tải ảnh đại diện: ' + err.message, 'danger');
+            } finally {
+                avatarFileInput.value = '';
+            }
+        });
+    }
+
+    // Form sửa thiết kế
+    const editDesignForm = document.getElementById('editDesignForm');
+    if (editDesignForm) editDesignForm.addEventListener('submit', handleUpdateDesignSubmit);
+
+    const editAddImgInput = document.getElementById('editDesignAddImageInput');
+    if (editAddImgInput) {
+        editAddImgInput.addEventListener('change', async () => {
+            const designId = Number(document.getElementById('editDesignIdInput').value);
+            if (!designId || !editAddImgInput.files || editAddImgInput.files.length === 0) return;
+            for (const file of Array.from(editAddImgInput.files)) {
+                try {
+                    const res = await api.upload.image(file);
+                    await api.designs.addImage(designId, res.fileUrl, false);
+                    showToast(`Đã thêm ảnh ${file.name}`, 'success');
+                } catch (err) {
+                    showToast(`Lỗi thêm ảnh ${file.name}: ${err.message}`, 'danger');
+                }
+            }
+            editAddImgInput.value = '';
+            await refreshEditDesignImages(designId);
+            await loadMyDesigns();
+        });
+    }
 
     // Form tạo thiết kế mới
     const createForm = document.getElementById('formCreateDesign');
