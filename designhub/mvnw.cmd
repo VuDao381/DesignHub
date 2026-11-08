@@ -1,4 +1,5 @@
 <# : batch portion
+@chcp 65001 >nul
 @REM ----------------------------------------------------------------------------
 @REM Licensed to the Apache Software Foundation (ASF) under one
 @REM or more contributor license agreements.  See the NOTICE file
@@ -98,6 +99,11 @@ if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
 $MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
 $MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
 $MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+
+$CLASSES_TARGET = Join-Path $scriptDir "target\classes"
+if (-not (Test-Path -Path $CLASSES_TARGET)) { New-Item -Path $CLASSES_TARGET -ItemType Directory -Force | Out-Null }
+$CLASSES_JUNCTION = "$MAVEN_M2_PATH/designhub-classes"
+if (-not (Test-Path -Path $CLASSES_JUNCTION)) { New-Item -ItemType Junction -Path $CLASSES_JUNCTION -Target $CLASSES_TARGET -ErrorAction SilentlyContinue | Out-Null }
 
 if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
   Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"

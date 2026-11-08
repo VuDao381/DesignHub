@@ -136,6 +136,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${user.home}/.m2/designhub-classes</additionalClasspathElement>
+                    </additionalClasspathElements>
+                </configuration>
             </plugin>
 
             <plugin>

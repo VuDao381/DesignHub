@@ -4,6 +4,8 @@
  */
 
 // Global State
+const DEFAULT_THUMBNAIL = 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&auto=format&fit=crop';
+
 const appState = {
     categories: [],
     designsPage: null,
@@ -331,12 +333,9 @@ function renderDesignCard(d) {
     return `
         <div class="col-sm-6 col-lg-3">
             <div class="product-card h-100 d-flex flex-column">
-                <div class="product-image-container position-relative cursor-pointer" onclick="openDesignDetail(${d.id}, '3d')">
+                <div class="product-image-container position-relative cursor-pointer" onclick="openDesignDetail(${d.id})">
                     ${imageHtml}
                     <span class="product-tag">${categoryName}</span>
-                    <span class="card-badge-3d" onclick="event.stopPropagation(); openDesignDetail(${d.id}, '3d')" title="Xoay không gian 3 chiều, lật mặt sau 180° & Quay phim Movie 3D">
-                        <i class="fa-solid fa-cube me-1"></i>3D & Movie 360°
-                    </span>
                     <button type="button" class="favorite-btn ${isFav ? 'active' : ''}" data-design-id="${d.id}" onclick="toggleFavorite(event, ${d.id})" title="${isFav ? 'Bỏ yêu thích' : 'Yêu thích thiết kế này'}">
                         <i class="bi ${isFav ? 'bi-heart-fill' : 'bi-heart'}"></i>
                     </button>
@@ -344,7 +343,7 @@ function renderDesignCard(d) {
 
                 <div class="product-info d-flex flex-column flex-grow-1">
                     <span class="product-category">${categoryName}</span>
-                    <h3 class="product-title cursor-pointer" onclick="openDesignDetail(${d.id}, '3d')" title="${d.name}">
+                    <h3 class="product-title cursor-pointer" onclick="openDesignDetail(${d.id})" title="${d.name}">
                         ${d.name}
                     </h3>
 
@@ -356,8 +355,8 @@ function renderDesignCard(d) {
                     <div class="product-bottom mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
                         <strong class="product-price">${formatVND(d.price)}</strong>
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="openDesignDetail(${d.id}, '3d')" title="Trải nghiệm 3D & Xem chi tiết trước khi mua">
-                                <i class="fa-solid fa-cube me-1"></i>3D
+                            <button class="btn btn-sm btn-outline-secondary" onclick="openDesignDetail(${d.id})" title="Xem chi tiết">
+                                <i class="bi bi-eye"></i>
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="handleAddToCart(${d.id})" title="Thêm vào giỏ hàng">
                                 <i class="bi bi-cart-plus"></i>
@@ -605,22 +604,7 @@ function renderFavoritesModalContent() {
     `;
 }
 
-function inferDefault3DMockup(design) {
-    const catName = (design.category && design.category.name ? design.category.name : '').toLowerCase();
-    const title = (design.name || '').toLowerCase();
-    if (catName.includes('ui/ux') || catName.includes('mobile') || title.includes('dashboard') || title.includes('app')) {
-        return 'DEVICE_3D';
-    }
-    if (title.includes('coffee') || title.includes('cà phê') || title.includes('cup')) {
-        return 'CUP_3D';
-    }
-    if (catName.includes('logo') || catName.includes('brand') || title.includes('pack') || title.includes('box')) {
-        return 'BOX_3D';
-    }
-    return 'POSTER_3D';
-}
-
-async function openDesignDetail(id, initialMode = '3d') {
+async function openDesignDetail(id) {
     const modalEl = document.getElementById('designDetailModal');
     let modal = bootstrap.Modal.getInstance(modalEl);
     if (!modal) modal = new bootstrap.Modal(modalEl);
@@ -629,14 +613,10 @@ async function openDesignDetail(id, initialMode = '3d') {
     content.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Đang khởi tạo Không gian 3D & Tải thông tin thiết kế...</p>
+            <p class="mt-2 text-muted">Đang tải thông tin thiết kế...</p>
         </div>
     `;
     modal.show();
-
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        if (window.DesignHub3D) window.DesignHub3D.cleanupActive();
-    }, { once: true });
 
     try {
         const [design, reviews] = await Promise.all([
@@ -652,38 +632,16 @@ async function openDesignDetail(id, initialMode = '3d') {
         const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '5.0';
         const isFav = !!appState.favoriteMap[design.id];
         const me = window.getCurrentUser ? window.getCurrentUser() : null;
-        const defaultMockup = inferDefault3DMockup(design);
         const files = design.files || [];
         const fileSummary = files.length > 0
             ? files.map(f => `${f.fileType || 'SOURCE'} (${f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(1) + ' MB' : 'Full Layer'})`).join(' • ')
-            : 'Vector / Full-Layer Source (.FIG, .PSD, .AI)';
+            : 'Vector / Source (.FIG, .PSD, .AI)';
 
         content.innerHTML = `
             <div class="row g-4">
                 <div class="col-lg-7">
-                    <!-- Thanh chuyển đổi Trải nghiệm Không gian 3D & Ảnh 2D có Watermark -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn ${initialMode === '3d' ? 'btn-primary' : 'btn-outline-primary'} fw-bold" id="btnSwitchMode3D">
-                                <i class="fa-solid fa-cube me-1"></i> Không gian 3D & Quay Movie 360°
-                            </button>
-                            <button type="button" class="btn ${initialMode === '2d' ? 'btn-primary' : 'btn-outline-primary'} fw-semibold" id="btnSwitchMode2D">
-                                <i class="bi bi-shield-lock me-1"></i> Ảnh 2D (Bảo vệ Watermark DRM)
-                            </button>
-                        </div>
-                        <span class="badge bg-dark text-white border">
-                            <i class="fa-solid fa-rotate me-1 text-info"></i>Hỗ trợ xoay ngược 180° & Xuất Video 3D
-                        </span>
-                    </div>
-
-                    <!-- Khung 3D Studio -->
-                    <div id="detail3DPane" class="${initialMode === '3d' ? '' : 'd-none'}">
-                        <div id="detail3DViewerMount"></div>
-                    </div>
-
-                    <!-- Khung Ảnh 2D có phủ Watermark Bản quyền -->
-                    <div id="detail2DPane" class="detail-gallery ${initialMode === '2d' ? '' : 'd-none'}">
-                        <div class="watermark-protected-wrap border shadow-sm" oncontextmenu="return false;">
+                    <div class="detail-gallery">
+                        <div class="watermark-protected-wrap border rounded-3 shadow-sm overflow-hidden" oncontextmenu="return false;">
                             ${primaryImg ? `
                                 <img src="${primaryImg}" class="img-fluid rounded-3 main-detail-image w-100" alt="${design.name}" draggable="false">
                             ` : `
@@ -692,11 +650,6 @@ async function openDesignDetail(id, initialMode = '3d') {
                                     <h4>${design.name}</h4>
                                 </div>
                             `}
-                            <div class="watermark-diagonal-overlay">
-                                <span class="watermark-stamp-pill">
-                                    <i class="bi bi-shield-lock-fill me-1"></i> © DESIGNHUB DRM PREVIEW • BẢN QUYỀN SỐ
-                                </span>
-                            </div>
                         </div>
 
                         ${design.images && design.images.length > 1 ? `
@@ -706,26 +659,9 @@ async function openDesignDetail(id, initialMode = '3d') {
                                 `).join('')}
                             </div>
                         ` : ''}
-                    </div>
 
-                    <!-- Hộp Giá Trị Nhận Được Trước Khi Mua (Try-Before-You-Buy Value Box) -->
-                    <div class="card border-0 bg-light p-3 mt-3 rounded-3">
-                        <h6 class="fw-bold mb-2 d-flex align-items-center gap-2 text-dark">
-                            <i class="bi bi-stars text-primary"></i> Vì sao thiết kế này nổi bật & Quyền lợi khi sở hữu?
-                        </h6>
-                        <div class="row g-2 small text-secondary">
-                            <div class="col-sm-6">
-                                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>Định dạng gốc:</strong> ${fileSummary}
-                            </div>
-                            <div class="col-sm-6">
-                                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>Bản quyền:</strong> Gỡ bỏ 100% Watermark DRM
-                            </div>
-                            <div class="col-sm-6">
-                                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>Trình diễn 3D:</strong> Áp lên Hộp, Cốc, Khung & लật 180°
-                            </div>
-                            <div class="col-sm-6">
-                                <i class="bi bi-check-circle-fill text-success me-1"></i> <strong>Phụ trợ Movie 3D:</strong> Quay & tải video .webm 30fps
-                            </div>
+                        <div class="small text-muted mt-3 p-2 px-3 bg-light rounded-3 border">
+                            <i class="bi bi-file-earmark-zip text-primary me-1"></i><strong>Định dạng tệp gốc nhận được khi mua:</strong> ${fileSummary}
                         </div>
                     </div>
                 </div>
@@ -738,15 +674,15 @@ async function openDesignDetail(id, initialMode = '3d') {
 
                     <h2 class="h4 fw-bold mb-3">${design.name}</h2>
 
-                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 p-2 px-3 bg-light rounded-3 ${designerId ? 'cursor-pointer border' : ''}" ${designerId ? `onclick="filterByDesigner(${designerId}, '${safeDesignerName}', event)" title="Lọc xem các thiết kế của ${designerName}"` : ''}>
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 p-2 px-3 bg-light rounded-3 ${designerId ? 'cursor-pointer border' : ''}" ${designerId ? `onclick="filterByDesigner(${designerId}, '${safeDesignerName}', event)" title="Xem các thiết kế của ${designerName}"` : ''}>
                         <div class="d-flex align-items-center gap-2">
                             <div class="designer-avatar">${designerName.charAt(0).toUpperCase()}</div>
                             <div>
                                 <div class="fw-semibold">${designerName}</div>
-                                <small class="text-muted">Tác giả thiết kế • Verified Studio</small>
+                                <small class="text-muted">Tác giả thiết kế</small>
                             </div>
                         </div>
-                        ${designerId ? `<span class="small text-primary fw-semibold">Xem các tác phẩm <i class="bi bi-arrow-right"></i></span>` : ''}
+                        ${designerId ? `<span class="small text-primary fw-semibold">Xem tác phẩm <i class="bi bi-arrow-right"></i></span>` : ''}
                     </div>
 
                     <div class="display-6 fw-bold text-primary mb-3">
@@ -765,19 +701,18 @@ async function openDesignDetail(id, initialMode = '3d') {
                             <i class="bi bi-cart-plus me-1"></i> Thêm vào giỏ
                         </button>
                         <button class="btn btn-primary flex-grow-1 fw-semibold" onclick="handleBuyNow(${design.id})">
-                            <i class="bi bi-lightning-charge me-1"></i> Mua bản quyền
+                            <i class="bi bi-lightning-charge me-1"></i> Mua ngay
                         </button>
                     </div>
 
-                    <!-- Nút Đặt Thiết Kế Riêng theo sản phẩm của khách hàng với Tác giả này -->
                     <div class="d-grid mb-3">
-                        <button type="button" class="btn btn-sm fw-semibold py-2" style="background:#fdf2f8;color:#db2777;border:1px dashed #f472b6;" onclick="bootstrap.Modal.getInstance(document.getElementById('designDetailModal'))?.hide(); openCustomRequestModal('create', ${designerId || 'null'}, '${safeDesignerName}', ${design.category ? design.category.id : 'null'});">
-                            <i class="bi bi-box-seam-fill me-1"></i> Cần thiết kế theo sản phẩm riêng của bạn? Đặt Tác giả ${designerName} ngay
+                        <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold py-2" onclick="bootstrap.Modal.getInstance(document.getElementById('designDetailModal'))?.hide(); openCustomRequestModal('create', ${designerId || 'null'}, '${safeDesignerName}', ${design.category ? design.category.id : 'null'});">
+                            <i class="bi bi-pencil-square me-1"></i> Đặt thiết kế riêng với ${designerName}
                         </button>
                     </div>
 
                     <div class="border-top pt-3">
-                        <h6 class="fw-bold mb-2">Đánh giá từ khách hàng đã mua (${reviews.length})</h6>
+                        <h6 class="fw-bold mb-2">Đánh giá (${reviews.length})</h6>
                         <div class="reviews-list" style="max-height: 190px; overflow-y: auto;">
                             ${reviews.length ? reviews.map(r => {
                                 const isOwner = me && r.user && r.user.id === me.id;
@@ -807,50 +742,12 @@ async function openDesignDetail(id, initialMode = '3d') {
                                     <p class="small text-muted mb-0 mt-1">${r.comment || 'Không có bình luận.'}</p>
                                 </div>
                             `;
-                            }).join('') : '<p class="text-muted small">Chưa có đánh giá nào cho sản phẩm này.</p>'}
+                            }).join('') : '<p class="text-muted small">Chưa có đánh giá nào.</p>'}
                         </div>
                     </div>
                 </div>
             </div>
         `;
-
-        const mount3D = () => {
-            if (window.DesignHub3D) {
-                window.DesignHub3D.initViewer('detail3DViewerMount', {
-                    imageUrl: primaryImg,
-                    title: design.name,
-                    designerName: designerName,
-                    mockupType: defaultMockup,
-                    watermark: true
-                });
-            }
-        };
-
-        if (initialMode === '3d') {
-            setTimeout(mount3D, 80);
-        }
-
-        const btn3D = document.getElementById('btnSwitchMode3D');
-        const btn2D = document.getElementById('btnSwitchMode2D');
-        const pane3D = document.getElementById('detail3DPane');
-        const pane2D = document.getElementById('detail2DPane');
-
-        if (btn3D && btn2D && pane3D && pane2D) {
-            btn3D.addEventListener('click', () => {
-                btn3D.classList.replace('btn-outline-primary', 'btn-primary');
-                btn2D.classList.replace('btn-primary', 'btn-outline-primary');
-                pane3D.classList.remove('d-none');
-                pane2D.classList.add('d-none');
-                mount3D();
-            });
-            btn2D.addEventListener('click', () => {
-                btn2D.classList.replace('btn-outline-primary', 'btn-primary');
-                btn3D.classList.replace('btn-primary', 'btn-outline-primary');
-                pane2D.classList.remove('d-none');
-                pane3D.classList.add('d-none');
-                if (window.DesignHub3D) window.DesignHub3D.cleanupActive();
-            });
-        }
     } catch (err) {
         content.innerHTML = `
             <div class="text-center py-5 text-danger">
@@ -1704,10 +1601,10 @@ function renderRequestStepProgress(status, paymentStatus = 'ESCROW_HELD') {
     const paySt = (paymentStatus || 'ESCROW_HELD').toUpperCase();
 
     if (st === 'CANCELLED') {
-        return `<div class="alert alert-secondary py-2 small mb-3"><i class="bi bi-x-circle me-1"></i> Yêu cầu này đã hủy ${paySt === 'REFUNDED' ? '(Đã hoàn trả 100% tiền ký quỹ cho bạn)' : ''}.</div>`;
+        return `<div class="alert alert-secondary py-2 small mb-3"><i class="bi bi-x-circle me-1"></i> Đã hủy yêu cầu.</div>`;
     }
     if (st === 'REFUNDED') {
-        return `<div class="alert alert-danger py-2 small mb-3"><i class="bi bi-arrow-counterclockwise me-1"></i> <strong>Đã từ chối & Hoàn tiền 100%:</strong> Sản phẩm không đúng yêu cầu nên hệ thống đã hoàn trả toàn bộ tiền ký quỹ về cho bạn.</div>`;
+        return `<div class="alert alert-danger py-2 small mb-3"><i class="bi bi-arrow-counterclockwise me-1"></i> Đã từ chối sản phẩm & hoàn tiền.</div>`;
     }
 
     const step1Done = paySt === 'ESCROW_HELD' || paySt === 'RELEASED';
@@ -1724,27 +1621,23 @@ function renderRequestStepProgress(status, paymentStatus = 'ESCROW_HELD') {
     return `
         <div class="row g-2 mb-3 text-center">
             <div class="col-6 col-md-3">
-                <div class="p-2 rounded-3 small fw-semibold h-100 d-flex flex-column justify-content-center" style="${pillStyle(step1Done, st === 'PENDING_PAYMENT')}">
-                    <div><i class="bi ${step1Done ? 'bi-shield-check' : 'bi-1-circle'} me-1"></i>Bước 1</div>
-                    <div style="font-size:11px;">Đẩy yêu cầu & Ký quỹ Escrow</div>
+                <div class="p-2 rounded-3 small fw-semibold h-100" style="${pillStyle(step1Done, st === 'PENDING_PAYMENT')}">
+                    1. Gửi yêu cầu
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="p-2 rounded-3 small fw-semibold h-100 d-flex flex-column justify-content-center" style="${pillStyle(step2Done, st === 'OPEN')}">
-                    <div><i class="bi ${step2Done ? 'bi-check-circle-fill' : 'bi-2-circle'} me-1"></i>Bước 2</div>
-                    <div style="font-size:11px;">Designer nhận & Báo khách</div>
+                <div class="p-2 rounded-3 small fw-semibold h-100" style="${pillStyle(step2Done, st === 'OPEN')}">
+                    2. Đang thực hiện
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="p-2 rounded-3 small fw-semibold h-100 d-flex flex-column justify-content-center" style="${pillStyle(step3Done, st === 'IN_PROGRESS' || st === 'REVISION_REQUESTED')}">
-                    <div><i class="bi ${step3Done ? 'bi-check-circle-fill' : 'bi-3-circle'} me-1"></i>Bước 3</div>
-                    <div style="font-size:11px;">${st === 'REVISION_REQUESTED' ? 'Đang sửa lại theo yêu cầu' : 'Hệ thống chuyển sản phẩm về'}</div>
+                <div class="p-2 rounded-3 small fw-semibold h-100" style="${pillStyle(step3Done, st === 'IN_PROGRESS' || st === 'REVISION_REQUESTED')}">
+                    3. ${st === 'REVISION_REQUESTED' ? 'Đang sửa lại' : 'Bàn giao'}
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="p-2 rounded-3 small fw-semibold h-100 d-flex flex-column justify-content-center" style="${pillStyle(step4Done, st === 'PREVIEW_READY')}">
-                    <div><i class="bi ${step4Done ? 'bi-check-circle-fill' : 'bi-4-circle'} me-1"></i>Bước 4</div>
-                    <div style="font-size:11px;">Nghiệm thu / Sửa / Hoàn tiền</div>
+                <div class="p-2 rounded-3 small fw-semibold h-100" style="${pillStyle(step4Done, st === 'PREVIEW_READY')}">
+                    4. Hoàn tất
                 </div>
             </div>
         </div>
@@ -1753,7 +1646,7 @@ function renderRequestStepProgress(status, paymentStatus = 'ESCROW_HELD') {
 
 async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId = null, preselectDesignerName = '', preselectCategoryId = null) {
     if (!TokenStorage.isAuthenticated()) {
-        showToast('Vui lòng đăng nhập để gửi yêu cầu thiết kế riêng!', 'warning');
+        showToast('Vui lòng đăng nhập để đặt thiết kế theo yêu cầu!', 'warning');
         const loginModalEl = document.getElementById('loginModal');
         if (loginModalEl) new bootstrap.Modal(loginModalEl).show();
         return;
@@ -1768,19 +1661,16 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
     body.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Đang tải dữ liệu Yêu Cầu Thiết Kế & Thông Báo Hệ Thống...</p>
+            <p class="mt-2 text-muted">Đang tải...</p>
         </div>
     `;
     modal.show();
-
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        if (window.DesignHub3D) window.DesignHub3D.cleanupActive();
-    }, { once: true });
 
     let myRequests = [];
     try {
         myRequests = await api.designRequests.getMyRequests();
     } catch { }
+    window._myCustomRequestsCache = myRequests || [];
 
     const unreadCount = (myRequests || []).filter(r => r.customerUnread === true).length;
     const readyCount = (myRequests || []).filter(r => r.status === 'PREVIEW_READY').length;
@@ -1796,50 +1686,33 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
     const requestsListHtml = (!myRequests || myRequests.length === 0) ? `
         <div class="text-center py-5">
             <i class="bi bi-box-seam fs-1 text-muted"></i>
-            <h5 class="mt-3">Bạn chưa có yêu cầu đặt thiết kế nào</h5>
-            <p class="text-muted small">Hãy chuyển sang tab "1. Gửi Yêu Cầu Thiết Kế Lên Hệ Thống" để đăng yêu cầu của bạn cho các Designer phù hợp nhận làm nhé!</p>
+            <h6 class="mt-3">Bạn chưa có yêu cầu thiết kế nào</h6>
         </div>
     ` : `
-        <div id="customRequest3DStageWrap" class="mb-4 d-none">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-bold text-primary mb-0" id="customRequest3DStageTitle">
-                    <i class="fa-solid fa-cube me-1"></i> Xem Thử Sản Phẩm Trong Không Gian 3D & Quay Movie
-                </h6>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('customRequest3DStageWrap').classList.add('d-none'); if(window.DesignHub3D) window.DesignHub3D.cleanupActive();">
-                    Đóng khung 3D
-                </button>
-            </div>
-            <div id="customRequest3DMount"></div>
-        </div>
-
-        <div class="d-flex flex-column gap-4">
+        <div class="d-flex flex-column gap-3">
             ${myRequests.map(req => {
                 const st = (req.status || 'OPEN').toUpperCase();
                 const paySt = (req.paymentStatus || 'ESCROW_HELD').toUpperCase();
-                let badgeHtml = '<span class="badge bg-info-subtle text-info border"><i class="bi bi-cloud-check me-1"></i>Đã đẩy lên hệ thống - Chờ Designer nhận</span>';
-                if (st === 'PENDING_PAYMENT') badgeHtml = '<span class="badge bg-secondary"><i class="bi bi-credit-card me-1"></i>Chờ thanh toán tạm giữ</span>';
-                else if (st === 'IN_PROGRESS') badgeHtml = '<span class="badge bg-primary"><i class="bi bi-bell-fill me-1"></i>Designer đã nhận yêu cầu & Đang thiết kế</span>';
-                else if (st === 'REVISION_REQUESTED') badgeHtml = `<span class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Đang chỉnh sửa theo góp ý của bạn (Lần #${req.revisionCount || 1})</span>`;
-                else if (st === 'PREVIEW_READY') badgeHtml = '<span class="badge bg-warning text-dark"><i class="bi bi-box-arrow-in-down me-1"></i>Hệ thống đã chuyển sản phẩm về - Chờ bạn nghiệm thu</span>';
-                else if (st === 'APPROVED') badgeHtml = '<span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Đã nghiệm thu & Mở khóa File gốc</span>';
-                else if (st === 'REFUNDED') badgeHtml = '<span class="badge bg-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Báo sai yêu cầu - Đã hoàn tiền 100%</span>';
+                let badgeHtml = '<span class="badge bg-info-subtle text-info border">Chờ nhận</span>';
+                if (st === 'PENDING_PAYMENT') badgeHtml = '<span class="badge bg-secondary">Chờ thanh toán</span>';
+                else if (st === 'IN_PROGRESS') badgeHtml = '<span class="badge bg-primary">Đang thiết kế</span>';
+                else if (st === 'REVISION_REQUESTED') badgeHtml = `<span class="badge bg-warning text-dark">Đang chỉnh sửa (#${req.revisionCount || 1})</span>`;
+                else if (st === 'PREVIEW_READY') badgeHtml = '<span class="badge bg-warning text-dark">Chờ nghiệm thu</span>';
+                else if (st === 'APPROVED') badgeHtml = '<span class="badge bg-success">Hoàn tất</span>';
+                else if (st === 'REFUNDED') badgeHtml = '<span class="badge bg-danger">Đã hoàn tiền</span>';
                 else if (st === 'CANCELLED') badgeHtml = '<span class="badge bg-secondary">Đã hủy</span>';
-
-                let escrowBadge = '<span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-shield-lock-fill text-warning me-1"></i>Escrow: Hệ thống đang tạm giữ tiền bảo đảm</span>';
-                if (paySt === 'RELEASED') escrowBadge = '<span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-cash-coin me-1"></i>Escrow: Đã giải ngân cho Designer</span>';
-                else if (paySt === 'REFUNDED') escrowBadge = '<span class="badge bg-danger-subtle text-danger border border-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Escrow: Đã hoàn trả 100% tiền cho bạn</span>';
-                else if (paySt === 'UNPAID') escrowBadge = '<span class="badge bg-secondary"><i class="bi bi-exclamation-circle me-1"></i>Chưa thanh toán ký quỹ</span>';
 
                 const designerName = req.designer && req.designer.user
                     ? (req.designer.user.fullName || req.designer.user.username)
-                    : 'Đang chờ Designer phù hợp tiếp nhận';
-                const safeTitle = (req.title || 'Yêu cầu thiết kế').replace(/'/g, "\\'");
-                const safeDesigner = designerName.replace(/'/g, "\\'");
-                const imgFor3D = req.previewImageUrl || req.referenceImageUrl || '';
+                    : 'Chờ Designer nhận';
                 const hasDeliveredProduct = st === 'PREVIEW_READY' || st === 'APPROVED' || !!req.previewImageUrl || !!req.deliveryFileUrl;
                 const isSourceUnlocked = st === 'APPROVED' && paySt === 'RELEASED';
+                const previewSampleUrl = req.previewImageUrl
+                    || ((req.deliveryFileUrl && /\.(png|jpe?g|webp|gif|svg)$/i.test(req.deliveryFileUrl)) ? req.deliveryFileUrl : '')
+                    || req.referenceImageUrl
+                    || DEFAULT_THUMBNAIL;
                 const downloadUrl = req.deliveryFileUrl || req.previewImageUrl || '';
-                const downloadName = req.deliveryFileName || 'san-pham-thiet-ke-ban-giao';
+                const downloadName = req.deliveryFileName || 'san-pham-thiet-ke';
 
                 return `
                     <div class="card border shadow-sm p-3 ${req.customerUnread ? 'border-primary border-2' : ''}">
@@ -1848,54 +1721,45 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
                                 <span class="badge bg-dark me-2">#REQ-${req.id}</span>
                                 <strong class="fs-6">${req.title}</strong>
                                 ${req.category ? `<span class="badge bg-light text-secondary border ms-2">${req.category.name}</span>` : ''}
-                                ${req.customerUnread ? `<span class="badge bg-danger ms-1">THÔNG BÁO MỚI</span>` : ''}
+                                ${req.customerUnread ? `<span class="badge bg-danger ms-1">Mới</span>` : ''}
                             </div>
                             <div class="d-flex flex-wrap gap-1 align-items-center">
-                                ${escrowBadge}
                                 ${badgeHtml}
                             </div>
                         </div>
 
-                        <!-- Thanh Tiến Trình 4 Bước -->
                         ${renderRequestStepProgress(st, paySt)}
 
-                        <!-- Hộp Thông Báo Tự Động Từ Hệ Thống Tới Khách Hàng -->
                         ${req.systemNotification ? `
-                            <div class="alert ${st === 'PREVIEW_READY' ? 'alert-warning' : st === 'IN_PROGRESS' ? 'alert-primary' : st === 'APPROVED' ? 'alert-success' : st === 'REFUNDED' ? 'alert-danger' : 'alert-secondary'} py-2 px-3 mb-3 d-flex align-items-start gap-2 small">
-                                <i class="bi bi-bell-fill fs-6 mt-1"></i>
-                                <div>
-                                    <strong>Thông báo từ Hệ thống DesignHub:</strong>
-                                    <div>${req.systemNotification}</div>
-                                </div>
+                            <div class="alert alert-light border py-2 px-3 mb-3 d-flex align-items-center gap-2 small">
+                                <i class="bi bi-bell-fill text-primary"></i>
+                                <div>${req.systemNotification}</div>
                             </div>
                         ` : ''}
 
                         <div class="row g-3 align-items-stretch">
                             <div class="col-md-3">
-                                <div class="small text-muted fw-semibold mb-1">Ảnh mẫu / Sản phẩm bạn gửi:</div>
-                                <div class="rounded border overflow-hidden bg-light d-flex align-items-center justify-content-center" style="height: 125px;">
-                                    ${req.referenceImageUrl ? `<img src="${req.referenceImageUrl}" style="width:100%;height:100%;object-fit:cover;">` : '<span class="text-muted small">Không đính kèm ảnh</span>'}
+                                <div class="small text-muted fw-semibold mb-1">Ảnh tham khảo:</div>
+                                <div class="rounded border overflow-hidden bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
+                                    ${req.referenceImageUrl ? `<img src="${req.referenceImageUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='${DEFAULT_THUMBNAIL}'">` : '<span class="text-muted small">Không có ảnh</span>'}
                                 </div>
                             </div>
 
                             <div class="col-md-5">
-                                <div class="small text-muted fw-semibold mb-1">Nội dung yêu cầu thiết kế:</div>
+                                <div class="small text-muted fw-semibold mb-1">Mô tả yêu cầu:</div>
                                 <p class="small text-secondary mb-2">${req.productDescription}</p>
                                 <div class="small text-muted bg-light p-2 rounded border">
-                                    <div><i class="bi bi-person-workspace me-1 text-primary"></i><strong>Designer tiếp nhận:</strong> <span class="text-dark fw-semibold">${designerName}</span></div>
-                                    <div><i class="bi bi-cash-coin me-1 text-success"></i><strong>Ngân sách ký quỹ:</strong> <span class="text-primary fw-bold">${formatVND(req.budget)}</span> (${req.paymentMethod || 'VNPAY'}) • <strong>Hạn:</strong> ${req.deadline || 'Linh hoạt'}</div>
-                                    ${req.transactionCode ? `<div><i class="bi bi-shield-check me-1 text-warning"></i><strong>Mã GD Tạm Giữ (Escrow):</strong> <code>${req.transactionCode}</code></div>` : ''}
-                                    ${req.acceptedAt ? `<div><i class="bi bi-check2-circle me-1 text-info"></i><strong>Thời điểm nhận yêu cầu:</strong> ${formatDate(req.acceptedAt)}</div>` : ''}
-                                    ${req.deliveredAt ? `<div><i class="bi bi-box-seam me-1 text-success"></i><strong>Thời điểm hệ thống chuyển sản phẩm:</strong> ${formatDate(req.deliveredAt)}</div>` : ''}
+                                    <div><strong>Designer:</strong> <span class="text-dark fw-semibold">${designerName}</span></div>
+                                    <div><strong>Ngân sách:</strong> <span class="text-primary fw-bold">${formatVND(req.budget)}</span> • <strong>Hạn:</strong> ${req.deadline || 'Linh hoạt'}</div>
                                 </div>
                                 ${req.designerNote ? `
                                     <div class="alert alert-info py-2 px-3 mt-2 mb-0 small">
-                                        <strong><i class="bi bi-chat-quote-fill me-1"></i>Ghi chú bàn giao từ Designer:</strong> ${req.designerNote}
+                                        <strong>Ghi chú từ Designer:</strong> ${req.designerNote}
                                     </div>
                                 ` : ''}
                                 ${req.customerFeedback ? `
                                     <div class="alert alert-warning py-2 px-3 mt-2 mb-0 small">
-                                        <strong><i class="bi bi-pencil-square me-1"></i>Phản hồi / Lý do của bạn:</strong> ${req.customerFeedback}
+                                        <strong>Phản hồi của bạn:</strong> ${req.customerFeedback}
                                     </div>
                                 ` : ''}
                             </div>
@@ -1903,62 +1767,59 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
                             <div class="col-md-4 border-start ps-md-3 d-flex flex-column justify-content-between">
                                 ${hasDeliveredProduct && st !== 'REFUNDED' ? `
                                     <div>
-                                        <div class="small fw-bold text-success mb-1">
-                                            <i class="bi bi-box-arrow-in-down me-1"></i>Sản phẩm Hệ thống chuyển về cho bạn:
+                                        <div class="small fw-bold text-success mb-1">Mẫu sản phẩm bàn giao:</div>
+                                        <div class="rounded border overflow-hidden mb-2 bg-light position-relative cursor-pointer" style="height: 130px;" onclick="openCustomRequestPreviewModal(${req.id})" title="Bấm để phóng to xem mẫu sản phẩm">
+                                            <img src="${previewSampleUrl}" style="width:100%;height:100%;object-fit:cover;" alt="Mẫu sản phẩm bàn giao" onerror="this.src='${DEFAULT_THUMBNAIL}'">
+                                            <span class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white text-center py-1" style="font-size:11px;">
+                                                <i class="bi bi-zoom-in me-1"></i>Bấm để xem mẫu sản phẩm
+                                            </span>
                                         </div>
-                                        ${req.previewImageUrl ? `
-                                            <div class="rounded border overflow-hidden mb-2 bg-light position-relative" style="height: 110px;">
-                                                <img src="${req.previewImageUrl}" style="width:100%;height:100%;object-fit:cover;" alt="Sản phẩm bàn giao">
-                                                ${!isSourceUnlocked ? `<span class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white text-center" style="font-size:10px;padding:2px 4px;"><i class="bi bi-shield-lock me-1"></i>Bản xem trước (Bấm Nghiệm thu để mở khóa File gốc)</span>` : ''}
-                                            </div>
-                                        ` : ''}
                                         ${req.deliveryFileName ? `
-                                            <div class="small text-dark ${isSourceUnlocked ? 'bg-success-subtle border-success-subtle' : 'bg-warning-subtle border-warning'} border rounded px-2 py-1 mb-2 text-truncate">
-                                                <i class="bi ${isSourceUnlocked ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-warning'} me-1"></i><strong>File gốc:</strong> ${req.deliveryFileName}
+                                            <div class="small text-dark bg-light border rounded px-2 py-1 mb-2 text-truncate" title="${req.deliveryFileName}">
+                                                <i class="bi ${isSourceUnlocked ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-warning'} me-1"></i>File gốc: ${req.deliveryFileName}
                                             </div>
                                         ` : ''}
                                     </div>
                                 ` : `
                                     <div class="small text-muted my-auto text-center p-3 bg-light rounded border">
-                                        <i class="bi bi-hourglass-split fs-4 d-block mb-1 text-secondary"></i>
                                         ${st === 'IN_PROGRESS'
-                                            ? 'Designer đang thực hiện yêu cầu của bạn (Tiền ký quỹ đang được hệ thống bảo vệ, không thể hủy ngang).'
+                                            ? 'Designer đang thực hiện yêu cầu của bạn.'
                                             : st === 'REVISION_REQUESTED'
-                                                ? 'Designer đang chỉnh sửa lại sản phẩm theo góp ý của bạn.'
+                                                ? 'Designer đang chỉnh sửa sản phẩm.'
                                                 : st === 'REFUNDED'
-                                                    ? 'Yêu cầu đã được hoàn tiền 100% về ví của bạn do sản phẩm không đúng yêu cầu.'
-                                                    : 'Yêu cầu đang mở trên hệ thống. Hệ thống sẽ thông báo ngay khi có Designer phù hợp nhận làm.'}
+                                                    ? 'Đã hoàn tiền cho yêu cầu này.'
+                                                    : 'Đang chờ Designer nhận yêu cầu.'}
                                     </div>
                                 `}
 
                                 <div class="d-grid gap-2 mt-2">
-                                    ${isSourceUnlocked && downloadUrl ? `
-                                        <a href="${downloadUrl}" download="${downloadName}" target="_blank" class="btn btn-sm btn-success fw-bold">
-                                            <i class="bi bi-cloud-arrow-down-fill me-1"></i> Tải File Thiết Kế Gốc Về Máy (Đã Mở Khóa)
-                                        </a>
+                                    ${hasDeliveredProduct && st !== 'REFUNDED' ? `
+                                        <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="openCustomRequestPreviewModal(${req.id})">
+                                            <i class="bi bi-eye-fill me-1"></i> Xem mẫu sản phẩm
+                                        </button>
                                     ` : ''}
 
-                                    ${imgFor3D && st !== 'REFUNDED' ? `
-                                        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" onclick="previewCustomRequestIn3D('${imgFor3D}', '${safeTitle}', '${safeDesigner}', '${req.mockupType && req.mockupType !== 'STANDARD_2D' ? req.mockupType : 'POSTER_3D'}')">
-                                            <i class="fa-solid fa-cube me-1"></i> Xem Thử Sản Phẩm Trên Khung 3D
-                                        </button>
+                                    ${isSourceUnlocked && downloadUrl ? `
+                                        <a href="${downloadUrl}" download="${downloadName}" target="_blank" class="btn btn-sm btn-success fw-bold">
+                                            <i class="bi bi-download me-1"></i> Tải file gốc
+                                        </a>
                                     ` : ''}
 
                                     ${st === 'PREVIEW_READY' ? `
                                         <button type="button" class="btn btn-sm btn-success fw-bold" onclick="handleApproveCustomRequest(${req.id})">
-                                            <i class="bi bi-check2-all me-1"></i> Đúng Yêu Cầu: Nghiệm Thu & Mở Khóa File Gốc
+                                            <i class="bi bi-check2 me-1"></i> Đồng ý nhận sản phẩm
                                         </button>
                                         <button type="button" class="btn btn-sm btn-warning fw-semibold text-dark" onclick="handleRevisionCustomRequest(${req.id})">
-                                            <i class="bi bi-arrow-repeat me-1"></i> Chưa Đúng Ý: Yêu Cầu Designer Sửa Lại
+                                            <i class="bi bi-arrow-repeat me-1"></i> Yêu cầu sửa lại
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger fw-semibold" onclick="handleRefundCustomRequest(${req.id})">
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Làm Sai Yêu Cầu: Từ Chối & Hoàn Tiền 100%
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Từ chối & Hoàn tiền
                                         </button>
                                     ` : ''}
 
                                     ${st === 'OPEN' ? `
                                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="handleCancelCustomRequest(${req.id})">
-                                            <i class="bi bi-x-circle me-1"></i> Hủy Yêu Cầu & Nhận Lại Tiền Ký Quỹ
+                                            <i class="bi bi-x-circle me-1"></i> Hủy yêu cầu
                                         </button>
                                     ` : ''}
                                 </div>
@@ -1974,115 +1835,88 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
         <ul class="nav nav-pills nav-fill mb-4 bg-light p-1 rounded-3" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link ${defaultTab === 'create' ? 'active' : ''} fw-semibold py-2" data-bs-toggle="pill" data-bs-target="#tabCreateCustomReq" type="button" role="tab">
-                    <i class="bi bi-send-plus me-1"></i> 1. Gửi Yêu Cầu Thiết Kế Lên Hệ Thống
+                    <i class="bi bi-plus-circle me-1"></i> Tạo yêu cầu mới
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link ${defaultTab === 'list' ? 'active' : ''} fw-semibold py-2" id="btnSwitchTabMyCustomReqs" data-bs-toggle="pill" data-bs-target="#tabMyCustomReqs" type="button" role="tab">
-                    <i class="bi bi-bell me-1"></i> 2. Yêu Cầu Của Tôi, Thông Báo & Nhận Sản Phẩm (${myRequests.length})
-                    ${(unreadCount > 0 || readyCount > 0) ? `<span class="badge bg-danger ms-1">${unreadCount > 0 ? unreadCount + ' thông báo mới' : readyCount + ' có sản phẩm'}</span>` : ''}
+                    <i class="bi bi-list-check me-1"></i> Yêu cầu của tôi (${myRequests.length})
+                    ${(unreadCount > 0 || readyCount > 0) ? `<span class="badge bg-danger ms-1">${unreadCount > 0 ? unreadCount + ' mới' : readyCount + ' có sản phẩm'}</span>` : ''}
                 </button>
             </li>
         </ul>
 
         <div class="tab-content">
             <div class="tab-pane fade ${defaultTab === 'create' ? 'show active' : ''}" id="tabCreateCustomReq" role="tabpanel">
-                <div class="alert alert-light border small mb-3">
-                    <strong><i class="bi bi-diagram-3-fill text-primary me-1"></i> Quy trình Đặt thiết kế theo yêu cầu trên DesignHub:</strong>
-                    Khách hàng đưa ra yêu cầu (Logo, Poster, UI/UX, Banner, Bao bì, 2D/3D...) và đẩy lên hệ thống $\\rightarrow$ Designer phù hợp vào xem và nhận làm $\\rightarrow$ Hệ thống thông báo yêu cầu đã được nhận tới khách hàng $\\rightarrow$ Khi Designer trả sản phẩm về hệ thống, hệ thống sẽ chuyển sản phẩm về cho khách hàng tải xuống.
-                </div>
-
-                <form id="customRequestForm" class="p-2">
+                <form id="customRequestForm" class="p-1">
                     <input type="hidden" name="designerId" value="${preselectDesignerId || ''}">
                     ${preselectDesignerName ? `
                         <div class="alert alert-primary py-2 small d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-person-check-fill me-1"></i> Đang gửi yêu cầu ưu tiên cho Designer: <strong>${preselectDesignerName}</strong> (Hoặc bấm X để đẩy công khai cho mọi Designer)</span>
+                            <span><i class="bi bi-person-check-fill me-1"></i> Designer nhận yêu cầu: <strong>${preselectDesignerName}</strong></span>
                             <button type="button" class="btn-close btn-sm" onclick="this.parentElement.remove(); document.querySelector('#customRequestForm [name=designerId]').value='';"></button>
                         </div>
                     ` : ''}
 
                     <div class="row g-3">
                         <div class="col-md-7">
-                            <label class="form-label small fw-bold">Tiêu đề yêu cầu thiết kế *</label>
-                            <input type="text" name="title" class="form-control" placeholder="VD: Thiết kế Bộ nhận diện thương hiệu / Giao diện App / Bao bì sản phẩm..." required>
+                            <label class="form-label small fw-bold">Tiêu đề yêu cầu *</label>
+                            <input type="text" name="title" class="form-control" placeholder="VD: Thiết kế Logo / Poster / Giao diện App..." required>
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-bold">Danh mục thiết kế phù hợp</label>
+                            <label class="form-label small fw-bold">Danh mục</label>
                             <select name="categoryId" class="form-select">
-                                <option value="">-- Tất cả danh mục --</option>
+                                <option value="">-- Chọn danh mục --</option>
                                 ${categoryOptions}
                             </select>
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-label small fw-bold">Mô tả chi tiết yêu cầu thiết kế của bạn *</label>
-                            <textarea name="productDescription" class="form-control" rows="3" placeholder="Mô tả chi tiết ý tưởng, sản phẩm cần thiết kế, phong cách màu sắc, kích thước, định dạng file mong muốn nhận về (.PSD, .AI, .FIG, .PNG, .ZIP)..." required></textarea>
+                            <label class="form-label small fw-bold">Mô tả chi tiết yêu cầu *</label>
+                            <textarea name="productDescription" class="form-control" rows="3" placeholder="Mô tả ý tưởng, phong cách, màu sắc, kích thước, định dạng file mong muốn (.PSD, .AI, .FIG, .PNG)..." required></textarea>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label small fw-bold">Ngân sách dự kiến (VNĐ) *</label>
                             <input type="number" name="budget" class="form-control" value="350000" min="50000" step="10000" required>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold">Thời hạn mong muốn nhận sản phẩm</label>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Thời hạn nhận sản phẩm</label>
                             <input type="date" name="deadline" class="form-control" value="2026-12-20">
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold">Hình thức trình diễn đi kèm (Tùy chọn)</label>
-                            <select name="mockupType" class="form-select">
-                                <option value="STANDARD_2D">Bản thiết kế 2D & File gốc tiêu chuẩn</option>
-                                <option value="POSTER_3D">Kèm mô hình Khung Tranh / Poster 3D</option>
-                                <option value="BOX_3D">Kèm mô hình Hộp Bao Bì Sản Phẩm 3D</option>
-                                <option value="CUP_3D">Kèm mô hình Cốc / Ly / Chai 3D</option>
-                                <option value="DEVICE_3D">Kèm mô hình Màn Hình Thiết Bị 3D</option>
-                            </select>
-                        </div>
-
                         <div class="col-md-12">
-                            <label class="form-label small fw-bold">Đính kèm hình ảnh sản phẩm mẫu / Bản phác thảo tham khảo (Tải ảnh lên hoặc dán URL)</label>
+                            <label class="form-label small fw-bold">Hình ảnh tham khảo (Tùy chọn)</label>
                             <div class="row g-2 align-items-center">
                                 <div class="col-md-6">
                                     <input type="file" id="customReqImageFile" class="form-control" accept="image/*">
                                 </div>
                                 <div class="col-md-6">
-                                    <input type="url" name="referenceImageUrl" id="customReqImageUrl" class="form-control" placeholder="Hoặc dán link ảnh tham khảo (https://...)">
+                                    <input type="url" name="referenceImageUrl" id="customReqImageUrl" class="form-control" placeholder="Hoặc dán link ảnh (https://...)">
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-12">
-                            <div class="p-3 rounded-3 bg-warning-subtle border border-warning">
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                                    <label class="form-label small fw-bold mb-0 text-dark">
-                                        <i class="bi bi-shield-lock-fill text-warning me-1"></i>Phương thức Thanh toán Tạm giữ qua Hệ thống (Escrow Payment) *
+                            <label class="form-label small fw-bold">Phương thức thanh toán *</label>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="border rounded-3 p-2 bg-light d-flex align-items-center gap-2 cursor-pointer w-100">
+                                        <input type="radio" name="paymentMethod" value="VNPAY" checked>
+                                        <span class="small fw-semibold"><i class="bi bi-qr-code-scan text-primary me-1"></i>VNPay / QR</span>
                                     </label>
-                                    <span class="badge bg-dark">Bảo vệ 2 chiều: Khách hàng & Designer</span>
                                 </div>
-                                <div class="row g-2 mb-2">
-                                    <div class="col-md-4">
-                                        <label class="border rounded-3 p-2 bg-white d-flex align-items-center gap-2 cursor-pointer w-100">
-                                            <input type="radio" name="paymentMethod" value="VNPAY" checked>
-                                            <span class="small fw-semibold"><i class="bi bi-qr-code-scan text-primary me-1"></i>Cổng VNPay / QR</span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="border rounded-3 p-2 bg-white d-flex align-items-center gap-2 cursor-pointer w-100">
-                                            <input type="radio" name="paymentMethod" value="MOMO">
-                                            <span class="small fw-semibold"><i class="bi bi-wallet2 text-danger me-1"></i>Ví Điện Tử MoMo</span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="border rounded-3 p-2 bg-white d-flex align-items-center gap-2 cursor-pointer w-100">
-                                            <input type="radio" name="paymentMethod" value="BANK_TRANSFER">
-                                            <span class="small fw-semibold"><i class="bi bi-bank text-success me-1"></i>Chuyển khoản NH</span>
-                                        </label>
-                                    </div>
+                                <div class="col-md-4">
+                                    <label class="border rounded-3 p-2 bg-light d-flex align-items-center gap-2 cursor-pointer w-100">
+                                        <input type="radio" name="paymentMethod" value="MOMO">
+                                        <span class="small fw-semibold"><i class="bi bi-wallet2 text-danger me-1"></i>Ví MoMo</span>
+                                    </label>
                                 </div>
-                                <div class="small text-secondary">
-                                    • <strong>Bảo vệ Designer:</strong> Hệ thống tạm giữ 100% ngân sách ngay khi tạo yêu cầu; khi Designer đã nhận làm, khách không thể tự ý hủy ngang.<br>
-                                    • <strong>Bảo vệ Khách hàng:</strong> Designer chỉ nhận được tiền khi bạn bấm <em>Nghiệm thu</em>. Nếu sản phẩm <strong>không đúng yêu cầu</strong>, bạn có quyền <em>Yêu cầu sửa lại</em> hoặc <em>Từ chối để nhận Hoàn tiền 100%</em>.
+                                <div class="col-md-4">
+                                    <label class="border rounded-3 p-2 bg-light d-flex align-items-center gap-2 cursor-pointer w-100">
+                                        <input type="radio" name="paymentMethod" value="BANK_TRANSFER">
+                                        <span class="small fw-semibold"><i class="bi bi-bank text-success me-1"></i>Chuyển khoản</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -2091,7 +1925,7 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
                     <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
                         <button type="submit" class="btn btn-primary px-4 fw-bold" id="btnSubmitCustomReq">
-                            <i class="bi bi-shield-check me-1"></i> Thanh Toán Tạm Giữ (Escrow) & Đẩy Yêu Cầu Lên Hệ Thống
+                            Thanh toán & Gửi yêu cầu
                         </button>
                     </div>
                 </form>
@@ -2118,7 +1952,7 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
             e.preventDefault();
             const btn = document.getElementById('btnSubmitCustomReq');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang đẩy yêu cầu lên hệ thống...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang gửi...';
 
             try {
                 let refUrl = form.referenceImageUrl.value.trim();
@@ -2136,7 +1970,7 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
                     productDescription: form.productDescription.value.trim(),
                     categoryId: form.categoryId.value || null,
                     designerId: form.designerId.value || null,
-                    mockupType: form.mockupType.value,
+                    mockupType: 'STANDARD_2D',
                     budget: Number(form.budget.value || 300000),
                     deadline: form.deadline.value || null,
                     referenceImageUrl: refUrl || null,
@@ -2144,46 +1978,142 @@ async function openCustomRequestModal(defaultTab = 'create', preselectDesignerId
                     paymentStatus: 'ESCROW_HELD'
                 });
 
-                showToast('Đã thanh toán tạm giữ (Escrow) & đẩy yêu cầu lên hệ thống thành công! Hệ thống đang bảo vệ giao dịch cho cả 2 bên.', 'success');
+                showToast('Đã gửi yêu cầu thiết kế thành công!', 'success');
                 await loadRequestNotificationsBadge(false);
                 openCustomRequestModal('list');
             } catch (err) {
                 showToast(err.message || 'Không thể gửi yêu cầu thiết kế', 'danger');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Thanh Toán Tạm Giữ (Escrow) & Đẩy Yêu Cầu Lên Hệ Thống';
+                btn.innerHTML = 'Thanh toán & Gửi yêu cầu';
             }
         });
     }
 }
 window.openCustomRequestModal = openCustomRequestModal;
 
-function previewCustomRequestIn3D(imageUrl, title, designerName, mockupType) {
-    const wrap = document.getElementById('customRequest3DStageWrap');
-    const titleEl = document.getElementById('customRequest3DStageTitle');
-    if (!wrap) return;
-    wrap.classList.remove('d-none');
-    if (titleEl) {
-        titleEl.innerHTML = `<i class="fa-solid fa-cube me-1"></i> Không gian 3D & Quay Movie: ${title}`;
-    }
-    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function openCustomRequestPreviewModal(requestId) {
+    const list = window._myCustomRequestsCache || [];
+    const req = list.find(r => Number(r.id) === Number(requestId));
+    if (!req) return;
 
-    if (window.DesignHub3D) {
-        window.DesignHub3D.initViewer('customRequest3DMount', {
-            imageUrl,
-            title,
-            designerName,
-            mockupType: (mockupType && mockupType !== 'STANDARD_2D') ? mockupType : 'POSTER_3D',
-            watermark: false
-        });
+    const modalEl = document.getElementById('customRequestPreviewModal');
+    const titleEl = document.getElementById('customRequestPreviewTitle');
+    const bodyEl = document.getElementById('customRequestPreviewBody');
+    if (!modalEl || !bodyEl) return;
+
+    const st = (req.status || 'OPEN').toUpperCase();
+    const paySt = (req.paymentStatus || 'ESCROW_HELD').toUpperCase();
+    const isSourceUnlocked = st === 'APPROVED' && paySt === 'RELEASED';
+    const previewSampleUrl = req.previewImageUrl
+        || ((req.deliveryFileUrl && /\.(png|jpe?g|webp|gif|svg)$/i.test(req.deliveryFileUrl)) ? req.deliveryFileUrl : '')
+        || req.referenceImageUrl
+        || DEFAULT_THUMBNAIL;
+    const downloadUrl = req.deliveryFileUrl || req.previewImageUrl || '';
+    const downloadName = req.deliveryFileName || 'san-pham-thiet-ke';
+    const designerName = req.designer && req.designer.user
+        ? (req.designer.user.fullName || req.designer.user.username)
+        : 'Designer';
+
+    if (titleEl) {
+        titleEl.innerHTML = `<i class="bi bi-eye-fill text-primary me-1"></i> Mẫu sản phẩm: #REQ-${req.id} - ${req.title}`;
+    }
+
+    bodyEl.innerHTML = `
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small fw-bold text-dark">Hình ảnh mẫu sản phẩm từ Designer (${designerName})</span>
+                    <a href="${previewSampleUrl}" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                        <i class="bi bi-arrows-fullscreen me-1"></i>Mở ảnh kích thước gốc
+                    </a>
+                </div>
+                <div class="rounded-3 border overflow-hidden bg-dark d-flex align-items-center justify-content-center position-relative" style="min-height: 360px; max-height: 480px;">
+                    <img src="${previewSampleUrl}" alt="Mẫu sản phẩm" style="max-width: 100%; max-height: 460px; object-fit: contain;" onerror="this.src='${DEFAULT_THUMBNAIL}'">
+                    ${!isSourceUnlocked ? `
+                        <div class="position-absolute top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center pointer-events-none" style="pointer-events: none;">
+                            <div style="transform: rotate(-22deg); background: rgba(15, 23, 42, 0.55); color: rgba(255,255,255,0.88); padding: 8px 22px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 1px; font-size: 14px;">
+                                BẢN XEM TRƯỚC NGHIỆM THU • DESIGNHUB
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="col-lg-5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="p-3 rounded-3 bg-light border mb-3">
+                        <div class="small fw-bold text-secondary mb-1">Yêu cầu ban đầu của bạn:</div>
+                        <p class="small text-dark mb-2">${req.productDescription}</p>
+                        ${req.referenceImageUrl ? `
+                            <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top">
+                                <img src="${req.referenceImageUrl}" style="width: 56px; height: 56px; object-fit: cover;" class="rounded border" onerror="this.src='${DEFAULT_THUMBNAIL}'">
+                                <span class="small text-muted">Ảnh tham khảo bạn đã gửi</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${req.designerNote ? `
+                        <div class="alert alert-info py-2 px-3 mb-3 small">
+                            <strong>Ghi chú bàn giao từ Designer:</strong>
+                            <div class="mt-1">${req.designerNote}</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="p-3 rounded-3 border mb-3 ${isSourceUnlocked ? 'bg-success-subtle border-success-subtle' : 'bg-warning-subtle border-warning'}">
+                        <div class="small fw-bold text-dark mb-1">
+                            <i class="bi ${isSourceUnlocked ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-warning'} me-1"></i>
+                            File thiết kế gốc đính kèm:
+                        </div>
+                        <div class="small text-dark fw-semibold text-truncate">${req.deliveryFileName || 'File-thiet-ke-goc.zip'}</div>
+                        <div class="text-muted mt-1" style="font-size: 12px;">
+                            ${isSourceUnlocked
+                                ? 'Đã mở khóa — Bạn có thể tải file gốc về máy.'
+                                : 'File gốc sẽ được mở khóa ngay khi bạn bấm "Đồng ý nhận sản phẩm".'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 pt-2 border-top">
+                    ${isSourceUnlocked && downloadUrl ? `
+                        <a href="${downloadUrl}" download="${downloadName}" target="_blank" class="btn btn-success fw-bold">
+                            <i class="bi bi-download me-1"></i> Tải file thiết kế gốc
+                        </a>
+                    ` : ''}
+
+                    ${st === 'PREVIEW_READY' ? `
+                        <button type="button" class="btn btn-success fw-bold" onclick="handleApproveCustomRequest(${req.id})">
+                            <i class="bi bi-check2 me-1"></i> Đúng yêu cầu — Đồng ý nhận sản phẩm
+                        </button>
+                        <button type="button" class="btn btn-warning fw-semibold text-dark" onclick="handleRevisionCustomRequest(${req.id})">
+                            <i class="bi bi-arrow-repeat me-1"></i> Chưa đúng ý — Yêu cầu sửa lại
+                        </button>
+                        <button type="button" class="btn btn-outline-danger fw-semibold" onclick="handleRefundCustomRequest(${req.id})">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Sai yêu cầu — Từ chối & Hoàn tiền
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+window.openCustomRequestPreviewModal = openCustomRequestPreviewModal;
+
+function hideCustomRequestPreviewModalIfOpen() {
+    const modalEl = document.getElementById('customRequestPreviewModal');
+    if (modalEl) {
+        const inst = bootstrap.Modal.getInstance(modalEl);
+        if (inst) inst.hide();
     }
 }
-window.previewCustomRequestIn3D = previewCustomRequestIn3D;
 
 async function handleApproveCustomRequest(requestId) {
-    if (!confirm('Xác nhận sản phẩm đúng yêu cầu? Hệ thống sẽ mở khóa toàn bộ File gốc cho bạn tải về và giải ngân tiền tạm giữ (Escrow) cho Designer.')) return;
+    if (!confirm('Xác nhận đồng ý nhận sản phẩm và mở khóa file gốc?')) return;
     try {
         await api.designRequests.approve(requestId);
-        showToast('Đã nghiệm thu thành công! Hệ thống đã mở khóa File gốc và giải ngân cho Designer.', 'success');
+        hideCustomRequestPreviewModalIfOpen();
+        showToast('Đã nghiệm thu sản phẩm thành công!', 'success');
         await loadRequestNotificationsBadge(false);
         openCustomRequestModal('list');
     } catch (err) {
@@ -2193,11 +2123,12 @@ async function handleApproveCustomRequest(requestId) {
 window.handleApproveCustomRequest = handleApproveCustomRequest;
 
 async function handleRevisionCustomRequest(requestId) {
-    const feedback = prompt('Nhập những điểm chưa đúng yêu cầu cần Designer chỉnh sửa lại (Hệ thống vẫn tiếp tục tạm giữ tiền bảo vệ bạn):', 'Bố cục và màu sắc chưa đúng với mô tả ban đầu, nhờ Designer chỉnh lại giúp mình...');
+    const feedback = prompt('Nhập nội dung cần chỉnh sửa:', '');
     if (!feedback || !feedback.trim()) return;
     try {
         await api.designRequests.requestRevision(requestId, { feedback: feedback.trim() });
-        showToast('Đã gửi yêu cầu chỉnh sửa cho Designer! Tiền ký quỹ của bạn vẫn được hệ thống giữ an toàn.', 'warning');
+        hideCustomRequestPreviewModalIfOpen();
+        showToast('Đã gửi yêu cầu chỉnh sửa!', 'warning');
         await loadRequestNotificationsBadge(false);
         openCustomRequestModal('list');
     } catch (err) {
@@ -2207,11 +2138,12 @@ async function handleRevisionCustomRequest(requestId) {
 window.handleRevisionCustomRequest = handleRevisionCustomRequest;
 
 async function handleRefundCustomRequest(requestId) {
-    const reason = prompt('Nhập lý do sản phẩm làm sai yêu cầu ban đầu để Hệ thống thu hồi bản vẽ và Hoàn trả 100% tiền ký quỹ cho bạn:', 'Sản phẩm thiết kế sai khác hoàn toàn so với yêu cầu mô tả ban đầu.');
+    const reason = prompt('Nhập lý do từ chối sản phẩm để hoàn tiền:', '');
     if (!reason || !reason.trim()) return;
     try {
         await api.designRequests.rejectRefund(requestId, { reason: reason.trim() });
-        showToast('Hệ thống đã xác nhận làm sai yêu cầu và HOÀN TRẢ 100% tiền ký quỹ về tài khoản của bạn!', 'info');
+        hideCustomRequestPreviewModalIfOpen();
+        showToast('Đã từ chối sản phẩm và hoàn tiền thành công!', 'info');
         await loadRequestNotificationsBadge(false);
         openCustomRequestModal('list');
     } catch (err) {
@@ -2221,10 +2153,11 @@ async function handleRefundCustomRequest(requestId) {
 window.handleRefundCustomRequest = handleRefundCustomRequest;
 
 async function handleCancelCustomRequest(requestId) {
-    if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu này và nhận lại 100% tiền ký quỹ?')) return;
+    if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu này?')) return;
     try {
         await api.designRequests.cancel(requestId);
-        showToast('Đã hủy yêu cầu và hoàn trả 100% tiền ký quỹ!', 'info');
+        hideCustomRequestPreviewModalIfOpen();
+        showToast('Đã hủy yêu cầu thành công!', 'info');
         await loadRequestNotificationsBadge(false);
         openCustomRequestModal('list');
     } catch (err) {

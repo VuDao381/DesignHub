@@ -47,432 +47,450 @@ import com.designhub.repository.UserRepository;
 @org.springframework.core.annotation.Order(10)
 public class DemoDataSeeder implements CommandLineRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
+        private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
 
-    @Value("${file.upload-dir:uploads}")
-    private String baseUploadDir = "uploads";
+        @Value("${file.upload-dir:uploads}")
+        private String baseUploadDir = "uploads";
 
-    private final UserRepository userRepository;
-    private final DesignerRepository designerRepository;
-    private final CategoryRepository categoryRepository;
-    private final DesignRepository designRepository;
-    private final DesignImageRepository designImageRepository;
-    private final DesignFileRepository designFileRepository;
-    private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final PaymentRepository paymentRepository;
-    private final ReviewRepository reviewRepository;
-    private final DownloadHistoryRepository downloadHistoryRepository;
-    private final DesignRequestRepository designRequestRepository;
-    private final PasswordEncoder passwordEncoder;
+        private final UserRepository userRepository;
+        private final DesignerRepository designerRepository;
+        private final CategoryRepository categoryRepository;
+        private final DesignRepository designRepository;
+        private final DesignImageRepository designImageRepository;
+        private final DesignFileRepository designFileRepository;
+        private final OrderRepository orderRepository;
+        private final OrderDetailRepository orderDetailRepository;
+        private final PaymentRepository paymentRepository;
+        private final ReviewRepository reviewRepository;
+        private final DownloadHistoryRepository downloadHistoryRepository;
+        private final DesignRequestRepository designRequestRepository;
+        private final PasswordEncoder passwordEncoder;
 
-    public DemoDataSeeder(
-            UserRepository userRepository,
-            DesignerRepository designerRepository,
-            CategoryRepository categoryRepository,
-            DesignRepository designRepository,
-            DesignImageRepository designImageRepository,
-            DesignFileRepository designFileRepository,
-            OrderRepository orderRepository,
-            OrderDetailRepository orderDetailRepository,
-            PaymentRepository paymentRepository,
-            ReviewRepository reviewRepository,
-            DownloadHistoryRepository downloadHistoryRepository,
-            DesignRequestRepository designRequestRepository,
-            PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.designerRepository = designerRepository;
-        this.categoryRepository = categoryRepository;
-        this.designRepository = designRepository;
-        this.designImageRepository = designImageRepository;
-        this.designFileRepository = designFileRepository;
-        this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-        this.paymentRepository = paymentRepository;
-        this.reviewRepository = reviewRepository;
-        this.downloadHistoryRepository = downloadHistoryRepository;
-        this.designRequestRepository = designRequestRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    @Transactional
-    public void run(String... args) {
-        if (categoryRepository.count() > 0 && designRepository.count() > 0) {
-            ensurePhysicalDemoFilesExist();
-            seedDemoDesignRequestsIfNeeded();
-            log.info("Dữ liệu mẫu (Demo Data) đã tồn tại. Bỏ qua bước nạp tự động.");
-            return;
+        public DemoDataSeeder(
+                        UserRepository userRepository,
+                        DesignerRepository designerRepository,
+                        CategoryRepository categoryRepository,
+                        DesignRepository designRepository,
+                        DesignImageRepository designImageRepository,
+                        DesignFileRepository designFileRepository,
+                        OrderRepository orderRepository,
+                        OrderDetailRepository orderDetailRepository,
+                        PaymentRepository paymentRepository,
+                        ReviewRepository reviewRepository,
+                        DownloadHistoryRepository downloadHistoryRepository,
+                        DesignRequestRepository designRequestRepository,
+                        PasswordEncoder passwordEncoder) {
+                this.userRepository = userRepository;
+                this.designerRepository = designerRepository;
+                this.categoryRepository = categoryRepository;
+                this.designRepository = designRepository;
+                this.designImageRepository = designImageRepository;
+                this.designFileRepository = designFileRepository;
+                this.orderRepository = orderRepository;
+                this.orderDetailRepository = orderDetailRepository;
+                this.paymentRepository = paymentRepository;
+                this.reviewRepository = reviewRepository;
+                this.downloadHistoryRepository = downloadHistoryRepository;
+                this.designRequestRepository = designRequestRepository;
+                this.passwordEncoder = passwordEncoder;
         }
 
-        log.info(">>> Đang bắt đầu nạp dữ liệu mẫu (Seeding Demo Data) cho DesignHub...");
-
-        // 1. Tạo Danh mục (Categories)
-        Category catUiUx = createCategory("UI/UX & Mobile Apps",
-                "Giao diện Web App, Mobile UI Kit, Dashboard SaaS tối ưu trải nghiệm người dùng.");
-        Category catPoster = createCategory("Poster & Quảng Cáo",
-                "Mẫu Poster sự kiện, Banner marketing, Cover mạng xã hội độ phân giải cao.");
-        Category catLogo = createCategory("Logo & Brand Identity",
-                "Hệ thống nhận diện thương hiệu, Logo vector, Brand guideline chuyên nghiệp.");
-        createCategory("Template & Slide",
-                "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
-        Category cat3d = createCategory("Vector & 3D Artwork",
-                "Gói icon 3D sống động, minh họa vector Isometric, texture thiết kế.");
-
-        // 2. Tạo Tài khoản Người dùng (Users & Designers)
-        User alexUser = createUserIfNotExist("vu", "vu@designhub.com", "123456", "Vũ Đào", "0901234567", Role.DESIGNER);
-        Designer alexDesigner = createDesignerIfNotExist(alexUser,
-                "Senior UI/UX & Brand Identity Designer với 5+ năm kinh nghiệm. Tác giả của nhiều bộ Design System và Mobile Kits chất lượng cao.",
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
-
-        User mayaUser = createUserIfNotExist("hoang", "hoang@designhub.com", "123456", "Hoàng Lê", "0908765432",
-                Role.DESIGNER);
-        Designer mayaDesigner = createDesignerIfNotExist(mayaUser,
-                "Digital Artist & Visual Designer đam mê phong cách Cyberpunk, Typography nghệ thuật và Poster sự kiện âm nhạc.",
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200");
-
-        User johnUser = createUserIfNotExist("quan", "quan@gmail.com", "123456", "Quân Nguyễn", "0912334455",
-                Role.CUSTOMER);
-        User lisaUser = createUserIfNotExist("tuan", "tuan@gmail.com", "123456", "Tuấn Vũ", "0933445566",
-                Role.CUSTOMER);
-
-        // 3. Tạo Bản Thiết Kế (Designs)
-        // Design 1: APPROVED - SaaS Dashboard
-        Design d1 = createDesign(
-                "SaaS Analytics Dashboard UI Kit",
-                "Bộ giao diện Dashboard chuyên sâu dành cho nền tảng SaaS & Fintech với hơn 100+ components, hỗ trợ Auto-Layout 5.0, đầy đủ biến thể Dark/Light mode và thiết kế chuẩn Responsive.",
-                new BigDecimal("250000"),
-                "APPROVED",
-                null,
-                catUiUx,
-                alexDesigner);
-        createDesignImage(d1, "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop",
-                true);
-        createDesignImage(d1,
-                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop", false);
-        createDesignFile(d1, "saas-analytics-dashboard-v2.fig", "/uploads/files/saas-analytics-dashboard-v2.fig",
-                25165824L, "FIG");
-
-        // Design 2: APPROVED - Cyberpunk Poster
-        Design d2 = createDesign(
-                "Cyberpunk Neon Music Fest Poster",
-                "Mẫu Poster sự kiện EDM / Cyberpunk với hiệu ứng ánh sáng Neon rực rỡ, layer Photoshop được tổ chức chuyên nghiệp, chuẩn in ấn CMYK 300 DPI kích thước A2/A3.",
-                new BigDecimal("95000"),
-                "APPROVED",
-                null,
-                catPoster,
-                mayaDesigner);
-        createDesignImage(d2,
-                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d2, "cyberpunk-neon-poster-cmyk.psd", "/uploads/files/cyberpunk-neon-poster-cmyk.psd",
-                88080384L, "PSD");
-
-        // Design 3: APPROVED - Coffee Brand Identity
-        Design d3 = createDesign(
-                "Minimalist Artisan Coffee Brand Guidelines",
-                "Trọn bộ nhận diện thương hiệu quán cà phê phong cách Tối giản Hiện đại: Logo vector tùy chỉnh, bảng màu Panton, mockup bao bì cốc/túi giấy và hướng dẫn sử dụng font.",
-                new BigDecimal("350000"),
-                "APPROVED",
-                null,
-                catLogo,
-                alexDesigner);
-        createDesignImage(d3,
-                "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d3, "coffee-brand-identity-pack.ai", "/uploads/files/coffee-brand-identity-pack.ai", 33554432L,
-                "AI");
-
-        // Design 4: APPROVED - Fintech Mobile Banking App
-        Design d4 = createDesign(
-                "Fintech Banking Mobile App UI Concept",
-                "Hệ thống 45+ màn hình ứng dụng ngân hàng số & ví điện tử: luồng chuyển tiền, quét mã QR, thẻ ảo, biểu đồ chi tiêu và quản lý tài chính cá nhân.",
-                new BigDecimal("180000"),
-                "APPROVED",
-                null,
-                catUiUx,
-                alexDesigner);
-        createDesignImage(d4,
-                "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d4, "fintech-mobile-banking.fig", "/uploads/files/fintech-mobile-banking.fig", 18874368L,
-                "FIG");
-
-        // Design 5: PENDING - Mẫu chờ Admin duyệt
-        Design d5 = createDesign(
-                "Eco Life Organic Farm Brand Identity",
-                "Bộ nhận diện nông sản hữu cơ thân thiện môi trường, gồm logo cách điệu hình mầm cây và bộ icon bao bì tự hủy sinh học.",
-                new BigDecimal("290000"),
-                "PENDING",
-                null,
-                catLogo,
-                mayaDesigner);
-        createDesignImage(d5,
-                "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d5, "eco-life-farm-branding.ai", "/uploads/files/eco-life-farm-branding.ai", 23068672L, "AI");
-
-        // Design 6: REJECTED - Mẫu bị từ chối kèm lý do
-        Design d6 = createDesign(
-                "Retro Vintage Typography Badge Pack",
-                "Bộ huy hiệu phong cách cổ điển thập niên 80 gồm 20 mẫu vector tùy biến chữ tự do, phù hợp in áo thun, nhãn mác sản phẩm và mũ nón.",
-                new BigDecimal("120000"),
-                "REJECTED",
-                "Ảnh xem trước kích thước nhỏ và bị mờ. Vui lòng tải lại ảnh mockup độ phân giải tối thiểu 1200x800px và kiểm tra lại font chữ đính kèm.",
-                cat3d,
-                mayaDesigner);
-        createDesignImage(d6,
-                "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop", true);
-        createDesignFile(d6, "retro-typography-badges.zip", "/uploads/files/retro-typography-badges.zip", 15728640L,
-                "ZIP");
-
-        // 4. Tạo Đơn hàng đã mua (Order) cho Quân Nguyễn để test "Kho của tôi" và Tải
-        // file
-        createCompletedOrder(johnUser, d1);
-
-        // 5. Tạo Đánh giá mẫu (Reviews)
-        createReview(johnUser, d1, 5,
-                "Sản phẩm cực kỳ chất lượng, các component tổ chức mạch lạc, chuẩn auto-layout, tiết kiệm được rất nhiều thời gian!");
-        createReview(lisaUser, d2, 5,
-                "Poster in ra rất nét và màu sắc chuẩn Neon, layer Photoshop phân chia gọn gàng dễ chỉnh sửa chữ.");
-
-        // 6. Tạo Yêu cầu đặt thiết kế riêng mẫu (Custom Design Requests)
-        seedDemoDesignRequestsIfNeeded();
-
-        log.info(
-                ">>> Nạp dữ liệu mẫu hoàn tất thành công! 5 danh mục, 6 thiết kế (APPROVED, PENDING, REJECTED), 1 đơn hàng đã mua và 2 đánh giá.");
-    }
-
-    private void seedDemoDesignRequestsIfNeeded() {
-        List<DesignRequest> existing = designRequestRepository.findAll();
-        if (!existing.isEmpty()) {
-            for (DesignRequest r : existing) {
-                boolean changed = false;
-                if (r.getTransactionCode() == null || r.getTransactionCode().isBlank()) {
-                    r.setPaymentStatus("APPROVED".equalsIgnoreCase(r.getStatus()) ? "RELEASED" : "ESCROW_HELD");
-                    r.setPaymentMethod("VNPAY");
-                    r.setTransactionCode("ESCROW-DH-DEMO-" + r.getId());
-                    r.setPaidAt(LocalDateTime.now().minusHours(5));
-                    changed = true;
+        @Override
+        @Transactional
+        public void run(String... args) {
+                if (categoryRepository.count() > 0 && designRepository.count() > 0) {
+                        ensurePhysicalDemoFilesExist();
+                        seedDemoDesignRequestsIfNeeded();
+                        log.info("Dữ liệu mẫu (Demo Data) đã tồn tại. Bỏ qua bước nạp tự động.");
+                        return;
                 }
-                if (r.getSystemNotification() == null || r.getSystemNotification().isBlank()) {
-                    if ("PREVIEW_READY".equalsIgnoreCase(r.getStatus())) {
-                        r.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.zip");
-                        r.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
-                        r.setDeliveredAt(LocalDateTime.now());
-                        r.setAcceptedAt(LocalDateTime.now().minusHours(2));
-                        r.setCustomerUnread(true);
-                        r.setSystemNotification(
-                                "Hệ thống thông báo: Hệ thống đã nhận được sản phẩm hoàn thiện từ Designer Vũ Đào cho yêu cầu #"
-                                        + r.getId() + " (\"" + r.getTitle()
-                                        + "\") và đã chuyển sản phẩm về tài khoản của bạn!");
-                    } else if ("IN_PROGRESS".equalsIgnoreCase(r.getStatus())) {
-                        r.setAcceptedAt(LocalDateTime.now().minusHours(1));
-                        r.setCustomerUnread(true);
-                        r.setSystemNotification("Hệ thống thông báo: Yêu cầu #" + r.getId() + " (\"" + r.getTitle()
-                                + "\") của bạn đã được Designer tiếp nhận và đang tiến hành thiết kế!");
-                    } else {
-                        r.setSystemNotification(
-                                "Hệ thống đã nhận & tạm giữ 100% tiền bảo đảm (Escrow). Yêu cầu của bạn đang mở trên hệ thống để các Designer phù hợp nhận làm.");
-                    }
-                    changed = true;
+
+                log.info(">>> Đang bắt đầu nạp dữ liệu mẫu (Seeding Demo Data) cho DesignHub...");
+
+                // 1. Tạo Danh mục (Categories)
+                Category catUiUx = createCategory("UI/UX & Mobile Apps",
+                                "Giao diện Web App, Mobile UI Kit, Dashboard SaaS tối ưu trải nghiệm người dùng.");
+                Category catPoster = createCategory("Poster & Quảng Cáo",
+                                "Mẫu Poster sự kiện, Banner marketing, Cover mạng xã hội độ phân giải cao.");
+                Category catLogo = createCategory("Logo & Brand Identity",
+                                "Hệ thống nhận diện thương hiệu, Logo vector, Brand guideline chuyên nghiệp.");
+                createCategory("Template & Slide",
+                                "Slide thuyết trình PowerPoint/Keynote hiện đại, mẫu CV/Resume chuẩn quốc tế.");
+                Category cat3d = createCategory("Vector & 3D Artwork",
+                                "Gói icon 3D sống động, minh họa vector Isometric, texture thiết kế.");
+
+                // 2. Tạo Tài khoản Người dùng (Users & Designers)
+                User alexUser = createUserIfNotExist("vu", "vu@designhub.com", "123456", "Vũ Đào", "0901234567",
+                                Role.DESIGNER);
+                Designer alexDesigner = createDesignerIfNotExist(alexUser,
+                                "Senior UI/UX & Brand Identity Designer với 5+ năm kinh nghiệm. Tác giả của nhiều bộ Design System và Mobile Kits chất lượng cao.",
+                                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
+
+                User mayaUser = createUserIfNotExist("hoang", "hoang@designhub.com", "123456", "Hoàng Lê", "0908765432",
+                                Role.DESIGNER);
+                Designer mayaDesigner = createDesignerIfNotExist(mayaUser,
+                                "Digital Artist & Visual Designer đam mê phong cách Cyberpunk, Typography nghệ thuật và Poster sự kiện âm nhạc.",
+                                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200");
+
+                User johnUser = createUserIfNotExist("quan", "quan@gmail.com", "123456", "Quân Nguyễn", "0912334455",
+                                Role.CUSTOMER);
+                User lisaUser = createUserIfNotExist("tuan", "tuan@gmail.com", "123456", "Tuấn Vũ", "0933445566",
+                                Role.CUSTOMER);
+
+                // 3. Tạo Bản Thiết Kế (Designs)
+                // Design 1: APPROVED - SaaS Dashboard
+                Design d1 = createDesign(
+                                "SaaS Analytics Dashboard UI Kit",
+                                "Bộ giao diện Dashboard chuyên sâu dành cho nền tảng SaaS & Fintech với hơn 100+ components, hỗ trợ Auto-Layout 5.0, đầy đủ biến thể Dark/Light mode và thiết kế chuẩn Responsive.",
+                                new BigDecimal("250000"),
+                                "APPROVED",
+                                null,
+                                catUiUx,
+                                alexDesigner);
+                createDesignImage(d1,
+                                "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignImage(d1,
+                                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop",
+                                false);
+                createDesignFile(d1, "saas-analytics-dashboard-v2.fig",
+                                "/uploads/files/saas-analytics-dashboard-v2.fig",
+                                25165824L, "FIG");
+
+                // Design 2: APPROVED - Cyberpunk Poster
+                Design d2 = createDesign(
+                                "Cyberpunk Neon Music Fest Poster",
+                                "Mẫu Poster sự kiện EDM / Cyberpunk với hiệu ứng ánh sáng Neon rực rỡ, layer Photoshop được tổ chức chuyên nghiệp, chuẩn in ấn CMYK 300 DPI kích thước A2/A3.",
+                                new BigDecimal("95000"),
+                                "APPROVED",
+                                null,
+                                catPoster,
+                                mayaDesigner);
+                createDesignImage(d2,
+                                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignFile(d2, "cyberpunk-neon-poster-cmyk.psd", "/uploads/files/cyberpunk-neon-poster-cmyk.psd",
+                                88080384L, "PSD");
+
+                // Design 3: APPROVED - Coffee Brand Identity
+                Design d3 = createDesign(
+                                "Minimalist Artisan Coffee Brand Guidelines",
+                                "Trọn bộ nhận diện thương hiệu quán cà phê phong cách Tối giản Hiện đại: Logo vector tùy chỉnh, bảng màu Panton, mockup bao bì cốc/túi giấy và hướng dẫn sử dụng font.",
+                                new BigDecimal("350000"),
+                                "APPROVED",
+                                null,
+                                catLogo,
+                                alexDesigner);
+                createDesignImage(d3,
+                                "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignFile(d3, "coffee-brand-identity-pack.ai", "/uploads/files/coffee-brand-identity-pack.ai",
+                                33554432L,
+                                "AI");
+
+                // Design 4: APPROVED - Fintech Mobile Banking App
+                Design d4 = createDesign(
+                                "Fintech Banking Mobile App UI Concept",
+                                "Hệ thống 45+ màn hình ứng dụng ngân hàng số & ví điện tử: luồng chuyển tiền, quét mã QR, thẻ ảo, biểu đồ chi tiêu và quản lý tài chính cá nhân.",
+                                new BigDecimal("180000"),
+                                "APPROVED",
+                                null,
+                                catUiUx,
+                                alexDesigner);
+                createDesignImage(d4,
+                                "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignFile(d4, "fintech-mobile-banking.fig", "/uploads/files/fintech-mobile-banking.fig",
+                                18874368L,
+                                "FIG");
+
+                // Design 5: PENDING - Mẫu chờ Admin duyệt
+                Design d5 = createDesign(
+                                "Eco Life Organic Farm Brand Identity",
+                                "Bộ nhận diện nông sản hữu cơ thân thiện môi trường, gồm logo cách điệu hình mầm cây và bộ icon bao bì tự hủy sinh học.",
+                                new BigDecimal("290000"),
+                                "PENDING",
+                                null,
+                                catLogo,
+                                mayaDesigner);
+                createDesignImage(d5,
+                                "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignFile(d5, "eco-life-farm-branding.ai", "/uploads/files/eco-life-farm-branding.ai", 23068672L,
+                                "AI");
+
+                // Design 6: REJECTED - Mẫu bị từ chối kèm lý do
+                Design d6 = createDesign(
+                                "Retro Vintage Typography Badge Pack",
+                                "Bộ huy hiệu phong cách cổ điển thập niên 80 gồm 20 mẫu vector tùy biến chữ tự do, phù hợp in áo thun, nhãn mác sản phẩm và mũ nón.",
+                                new BigDecimal("120000"),
+                                "REJECTED",
+                                "Ảnh xem trước kích thước nhỏ và bị mờ. Vui lòng tải lại ảnh mockup độ phân giải tối thiểu 1200x800px và kiểm tra lại font chữ đính kèm.",
+                                cat3d,
+                                mayaDesigner);
+                createDesignImage(d6,
+                                "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop",
+                                true);
+                createDesignFile(d6, "retro-typography-badges.zip", "/uploads/files/retro-typography-badges.zip",
+                                15728640L,
+                                "ZIP");
+
+                // 4. Tạo Đơn hàng đã mua (Order) cho Quân Nguyễn để test "Kho của tôi" và Tải
+                // file
+                createCompletedOrder(johnUser, d1);
+
+                // 5. Tạo Đánh giá mẫu (Reviews)
+                createReview(johnUser, d1, 5,
+                                "Sản phẩm cực kỳ chất lượng, các component tổ chức mạch lạc, chuẩn auto-layout, tiết kiệm được rất nhiều thời gian!");
+                createReview(lisaUser, d2, 5,
+                                "Poster in ra rất nét và màu sắc chuẩn Neon, layer Photoshop phân chia gọn gàng dễ chỉnh sửa chữ.");
+
+                // 6. Tạo Yêu cầu đặt thiết kế riêng mẫu (Custom Design Requests)
+                seedDemoDesignRequestsIfNeeded();
+
+                log.info(
+                                ">>> Nạp dữ liệu mẫu hoàn tất thành công! 5 danh mục, 6 thiết kế (APPROVED, PENDING, REJECTED), 1 đơn hàng đã mua và 2 đánh giá.");
+        }
+
+        private void seedDemoDesignRequestsIfNeeded() {
+                List<DesignRequest> existing = designRequestRepository.findAll();
+                if (!existing.isEmpty()) {
+                        for (DesignRequest r : existing) {
+                                boolean changed = false;
+                                if (r.getTransactionCode() == null || r.getTransactionCode().isBlank()) {
+                                        r.setPaymentStatus("APPROVED".equalsIgnoreCase(r.getStatus()) ? "RELEASED"
+                                                        : "ESCROW_HELD");
+                                        r.setPaymentMethod("VNPAY");
+                                        r.setTransactionCode("DH-DEMO-" + r.getId());
+                                        r.setPaidAt(LocalDateTime.now().minusHours(5));
+                                        changed = true;
+                                }
+                                if (r.getSystemNotification() == null || r.getSystemNotification().isBlank()
+                                                || r.getSystemNotification().length() > 90) {
+                                        if ("PREVIEW_READY".equalsIgnoreCase(r.getStatus())) {
+                                                r.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.zip");
+                                                r.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
+                                                r.setDeliveredAt(LocalDateTime.now());
+                                                r.setAcceptedAt(LocalDateTime.now().minusHours(2));
+                                                r.setSystemNotification(
+                                                                "Designer Vũ Đào đã bàn giao sản phẩm. Vui lòng kiểm tra và nghiệm thu.");
+                                        } else if ("IN_PROGRESS".equalsIgnoreCase(r.getStatus())) {
+                                                r.setAcceptedAt(LocalDateTime.now().minusHours(1));
+                                                r.setSystemNotification("Designer đã nhận yêu cầu và đang thực hiện.");
+                                        } else if ("APPROVED".equalsIgnoreCase(r.getStatus())) {
+                                                r.setSystemNotification("Đã nghiệm thu sản phẩm và mở khóa file gốc.");
+                                        } else {
+                                                r.setSystemNotification(
+                                                                "Yêu cầu đã được gửi lên hệ thống, đang chờ Designer tiếp nhận.");
+                                        }
+                                        changed = true;
+                                }
+                                if (changed) {
+                                        designRequestRepository.save(r);
+                                }
+                        }
+                        return;
                 }
-                if (changed) {
-                    designRequestRepository.save(r);
+                User customer1 = userRepository.findByEmail("quan@gmail.com").orElse(null);
+                User customer2 = userRepository.findByEmail("tuan@gmail.com").orElse(null);
+                User designerUser = userRepository.findByEmail("vu@designhub.com").orElse(null);
+                Designer designer1 = designerUser != null
+                                ? designerRepository.findByUserId(designerUser.getId()).orElse(null)
+                                : null;
+                Category catLogo = categoryRepository.findAll().stream().findFirst().orElse(null);
+
+                if (customer1 != null) {
+                        DesignRequest req1 = new DesignRequest();
+                        req1.setCustomer(customer1);
+                        req1.setDesigner(designer1);
+                        req1.setCategory(catLogo);
+                        req1.setTitle("Thiết kế Bộ nhận diện & Bao bì Trà Thảo Mộc Organic");
+                        req1.setProductDescription(
+                                        "Tôi cần thiết kế bộ nhận diện thương hiệu và bao bì cho dòng trà thảo mộc đóng hộp. Tông màu xanh lá tự nhiên, sang trọng, bàn giao đầy đủ file gốc in ấn và hình ảnh sản phẩm.");
+                        req1.setReferenceImageUrl(
+                                        "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop");
+                        req1.setBudget(new BigDecimal("450000"));
+                        req1.setDeadline("2026-12-15");
+                        req1.setMockupType("STANDARD_2D");
+                        req1.setStatus("PREVIEW_READY");
+                        req1.setPreviewImageUrl(
+                                        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop");
+                        req1.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.ai");
+                        req1.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
+                        req1.setAcceptedAt(LocalDateTime.now().minusHours(3));
+                        req1.setDeliveredAt(LocalDateTime.now().minusMinutes(30));
+                        req1.setCustomerUnread(true);
+                        req1.setDesignerNote(
+                                        "Mình đã hoàn thiện sản phẩm thiết kế kèm file gốc .AI và ảnh xem trước.");
+                        req1.setSystemNotification(
+                                        "Designer Vũ Đào đã bàn giao sản phẩm. Vui lòng kiểm tra và nghiệm thu.");
+                        designRequestRepository.save(req1);
                 }
-            }
-            return;
-        }
-        User customer1 = userRepository.findByEmail("quan@gmail.com").orElse(null);
-        User customer2 = userRepository.findByEmail("tuan@gmail.com").orElse(null);
-        User designerUser = userRepository.findByEmail("vu@designhub.com").orElse(null);
-        Designer designer1 = designerUser != null ? designerRepository.findByUserId(designerUser.getId()).orElse(null)
-                : null;
-        Category catLogo = categoryRepository.findAll().stream().findFirst().orElse(null);
 
-        if (customer1 != null) {
-            DesignRequest req1 = new DesignRequest();
-            req1.setCustomer(customer1);
-            req1.setDesigner(designer1);
-            req1.setCategory(catLogo);
-            req1.setTitle("Thiết kế Bộ nhận diện & Bao bì Trà Thảo Mộc Organic");
-            req1.setProductDescription(
-                    "Tôi cần thiết kế bộ nhận diện thương hiệu và bao bì cho dòng trà thảo mộc đóng hộp. Tông màu xanh lá tự nhiên, sang trọng, bàn giao đầy đủ file gốc in ấn và hình ảnh sản phẩm.");
-            req1.setReferenceImageUrl(
-                    "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop");
-            req1.setBudget(new BigDecimal("450000"));
-            req1.setDeadline("2026-12-15");
-            req1.setMockupType("BOX_3D");
-            req1.setStatus("PREVIEW_READY");
-            req1.setPreviewImageUrl(
-                    "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop");
-            req1.setDeliveryFileName("bo-thiet-ke-tra-thao-moc-final.ai");
-            req1.setDeliveryFileUrl("/uploads/files/eco-life-farm-branding.ai");
-            req1.setAcceptedAt(LocalDateTime.now().minusHours(3));
-            req1.setDeliveredAt(LocalDateTime.now().minusMinutes(30));
-            req1.setCustomerUnread(true);
-            req1.setDesignerNote(
-                    "Mình đã hoàn thiện sản phẩm thiết kế và gửi trả về hệ thống (kèm file gốc .AI và ảnh kết xuất). Mời bạn kiểm tra và tải sản phẩm về nhé!");
-            req1.setSystemNotification(
-                    "Hệ thống thông báo: Hệ thống đã nhận được sản phẩm hoàn thiện từ Designer Vũ Đào và đã chuyển sản phẩm về tài khoản của bạn. Vui lòng kiểm tra và tải sản phẩm!");
-            designRequestRepository.save(req1);
+                if (customer2 != null) {
+                        DesignRequest req2 = new DesignRequest();
+                        req2.setCustomer(customer2);
+                        req2.setCategory(catLogo);
+                        req2.setTitle("Thiết kế Logo & Nhãn Chai Cà Phê Cold Brew");
+                        req2.setProductDescription(
+                                        "Quán cà phê của mình chuẩn bị ra mắt dòng Cold Brew đóng chai. Mình gửi ảnh chụp sản phẩm thực tế, cần Designer thiết kế nhãn dán và bộ menu đồng bộ.");
+                        req2.setReferenceImageUrl(
+                                        "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop");
+                        req2.setBudget(new BigDecimal("300000"));
+                        req2.setDeadline("2026-12-20");
+                        req2.setMockupType("STANDARD_2D");
+                        req2.setStatus("OPEN");
+                        req2.setCustomerUnread(false);
+                        req2.setSystemNotification(
+                                        "Yêu cầu đã được gửi lên hệ thống, đang chờ Designer tiếp nhận.");
+                        designRequestRepository.save(req2);
+                }
         }
 
-        if (customer2 != null) {
-            DesignRequest req2 = new DesignRequest();
-            req2.setCustomer(customer2);
-            req2.setCategory(catLogo);
-            req2.setTitle("Thiết kế Logo & Nhãn Chai Cà Phê Cold Brew");
-            req2.setProductDescription(
-                    "Quán cà phê của mình chuẩn bị ra mắt dòng Cold Brew đóng chai. Mình gửi ảnh chụp sản phẩm thực tế, cần Designer thiết kế nhãn dán và bộ menu đồng bộ.");
-            req2.setReferenceImageUrl(
-                    "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop");
-            req2.setBudget(new BigDecimal("300000"));
-            req2.setDeadline("2026-12-20");
-            req2.setMockupType("CUP_3D");
-            req2.setStatus("OPEN");
-            req2.setCustomerUnread(false);
-            req2.setSystemNotification(
-                    "Yêu cầu của bạn đã được đẩy lên hệ thống thành công. Hệ thống đang hiển thị yêu cầu để các Designer phù hợp xem và tiếp nhận.");
-            designRequestRepository.save(req2);
+        private Category createCategory(String name, String desc) {
+                return categoryRepository
+                                .findByNameContainingIgnoreCase(name,
+                                                org.springframework.data.domain.Pageable.unpaged())
+                                .stream().findFirst()
+                                .orElseGet(() -> {
+                                        Category cat = new Category();
+                                        cat.setName(name);
+                                        cat.setDescription(desc);
+                                        return categoryRepository.save(cat);
+                                });
         }
-    }
 
-    private Category createCategory(String name, String desc) {
-        return categoryRepository
-                .findByNameContainingIgnoreCase(name, org.springframework.data.domain.Pageable.unpaged())
-                .stream().findFirst()
-                .orElseGet(() -> {
-                    Category cat = new Category();
-                    cat.setName(name);
-                    cat.setDescription(desc);
-                    return categoryRepository.save(cat);
+        private User createUserIfNotExist(String username, String email, String rawPassword, String fullName,
+                        String phone,
+                        Role role) {
+                return userRepository.findByEmail(email).orElseGet(() -> {
+                        User u = new User();
+                        u.setUsername(username);
+                        u.setEmail(email);
+                        u.setPassword(passwordEncoder.encode(rawPassword));
+                        u.setFullName(fullName);
+                        u.setPhone(phone);
+                        u.setRole(role);
+                        return userRepository.save(u);
                 });
-    }
-
-    private User createUserIfNotExist(String username, String email, String rawPassword, String fullName, String phone,
-            Role role) {
-        return userRepository.findByEmail(email).orElseGet(() -> {
-            User u = new User();
-            u.setUsername(username);
-            u.setEmail(email);
-            u.setPassword(passwordEncoder.encode(rawPassword));
-            u.setFullName(fullName);
-            u.setPhone(phone);
-            u.setRole(role);
-            return userRepository.save(u);
-        });
-    }
-
-    private Designer createDesignerIfNotExist(User user, String bio, String avatar) {
-        return designerRepository.findByUserId(user.getId()).orElseGet(() -> {
-            Designer d = new Designer();
-            d.setUser(user);
-            d.setBio(bio);
-            d.setAvatar(avatar);
-            return designerRepository.save(d);
-        });
-    }
-
-    private Design createDesign(String name, String desc, BigDecimal price, String status, String rejectReason, Category cat, Designer designer) {
-        Design d = new Design();
-        d.setName(name);
-        d.setDescription(desc);
-        d.setPrice(price);
-        d.setStatus(status);
-        d.setRejectReason(rejectReason);
-        d.setCategory(cat);
-        d.setDesigner(designer);
-        return designRepository.save(d);
-    }
-
-    private void createDesignImage(Design design, String url, boolean isPrimary) {
-        DesignImage img = new DesignImage();
-        img.setDesign(design);
-        img.setImageUrl(url);
-        img.setPrimary(isPrimary);
-        designImageRepository.save(img);
-    }
-
-    private void createDesignFile(Design design, String fileName, String fileUrl, long size, String type) {
-        DesignFile file = new DesignFile();
-        file.setDesign(design);
-        file.setFileName(fileName);
-        file.setFileUrl(fileUrl);
-        file.setFileSize(size);
-        file.setFileType(type);
-        designFileRepository.save(file);
-
-        try {
-            ensurePhysicalFileForRecord(file);
-        } catch (Exception ex) {
-            log.warn("Không thể tạo tệp mẫu vật lý cho {}: {}", fileName, ex.getMessage());
-        }
-    }
-
-    private void ensurePhysicalDemoFilesExist() {
-        for (DesignFile file : designFileRepository.findAll()) {
-            try {
-                ensurePhysicalFileForRecord(file);
-            } catch (Exception ex) {
-                log.warn("Không thể bổ sung tệp mẫu vật lý cho {}: {}", file.getFileName(), ex.getMessage());
-            }
-        }
-    }
-
-    private void ensurePhysicalFileForRecord(DesignFile file) throws java.io.IOException {
-        if (file.getFileUrl() == null || file.getFileUrl().isBlank()) {
-            return;
-        }
-        Path filesDir = Paths.get(baseUploadDir, "files").toAbsolutePath().normalize();
-        Files.createDirectories(filesDir);
-        String storedFileName = Paths.get(file.getFileUrl()).getFileName().toString();
-        Path targetPath = filesDir.resolve(storedFileName).normalize();
-        if (targetPath.startsWith(filesDir) && !Files.exists(targetPath)) {
-            String designName = file.getDesign() != null ? file.getDesign().getName() : "DesignHub";
-            String demoContent = "DesignHub Demo Source File - " + designName + " (" + file.getFileName() + ")\n";
-            Files.writeString(targetPath, demoContent, StandardCharsets.UTF_8);
-        }
-    }
-
-    private void createCompletedOrder(User user, Design design) {
-        if (orderRepository.existsByUserId(user.getId())) {
-            return;
         }
 
-        Order order = new Order();
-        order.setUser(user);
-        order.setTotalAmount(design.getPrice());
-        order.setStatus("PAID");
-        Order savedOrder = orderRepository.save(order);
-
-        OrderDetail detail = new OrderDetail();
-        detail.setOrder(savedOrder);
-        detail.setDesign(design);
-        detail.setQuantity(1);
-        detail.setPrice(design.getPrice());
-        orderDetailRepository.save(detail);
-
-        Payment payment = new Payment();
-        payment.setOrder(savedOrder);
-        payment.setAmount(design.getPrice());
-        payment.setPaymentMethod("VNPAY");
-        payment.setTransactionId("TXN_DEMO_" + System.currentTimeMillis());
-        payment.setStatus(PaymentStatus.SUCCESS);
-        payment.setPaymentDate(LocalDateTime.now());
-        paymentRepository.save(payment);
-
-        DownloadHistory history = new DownloadHistory();
-        history.setUser(user);
-        history.setDesign(design);
-        history.setDownloadedAt(LocalDateTime.now());
-        downloadHistoryRepository.save(history);
-    }
-
-    private void createReview(User user, Design design, int rating, String comment) {
-        if (!reviewRepository.existsByUserIdAndDesignId(user.getId(), design.getId())) {
-            Review review = new Review();
-            review.setUser(user);
-            review.setDesign(design);
-            review.setRating(rating);
-            review.setComment(comment);
-            reviewRepository.save(review);
+        private Designer createDesignerIfNotExist(User user, String bio, String avatar) {
+                return designerRepository.findByUserId(user.getId()).orElseGet(() -> {
+                        Designer d = new Designer();
+                        d.setUser(user);
+                        d.setBio(bio);
+                        d.setAvatar(avatar);
+                        return designerRepository.save(d);
+                });
         }
-    }
+
+        private Design createDesign(String name, String desc, BigDecimal price, String status, String rejectReason,
+                        Category cat, Designer designer) {
+                Design d = new Design();
+                d.setName(name);
+                d.setDescription(desc);
+                d.setPrice(price);
+                d.setStatus(status);
+                d.setRejectReason(rejectReason);
+                d.setCategory(cat);
+                d.setDesigner(designer);
+                return designRepository.save(d);
+        }
+
+        private void createDesignImage(Design design, String url, boolean isPrimary) {
+                DesignImage img = new DesignImage();
+                img.setDesign(design);
+                img.setImageUrl(url);
+                img.setPrimary(isPrimary);
+                designImageRepository.save(img);
+        }
+
+        private void createDesignFile(Design design, String fileName, String fileUrl, long size, String type) {
+                DesignFile file = new DesignFile();
+                file.setDesign(design);
+                file.setFileName(fileName);
+                file.setFileUrl(fileUrl);
+                file.setFileSize(size);
+                file.setFileType(type);
+                designFileRepository.save(file);
+
+                try {
+                        ensurePhysicalFileForRecord(file);
+                } catch (Exception ex) {
+                        log.warn("Không thể tạo tệp mẫu vật lý cho {}: {}", fileName, ex.getMessage());
+                }
+        }
+
+        private void ensurePhysicalDemoFilesExist() {
+                for (DesignFile file : designFileRepository.findAll()) {
+                        try {
+                                ensurePhysicalFileForRecord(file);
+                        } catch (Exception ex) {
+                                log.warn("Không thể bổ sung tệp mẫu vật lý cho {}: {}", file.getFileName(),
+                                                ex.getMessage());
+                        }
+                }
+        }
+
+        private void ensurePhysicalFileForRecord(DesignFile file) throws java.io.IOException {
+                if (file.getFileUrl() == null || file.getFileUrl().isBlank()) {
+                        return;
+                }
+                Path filesDir = Paths.get(baseUploadDir, "files").toAbsolutePath().normalize();
+                Files.createDirectories(filesDir);
+                String storedFileName = Paths.get(file.getFileUrl()).getFileName().toString();
+                Path targetPath = filesDir.resolve(storedFileName).normalize();
+                if (targetPath.startsWith(filesDir) && !Files.exists(targetPath)) {
+                        String designName = file.getDesign() != null ? file.getDesign().getName() : "DesignHub";
+                        String demoContent = "DesignHub Demo Source File - " + designName + " (" + file.getFileName()
+                                        + ")\n";
+                        Files.writeString(targetPath, demoContent, StandardCharsets.UTF_8);
+                }
+        }
+
+        private void createCompletedOrder(User user, Design design) {
+                if (orderRepository.existsByUserId(user.getId())) {
+                        return;
+                }
+
+                Order order = new Order();
+                order.setUser(user);
+                order.setTotalAmount(design.getPrice());
+                order.setStatus("PAID");
+                Order savedOrder = orderRepository.save(order);
+
+                OrderDetail detail = new OrderDetail();
+                detail.setOrder(savedOrder);
+                detail.setDesign(design);
+                detail.setQuantity(1);
+                detail.setPrice(design.getPrice());
+                orderDetailRepository.save(detail);
+
+                Payment payment = new Payment();
+                payment.setOrder(savedOrder);
+                payment.setAmount(design.getPrice());
+                payment.setPaymentMethod("VNPAY");
+                payment.setTransactionId("TXN_DEMO_" + System.currentTimeMillis());
+                payment.setStatus(PaymentStatus.SUCCESS);
+                payment.setPaymentDate(LocalDateTime.now());
+                paymentRepository.save(payment);
+
+                DownloadHistory history = new DownloadHistory();
+                history.setUser(user);
+                history.setDesign(design);
+                history.setDownloadedAt(LocalDateTime.now());
+                downloadHistoryRepository.save(history);
+        }
+
+        private void createReview(User user, Design design, int rating, String comment) {
+                if (!reviewRepository.existsByUserIdAndDesignId(user.getId(), design.getId())) {
+                        Review review = new Review();
+                        review.setUser(user);
+                        review.setDesign(design);
+                        review.setRating(rating);
+                        review.setComment(comment);
+                        reviewRepository.save(review);
+                }
+        }
 }

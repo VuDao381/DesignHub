@@ -192,10 +192,10 @@
 
                             <div class="d-flex flex-wrap gap-2 mt-4">
                                 <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #6366f1, #db2777); border:none;" onclick="openCustomRequestModal('create')">
-                                    <i class="bi bi-send-plus-fill me-1"></i> Gửi Yêu Cầu Thiết Kế Riêng Lên Hệ Thống
+                                    <i class="bi bi-send-plus-fill me-1"></i> Đặt thiết kế theo yêu cầu
                                 </button>
                                 <button type="button" class="btn btn-outline-dark rounded-pill px-3 py-2 fw-semibold position-relative" onclick="openCustomRequestModal('list')">
-                                    <i class="bi bi-bell-fill me-1 text-danger"></i> Yêu Cầu Của Tôi & Nhận Sản Phẩm
+                                    <i class="bi bi-bell-fill me-1 text-danger"></i> Yêu cầu của tôi
                                 </button>
                             </div>
                         </div>
@@ -226,58 +226,6 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </section>
-
-        <!-- Băng chuyền Điểm Khác Biệt Độc Quyền: 3D Studio, Quay Phim Movie 3D, Đặt Thiết Kế Riêng & Bảo mật DRM -->
-        <section class="py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #311042 100%); color: #fff;">
-            <div class="container">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-3">
-                        <div class="d-flex align-items-start gap-3 p-2">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:46px;height:46px;background:rgba(99,102,241,0.25);color:#818cf8;font-size:20px;">
-                                <i class="fa-solid fa-cube"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1" style="font-size:14px;">Không gian 3 Chiều & Lật 180°</h6>
-                                <p class="small mb-0" style="color:#cbd5e1;font-size:12px;">Áp bản vẽ lên Hộp 3D, Cốc 3D, Khung tranh 3D; xoay ngược mặt sau 180° kiểm tra chứng nhận.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="d-flex align-items-start gap-3 p-2">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:46px;height:46px;background:rgba(236,72,153,0.25);color:#f472b6;font-size:20px;">
-                                <i class="fa-solid fa-video"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1" style="font-size:14px;">Phụ trợ Quay Phim Movie 3D</h6>
-                                <p class="small mb-0" style="color:#cbd5e1;font-size:12px;">Quay & tải xuống video Movie 3D (30 FPS) giúp Artist và khách hàng trình chiếu sản phẩm vượt trội.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="d-flex align-items-start gap-3 p-2 cursor-pointer" onclick="openCustomRequestModal('create')">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:46px;height:46px;background:rgba(16,185,129,0.25);color:#34d399;font-size:20px;">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1 text-decoration-underline" style="font-size:14px;">Đặt Thiết Kế Theo Yêu Cầu</h6>
-                                <p class="small mb-0" style="color:#cbd5e1;font-size:12px;">Khách đẩy yêu cầu lên hệ thống, Designer phù hợp nhận làm và trả sản phẩm về cho khách.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="d-flex align-items-start gap-3 p-2 cursor-pointer" onclick="openCustomRequestModal('list')">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:46px;height:46px;background:rgba(245,158,11,0.25);color:#fbbf24;font-size:20px;">
-                                <i class="fa-solid fa-bell"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1 text-decoration-underline" style="font-size:14px;">Thông Báo & Nhận Sản Phẩm</h6>
-                                <p class="small mb-0" style="color:#cbd5e1;font-size:12px;">Hệ thống tự động thông báo khi yêu cầu được nhận và chuyển giao sản phẩm hoàn thiện về cho bạn.</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -558,20 +506,33 @@
         </div>
     </div>
 
-    <!-- Modal Đặt Thiết Kế Theo Yêu Cầu (Custom Design Commission & System Delivery) -->
+    <!-- Modal Đặt Thiết Kế Theo Yêu Cầu -->
     <div class="modal fade" id="customRequestModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
-                <div class="modal-header border-bottom">
-                    <div>
-                        <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
-                            <i class="bi bi-box-seam-fill text-primary"></i> Đặt Thiết Kế Theo Yêu Cầu & Nhận Sản Phẩm Bàn Giao Từ Hệ Thống
-                        </h5>
-                        <small class="text-muted">Đẩy yêu cầu thiết kế lên hệ thống • Hệ thống thông báo khi Designer tiếp nhận và chuyển sản phẩm hoàn thiện về cho bạn.</small>
-                    </div>
+                <div class="modal-header border-bottom py-3">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0">
+                        <i class="bi bi-box-seam-fill text-primary"></i> Đặt Thiết Kế Theo Yêu Cầu
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4" id="customRequestModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Mẫu Sản Phẩm Nghiệm Thu -->
+    <div class="modal fade" id="customRequestPreviewModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom py-3">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0" id="customRequestPreviewTitle">
+                        <i class="bi bi-eye-fill text-primary"></i> Xem Mẫu Sản Phẩm Bàn Giao
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="customRequestPreviewBody">
                 </div>
             </div>
         </div>
@@ -699,11 +660,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script th:src="@{/js/api.js}" src="/js/api.js"></script>
     <script th:src="@{/js/auth.js}" src="/js/auth.js"></script>
-    <script th:src="@{/js/viewer3d.js}" src="/js/viewer3d.js"></script>
     <script th:src="@{/js/app.js}" src="/js/app.js"></script>
 
     <script>

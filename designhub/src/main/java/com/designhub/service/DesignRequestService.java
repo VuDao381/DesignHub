@@ -98,14 +98,14 @@ public class DesignRequestService {
         if ("UNPAID".equalsIgnoreCase(req.getPaymentStatus())) {
             req.setPaymentStatus("UNPAID");
             req.setStatus("PENDING_PAYMENT");
-            req.setSystemNotification("Yêu cầu đã được khởi tạo. Vui lòng hoàn tất Thanh toán tạm giữ (Escrow) để hệ thống kích hoạt đẩy yêu cầu tới các Designer.");
+            req.setSystemNotification("Yêu cầu đã tạo, chờ thanh toán.");
         } else {
-            String txCode = "ESCROW-DH-" + System.currentTimeMillis();
+            String txCode = "DH-" + System.currentTimeMillis();
             req.setPaymentStatus("ESCROW_HELD");
             req.setTransactionCode(txCode);
             req.setPaidAt(LocalDateTime.now());
             req.setStatus("OPEN");
-            req.setSystemNotification("Hệ thống đã nhận & tạm giữ 100% khoản thanh toán bảo đảm (Escrow " + method + " - Mã GD: " + txCode + "). Yêu cầu của bạn đã được đẩy lên hệ thống để Designer phù hợp nhận làm.");
+            req.setSystemNotification("Yêu cầu đã được gửi lên hệ thống, đang chờ Designer tiếp nhận.");
         }
         return designRequestRepository.save(req);
     }
@@ -118,7 +118,7 @@ public class DesignRequestService {
         String method = (payload != null && payload.get("paymentMethod") != null)
                 ? String.valueOf(payload.get("paymentMethod")).trim().toUpperCase()
                 : "VNPAY";
-        String txCode = "ESCROW-DH-" + System.currentTimeMillis();
+        String txCode = "DH-" + System.currentTimeMillis();
 
         req.setPaymentMethod(method);
         req.setPaymentStatus("ESCROW_HELD");
@@ -128,7 +128,7 @@ public class DesignRequestService {
             req.setStatus("OPEN");
         }
         req.setCustomerUnread(false);
-        req.setSystemNotification("Thanh toán tạm giữ thành công (Mã GD: " + txCode + "). Hệ thống đang giữ tiền bảo đảm và đã mở yêu cầu cho Designer nhận làm.");
+        req.setSystemNotification("Đã thanh toán thành công, đang chờ Designer tiếp nhận.");
         return designRequestRepository.save(req);
     }
 
@@ -149,7 +149,7 @@ public class DesignRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu thiết kế #" + id));
 
         if (!"ESCROW_HELD".equalsIgnoreCase(req.getPaymentStatus())) {
-            throw new IllegalArgumentException("Yêu cầu này khách hàng chưa thanh toán tạm giữ (Escrow) nên chưa thể nhận làm");
+            throw new IllegalArgumentException("Yêu cầu này chưa được thanh toán");
         }
 
         if (!"OPEN".equalsIgnoreCase(req.getStatus()) && (req.getDesigner() == null || !req.getDesigner().getId().equals(designer.getId()))) {
@@ -164,7 +164,7 @@ public class DesignRequestService {
         req.setStatus("IN_PROGRESS");
         req.setAcceptedAt(LocalDateTime.now());
         req.setCustomerUnread(true);
-        req.setSystemNotification("Hệ thống thông báo: Yêu cầu #" + req.getId() + " (\"" + req.getTitle() + "\") của bạn đã được Designer " + designerName + " tiếp nhận! Khoản tiền tạm giữ (Escrow) đang được hệ thống bảo đảm (khách hàng không thể tự ý hủy ngang khi Designer đang thực hiện).");
+        req.setSystemNotification("Designer " + designerName + " đã nhận yêu cầu và đang thực hiện.");
         return designRequestRepository.save(req);
     }
 
@@ -228,7 +228,7 @@ public class DesignRequestService {
         req.setDeliveredAt(LocalDateTime.now());
         req.setStatus("PREVIEW_READY");
         req.setCustomerUnread(true);
-        req.setSystemNotification("Hệ thống thông báo: Hệ thống đã nhận được sản phẩm hoàn thiện từ Designer " + designerName + " cho yêu cầu #" + req.getId() + " (\"" + req.getTitle() + "\") và chuyển về cho bạn kiểm tra! Nếu sản phẩm đúng yêu cầu, hãy bấm [Nghiệm thu & Giải ngân] để tải File gốc; nếu chưa đúng yêu cầu, bạn có thể [Yêu cầu chỉnh sửa] hoặc [Báo sai yêu cầu & Hoàn tiền 100%].");
+        req.setSystemNotification("Designer " + designerName + " đã bàn giao sản phẩm. Vui lòng kiểm tra và nghiệm thu.");
         return designRequestRepository.save(req);
     }
 
@@ -246,7 +246,7 @@ public class DesignRequestService {
         req.setPaymentStatus("RELEASED");
         req.setReleasedAt(LocalDateTime.now());
         req.setCustomerUnread(false);
-        req.setSystemNotification("Hoàn tất nghiệm thu! Hệ thống đã mở khóa toàn bộ File thiết kế gốc cho bạn tải về và giải ngân 100% tiền tạm giữ (Escrow) cho Designer.");
+        req.setSystemNotification("Đã nghiệm thu sản phẩm và mở khóa file gốc.");
         return designRequestRepository.save(req);
     }
 
@@ -264,7 +264,7 @@ public class DesignRequestService {
                 ? String.valueOf(payload.get("feedback")).trim()
                 : "";
         if (feedback.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng nhập nội dung chưa đúng yêu cầu cần Designer chỉnh sửa lại");
+            throw new IllegalArgumentException("Vui lòng nhập nội dung cần chỉnh sửa");
         }
 
         req.setCustomerFeedback(feedback);
@@ -272,7 +272,7 @@ public class DesignRequestService {
         req.setStatus("REVISION_REQUESTED");
         req.setPaymentStatus("ESCROW_HELD");
         req.setCustomerUnread(false);
-        req.setSystemNotification("Bạn đã gửi yêu cầu chỉnh sửa lần #" + req.getRevisionCount() + " (\"" + feedback + "\"). Hệ thống vẫn đang tạm giữ an toàn khoản tiền ký quỹ của bạn và đã thông báo cho Designer chỉnh sửa lại.");
+        req.setSystemNotification("Đã gửi yêu cầu chỉnh sửa cho Designer.");
         return designRequestRepository.save(req);
     }
 
@@ -283,14 +283,14 @@ public class DesignRequestService {
         currentUserService.checkOwnerOrAdmin(req.getCustomer().getId());
 
         if (!"PREVIEW_READY".equalsIgnoreCase(req.getStatus()) && !"REVISION_REQUESTED".equalsIgnoreCase(req.getStatus())) {
-            throw new IllegalArgumentException("Chỉ có thể báo sai yêu cầu & hoàn tiền sau khi kiểm tra sản phẩm bàn giao");
+            throw new IllegalArgumentException("Chỉ có thể hoàn tiền sau khi kiểm tra sản phẩm bàn giao");
         }
 
         String reason = (payload != null && payload.get("reason") != null)
                 ? String.valueOf(payload.get("reason")).trim()
                 : "";
         if (reason.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng nhập lý do sản phẩm không đúng với yêu cầu ban đầu để hệ thống hoàn tiền");
+            throw new IllegalArgumentException("Vui lòng nhập lý do từ chối sản phẩm");
         }
 
         req.setCustomerFeedback(reason);
@@ -298,7 +298,7 @@ public class DesignRequestService {
         req.setPaymentStatus("REFUNDED");
         req.setReleasedAt(LocalDateTime.now());
         req.setCustomerUnread(false);
-        req.setSystemNotification("Bảo vệ Khách hàng: Do sản phẩm không đúng với yêu cầu ban đầu (\"" + reason + "\"), hệ thống đã thu hồi quyền tải bản vẽ và HOÀN TRẢ 100% số tiền ký quỹ về tài khoản của bạn!");
+        req.setSystemNotification("Đã từ chối sản phẩm và hoàn tiền.");
         return designRequestRepository.save(req);
     }
 
@@ -310,24 +310,20 @@ public class DesignRequestService {
         if (!currentUserService.isAdmin()) {
             Designer designer = designerRepository.findByUserId(me.getId())
                     .orElseThrow(() -> new AccessDeniedException("Chỉ Designer phụ trách hoặc Admin mới có quyền thực hiện"));
-            if (req.getDesigner() == null || !req.getDesigner().getId().equals(designer.getId())) {
+            if (req.getDesigner() != null && !req.getDesigner().getId().equals(designer.getId())) {
                 throw new AccessDeniedException("Bạn không phải Designer phụ trách yêu cầu này");
             }
         }
 
         if (!"PREVIEW_READY".equalsIgnoreCase(req.getStatus())) {
-            throw new IllegalArgumentException("Chỉ có thể giải ngân bảo vệ Designer khi đã trả đầy đủ sản phẩm về hệ thống");
+            throw new IllegalArgumentException("Chỉ có thể giải ngân khi đã bàn giao sản phẩm");
         }
-
-        String note = (payload != null && payload.get("note") != null && !String.valueOf(payload.get("note")).isBlank())
-                ? String.valueOf(payload.get("note")).trim()
-                : "Sản phẩm đã được hoàn thiện đúng theo mô tả yêu cầu ban đầu nhưng khách hàng không bấm nhận.";
 
         req.setStatus("APPROVED");
         req.setPaymentStatus("RELEASED");
         req.setReleasedAt(LocalDateTime.now());
         req.setCustomerUnread(true);
-        req.setSystemNotification("Bảo vệ quyền lợi Designer: Hệ thống xác nhận sản phẩm đã làm đúng yêu cầu cam kết (\"" + note + "\"). Hệ thống đã tự động giải ngân tiền tạm giữ (Escrow) cho Designer và mở khóa file sản phẩm cho bạn.");
+        req.setSystemNotification("Đã hoàn tất yêu cầu và mở khóa file sản phẩm.");
         return designRequestRepository.save(req);
     }
 
@@ -338,20 +334,20 @@ public class DesignRequestService {
         currentUserService.checkOwnerOrAdmin(req.getCustomer().getId());
 
         if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
-            throw new IllegalArgumentException("Không thể hủy yêu cầu đã được nghiệm thu hoàn tất");
+            throw new IllegalArgumentException("Không thể hủy yêu cầu đã hoàn tất");
         }
 
         if (!currentUserService.isAdmin() && ("IN_PROGRESS".equalsIgnoreCase(req.getStatus())
                 || "PREVIEW_READY".equalsIgnoreCase(req.getStatus())
                 || "REVISION_REQUESTED".equalsIgnoreCase(req.getStatus()))) {
-            throw new IllegalArgumentException("Không thể tự ý hủy ngang khi Designer đã nhận làm để bảo vệ công sức Designer! Nếu sản phẩm bàn giao không đúng yêu cầu, bạn có quyền bấm 'Yêu cầu sửa lại' hoặc 'Báo sai yêu cầu & Hoàn tiền 100%' ở bước nghiệm thu.");
+            throw new IllegalArgumentException("Không thể hủy yêu cầu khi Designer đã nhận làm.");
         }
 
         req.setStatus("CANCELLED");
         if ("ESCROW_HELD".equalsIgnoreCase(req.getPaymentStatus())) {
             req.setPaymentStatus("REFUNDED");
             req.setReleasedAt(LocalDateTime.now());
-            req.setSystemNotification("Bạn đã hủy yêu cầu trước khi có Designer nhận làm. Hệ thống đã hoàn trả 100% số tiền ký quỹ về tài khoản của bạn.");
+            req.setSystemNotification("Đã hủy yêu cầu và hoàn tiền.");
         }
         req.setCustomerUnread(false);
         return designRequestRepository.save(req);

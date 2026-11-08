@@ -280,10 +280,6 @@ async function loadMyDesigns() {
                             ${rejectBox}
 
                             <div class="mt-auto d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-primary btn-sm flex-fill rounded-pill"
-                                    onclick="openDesigner3DStudio('${primaryImg}', '${escapeHtml(design.name)}', 'POSTER_3D')" title="Dựng Không gian 3D & Quay Phim Movie 3D">
-                                    <i class="fa-solid fa-cube me-1"></i> 3D & Movie
-                                </button>
                                 <button type="button" class="btn btn-outline-secondary btn-sm flex-fill rounded-pill"
                                     onclick="openEditDesignModal(${design.id})" title="Chỉnh sửa thông tin thiết kế">
                                     <i class="bi bi-pencil-square me-1"></i> Sửa
@@ -1050,7 +1046,7 @@ window.addEventListener('auth:login_success', () => {
 });
 
 // =========================================================================
-// YÊU CẦU THIẾT KẾ RIÊNG TRÊN HỆ THỐNG & TRẢ SẢN PHẨM BÀN GIAO CHO KHÁCH HÀNG
+// YÊU CẦU THIẾT KẾ RIÊNG TỪ KHÁCH HÀNG
 // =========================================================================
 
 async function loadDesignerCustomRequests() {
@@ -1072,8 +1068,7 @@ async function loadDesignerCustomRequests() {
             container.innerHTML = `
                 <div class="text-center py-5 bg-light rounded-4 border">
                     <i class="bi bi-briefcase fs-1 text-muted"></i>
-                    <h5 class="mt-3 fw-bold">Chưa có yêu cầu đặt thiết kế nào trên hệ thống</h5>
-                    <p class="text-muted small mb-0">Khi khách hàng đẩy yêu cầu thiết kế riêng lên hệ thống, yêu cầu sẽ hiển thị tại đây để bạn nhận làm.</p>
+                    <h6 class="mt-3 fw-bold">Chưa có yêu cầu thiết kế nào</h6>
                 </div>
             `;
             return;
@@ -1089,21 +1084,15 @@ async function loadDesignerCustomRequests() {
         container.innerHTML = `
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <div class="p-3 rounded-4 bg-warning-subtle border border-warning d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="small fw-bold text-dark"><i class="bi bi-shield-lock-fill text-warning me-1"></i>Tiền Ký Quỹ Hệ Thống Đang Giữ Bảo Vệ Bạn (Escrow)</div>
-                            <small class="text-muted">Khách đã nộp 100% vào hệ thống, không thể tự ý hủy ngang khi bạn đã nhận làm</small>
-                        </div>
-                        <h4 class="fw-bold text-dark mb-0">${formatCurrency(totalEscrowHeld)}</h4>
+                    <div class="p-3 rounded-4 bg-light border d-flex align-items-center justify-content-between">
+                        <div class="small fw-bold text-secondary">Ngân sách đang thực hiện</div>
+                        <h5 class="fw-bold text-dark mb-0">${formatCurrency(totalEscrowHeld)}</h5>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="p-3 rounded-4 bg-success-subtle border border-success d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="small fw-bold text-success"><i class="bi bi-cash-coin me-1"></i>Doanh Thu Thiết Kế Riêng Đã Giải Ngân</div>
-                            <small class="text-muted">Đã nghiệm thu hoặc được hệ thống bảo vệ giải ngân về tài khoản của bạn</small>
-                        </div>
-                        <h4 class="fw-bold text-success mb-0">${formatCurrency(totalReleased)}</h4>
+                    <div class="p-3 rounded-4 bg-success-subtle border border-success-subtle d-flex align-items-center justify-content-between">
+                        <div class="small fw-bold text-success">Doanh thu đã nhận</div>
+                        <h5 class="fw-bold text-success mb-0">${formatCurrency(totalReleased)}</h5>
                     </div>
                 </div>
             </div>
@@ -1111,32 +1100,20 @@ async function loadDesignerCustomRequests() {
             <div class="d-flex flex-column gap-3">
                 ${list.map(req => {
                     const st = req.status || 'OPEN';
-                    const paySt = req.paymentStatus || 'ESCROW_HELD';
-                    let statusBadge = '<span class="badge bg-info text-dark"><i class="bi bi-lightning-fill me-1"></i>Đang mở trên hệ thống - Chờ Designer nhận</span>';
-                    if (st === 'IN_PROGRESS') statusBadge = '<span class="badge bg-primary"><i class="bi bi-bell-fill me-1"></i>Đã nhận làm (Hệ thống đã báo khách)</span>';
-                    else if (st === 'REVISION_REQUESTED') statusBadge = `<span class="badge bg-danger"><i class="bi bi-arrow-repeat me-1"></i>Khách yêu cầu chỉnh sửa lại (Lần #${req.revisionCount || 1})</span>`;
-                    else if (st === 'PREVIEW_READY') statusBadge = '<span class="badge bg-warning text-dark"><i class="bi bi-box-seam-fill me-1"></i>Đã trả sản phẩm về hệ thống & chuyển cho khách</span>';
-                    else if (st === 'APPROVED') statusBadge = '<span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Hoàn tất & Đã giải ngân tiền cho bạn</span>';
-                    else if (st === 'REFUNDED') statusBadge = '<span class="badge bg-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>Đã hoàn tiền cho khách (Sai yêu cầu)</span>';
+                    let statusBadge = '<span class="badge bg-info text-dark">Chờ nhận</span>';
+                    if (st === 'IN_PROGRESS') statusBadge = '<span class="badge bg-primary">Đang thực hiện</span>';
+                    else if (st === 'REVISION_REQUESTED') statusBadge = `<span class="badge bg-danger">Cần chỉnh sửa (#${req.revisionCount || 1})</span>`;
+                    else if (st === 'PREVIEW_READY') statusBadge = '<span class="badge bg-warning text-dark">Đã gửi sản phẩm</span>';
+                    else if (st === 'APPROVED') statusBadge = '<span class="badge bg-success">Hoàn tất</span>';
+                    else if (st === 'REFUNDED') statusBadge = '<span class="badge bg-secondary">Đã hoàn tiền</span>';
                     else if (st === 'CANCELLED') statusBadge = '<span class="badge bg-secondary">Đã hủy</span>';
-
-                    let escrowBadge = '<span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-shield-lock-fill text-warning me-1"></i>Escrow: Hệ thống đang giữ tiền bảo đảm</span>';
-                    if (paySt === 'RELEASED') escrowBadge = '<span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-check-circle-fill me-1"></i>Escrow: Đã giải ngân cho bạn</span>';
-                    else if (paySt === 'REFUNDED') escrowBadge = '<span class="badge bg-danger-subtle text-danger border border-danger">Escrow: Đã hoàn tiền cho khách</span>';
 
                     const customerName = req.customer ? (req.customer.fullName || req.customer.username) : 'Khách hàng';
                     const safeTitle = escapeHtml(req.title || 'Yêu cầu thiết kế');
                     const safeNote = escapeHtml(req.designerNote || '');
                     const safeFeedback = escapeHtml(req.customerFeedback || '');
-                    const safeSysNotif = escapeHtml(req.systemNotification || '');
-                    const previewImg = req.previewImageUrl || req.referenceImageUrl || '';
                     const deliveryName = escapeHtml(req.deliveryFileName || '');
                     const deliveryUrl = req.deliveryFileUrl || '';
-                    const mockupLabel = req.mockupType === 'BOX_3D' ? 'Kèm Hộp 3D'
-                        : req.mockupType === 'CUP_3D' ? 'Kèm Cốc/Chai 3D'
-                        : req.mockupType === 'DEVICE_3D' ? 'Kèm Màn hình 3D'
-                        : req.mockupType === 'POSTER_3D' ? 'Kèm Khung 3D'
-                        : 'Thiết kế 2D & File gốc';
 
                     return `
                         <div class="card border rounded-4 shadow-sm p-3 ${st === 'REVISION_REQUESTED' ? 'border-danger border-2' : ''}">
@@ -1144,58 +1121,49 @@ async function loadDesignerCustomRequests() {
                                 <div>
                                     <span class="badge bg-dark me-2">#REQ-${req.id}</span>
                                     <strong class="fs-6 text-dark">${safeTitle}</strong>
-                                    <span class="badge bg-primary-subtle text-primary border ms-2">${mockupLabel}</span>
+                                    ${req.category ? `<span class="badge bg-light text-secondary border ms-2">${escapeHtml(req.category.name)}</span>` : ''}
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 align-items-center">
-                                    ${escrowBadge}
                                     ${statusBadge}
                                 </div>
                             </div>
 
-                            ${safeSysNotif ? `
-                                <div class="alert alert-light border py-2 px-3 mb-3 small d-flex align-items-center gap-2">
-                                    <i class="bi bi-bell-fill text-primary"></i>
-                                    <div><strong>Trạng thái thông báo hệ thống gửi khách:</strong> ${safeSysNotif}</div>
-                                </div>
-                            ` : ''}
-
                             ${safeFeedback ? `
                                 <div class="alert alert-warning border-warning py-2 px-3 mb-3 small">
-                                    <strong><i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>Yêu cầu chỉnh sửa / Phản hồi từ khách hàng:</strong> ${safeFeedback}
+                                    <strong>Phản hồi từ khách hàng:</strong> ${safeFeedback}
                                 </div>
                             ` : ''}
 
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-3">
-                                    <div class="small text-muted fw-semibold mb-1">Tài liệu / Mẫu khách gửi:</div>
-                                    <div class="rounded-3 border overflow-hidden bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
-                                        ${req.referenceImageUrl ? `<img src="${req.referenceImageUrl}" class="w-100 h-100 object-fit-cover">` : '<span class="text-muted small px-2 text-center">Yêu cầu mô tả chữ (Không kèm ảnh)</span>'}
+                                    <div class="small text-muted fw-semibold mb-1">Ảnh tham khảo:</div>
+                                    <div class="rounded-3 border overflow-hidden bg-light d-flex align-items-center justify-content-center" style="height: 115px;">
+                                        ${req.referenceImageUrl ? `<img src="${req.referenceImageUrl}" class="w-100 h-100 object-fit-cover">` : '<span class="text-muted small">Không có ảnh</span>'}
                                     </div>
                                 </div>
 
                                 <div class="col-md-5">
                                     <p class="small text-secondary mb-2">${escapeHtml(req.productDescription)}</p>
                                     <div class="small text-muted">
-                                        <div><i class="bi bi-person me-1"></i><strong>Khách hàng yêu cầu:</strong> ${escapeHtml(customerName)}</div>
-                                        <div><i class="bi bi-cash-stack me-1"></i><strong>Thù lao ký quỹ (Escrow):</strong> <span class="text-success fw-bold">${formatCurrency(req.budget)}</span> • <strong>Thời hạn:</strong> ${escapeHtml(req.deadline || 'Linh hoạt')}</div>
-                                        ${req.transactionCode ? `<div><i class="bi bi-shield-check me-1 text-warning"></i><strong>Mã GD Escrow:</strong> <code>${escapeHtml(req.transactionCode)}</code></div>` : ''}
+                                        <div><strong>Khách hàng:</strong> ${escapeHtml(customerName)}</div>
+                                        <div><strong>Ngân sách:</strong> <span class="text-success fw-bold">${formatCurrency(req.budget)}</span> • <strong>Hạn:</strong> ${escapeHtml(req.deadline || 'Linh hoạt')}</div>
                                     </div>
                                     ${req.designerNote ? `
                                         <div class="alert alert-info py-2 px-3 mt-2 mb-0 small">
-                                            <strong><i class="bi bi-chat-dots me-1"></i>Ghi chú bàn giao đã gửi:</strong> ${safeNote}
+                                            <strong>Ghi chú đã gửi:</strong> ${safeNote}
                                         </div>
                                     ` : ''}
                                 </div>
 
                                 <div class="col-md-4 border-start ps-md-3">
                                     ${req.previewImageUrl ? `
-                                        <div class="small fw-bold text-success mb-1"><i class="bi bi-check2-circle me-1"></i>Sản phẩm đã trả về hệ thống:</div>
+                                        <div class="small fw-bold text-success mb-1">Sản phẩm đã gửi:</div>
                                         <div class="rounded border overflow-hidden mb-2" style="height: 80px;">
                                             <img src="${req.previewImageUrl}" class="w-100 h-100 object-fit-cover">
                                         </div>
                                         ${deliveryName ? `
                                             <div class="small text-dark mb-2 text-truncate" title="${deliveryName}">
-                                                <i class="bi bi-file-earmark-zip-fill text-primary me-1"></i>File bàn giao: <strong>${deliveryName}</strong>
+                                                <i class="bi bi-file-earmark-zip-fill text-primary me-1"></i>${deliveryName}
                                             </div>
                                         ` : ''}
                                     ` : ''}
@@ -1203,25 +1171,19 @@ async function loadDesignerCustomRequests() {
                                     <div class="d-grid gap-2">
                                         ${st === 'OPEN' ? `
                                             <button type="button" class="btn btn-primary btn-sm fw-bold rounded-pill" onclick="handleAcceptCustomRequest(${req.id})">
-                                                <i class="bi bi-hand-thumbs-up-fill me-1"></i> Nhận Làm Yêu Cầu Này (Đã Ký Quỹ Escrow)
+                                                <i class="bi bi-check2 me-1"></i> Nhận yêu cầu
                                             </button>
                                         ` : ''}
 
                                         ${(st === 'OPEN' || st === 'IN_PROGRESS' || st === 'REVISION_REQUESTED' || st === 'PREVIEW_READY') ? `
-                                            <button type="button" class="btn btn-success btn-sm fw-bold rounded-pill" onclick="openSubmitPreviewModal(${req.id}, '${safeTitle}', '${req.previewImageUrl || ''}', '${req.mockupType || 'STANDARD_2D'}', '${deliveryUrl}', '${deliveryName}')">
-                                                <i class="bi bi-box-seam-fill me-1"></i> ${st === 'REVISION_REQUESTED' ? 'Nộp Bản Đã Chỉnh Sửa Về Hệ Thống' : req.previewImageUrl ? 'Cập Nhật Sản Phẩm Trả Về Hệ Thống' : 'Trả Sản Phẩm Về Hệ Thống (Giao Khách)'}
+                                            <button type="button" class="btn btn-success btn-sm fw-bold rounded-pill" onclick="openSubmitPreviewModal(${req.id}, '${safeTitle}', '${req.previewImageUrl || ''}', 'STANDARD_2D', '${deliveryUrl}', '${deliveryName}')">
+                                                <i class="bi bi-upload me-1"></i> ${st === 'REVISION_REQUESTED' ? 'Gửi lại bản sửa' : req.previewImageUrl ? 'Cập nhật sản phẩm' : 'Bàn giao sản phẩm'}
                                             </button>
                                         ` : ''}
 
                                         ${st === 'PREVIEW_READY' ? `
-                                            <button type="button" class="btn btn-outline-warning text-dark btn-sm fw-bold rounded-pill" onclick="handleForceReleaseEscrow(${req.id})">
-                                                <i class="bi bi-shield-fill-check text-warning me-1"></i> Đã Làm Đúng Nhưng Khách Không Nhận: Giải Ngân
-                                            </button>
-                                        ` : ''}
-
-                                        ${previewImg ? `
-                                            <button type="button" class="btn btn-outline-dark btn-sm fw-semibold rounded-pill" onclick="openDesigner3DStudio('${previewImg}', '${safeTitle}', '${req.mockupType && req.mockupType !== 'STANDARD_2D' ? req.mockupType : 'POSTER_3D'}')">
-                                                <i class="fa-solid fa-cube me-1 text-danger"></i> Xem Mô Hình 3D / Quay Movie
+                                            <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold rounded-pill" onclick="handleForceReleaseEscrow(${req.id})">
+                                                Yêu cầu giải ngân
                                             </button>
                                         ` : ''}
                                     </div>
@@ -1238,40 +1200,10 @@ async function loadDesignerCustomRequests() {
 }
 window.loadDesignerCustomRequests = loadDesignerCustomRequests;
 
-function openDesigner3DStudio(imageUrl, title, mockupType = 'POSTER_3D') {
-    const tabBtn = document.getElementById('tab-requests-btn');
-    if (tabBtn && !tabBtn.classList.contains('active')) {
-        tabBtn.click();
-    }
-
-    const wrap = document.getElementById('designer3DStageWrap');
-    const titleEl = document.getElementById('designer3DStageTitle');
-    if (!wrap) return;
-    wrap.classList.remove('d-none');
-    if (titleEl) {
-        titleEl.innerHTML = `<i class="fa-solid fa-cube me-1"></i> Bàn Dựng Không Gian 3D & Phụ Trợ Quay Movie 3D: ${title}`;
-    }
-
-    setTimeout(() => {
-        wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        if (window.DesignHub3D) {
-            const user = TokenStorage.getUser();
-            window.DesignHub3D.initViewer('designer3DMount', {
-                imageUrl,
-                title,
-                designerName: user ? (user.fullName || user.username) : 'DesignHub Artist',
-                mockupType: mockupType || 'POSTER_3D',
-                watermark: false
-            });
-        }
-    }, 120);
-}
-window.openDesigner3DStudio = openDesigner3DStudio;
-
 async function handleAcceptCustomRequest(reqId) {
     try {
         await api.designRequests.accept(reqId);
-        showToast('Đã nhận yêu cầu! Hệ thống đã tự động gửi thông báo tới khách hàng và khóa hủy ngang để bảo vệ bạn.', 'success');
+        showToast('Đã nhận yêu cầu thiết kế!', 'success');
         await loadDesignerCustomRequests();
     } catch (err) {
         showToast(err.message || 'Không thể nhận yêu cầu', 'danger');
@@ -1280,11 +1212,11 @@ async function handleAcceptCustomRequest(reqId) {
 window.handleAcceptCustomRequest = handleAcceptCustomRequest;
 
 async function handleForceReleaseEscrow(reqId) {
-    const note = prompt('Bảo vệ Designer (Trường hợp sản phẩm đã làm đúng yêu cầu nhưng khách hàng không nhận): Nhập ghi chú xác nhận bàn giao đúng yêu cầu để hệ thống giải ngân tiền tạm giữ (Escrow) cho bạn:', 'Đã hoàn thiện và nộp đầy đủ ảnh thiết kế cùng file gốc đúng theo toàn bộ mô tả yêu cầu ban đầu của khách hàng.');
+    const note = prompt('Nhập ghi chú xác nhận hoàn thành yêu cầu để giải ngân:', 'Đã bàn giao đầy đủ sản phẩm theo đúng yêu cầu.');
     if (!note || !note.trim()) return;
     try {
         await api.designRequests.forceRelease(reqId, { note: note.trim() });
-        showToast('Hệ thống đã xác nhận sản phẩm đúng cam kết và GIẢI NGÂN 100% tiền ký quỹ (Escrow) cho bạn!', 'success');
+        showToast('Đã giải ngân thành công!', 'success');
         await loadDesignerCustomRequests();
     } catch (err) {
         showToast(err.message || 'Không thể giải ngân yêu cầu', 'danger');
@@ -1296,10 +1228,10 @@ function openSubmitPreviewModal(reqId, title, currentPreviewUrl = '', mockupType
     document.getElementById('submitPreviewReqId').value = reqId;
     document.getElementById('submitPreviewReqTitle').textContent = `#REQ-${reqId}: ${title}`;
     document.getElementById('submitPreviewImageUrl').value = currentPreviewUrl || '';
-    document.getElementById('submitPreviewMockupType').value = mockupType || 'STANDARD_2D';
+    document.getElementById('submitPreviewMockupType').value = 'STANDARD_2D';
     document.getElementById('submitDeliveryFileUrl').value = currentDeliveryUrl || '';
-    document.getElementById('submitDeliveryFileName').value = currentDeliveryName || 'San-Pham-Thiet-Ke-Ban-Giao.zip';
-    document.getElementById('submitPreviewNote').value = 'Đã hoàn thiện sản phẩm thiết kế theo đúng yêu cầu của bạn và trả sản phẩm (ảnh + file thiết kế gốc) về hệ thống. Mời bạn kiểm tra và tải sản phẩm về máy!';
+    document.getElementById('submitDeliveryFileName').value = currentDeliveryName || 'San-Pham-Thiet-Ke.zip';
+    document.getElementById('submitPreviewNote').value = 'Đã hoàn thiện sản phẩm thiết kế theo yêu cầu của bạn.';
 
     const fileInput = document.getElementById('submitPreviewImageFile');
     if (fileInput) {
@@ -1307,14 +1239,14 @@ function openSubmitPreviewModal(reqId, title, currentPreviewUrl = '', mockupType
         fileInput.onchange = async () => {
             if (!fileInput.files || !fileInput.files[0]) return;
             try {
-                showToast('Đang tải ảnh sản phẩm lên hệ thống...', 'info');
+                showToast('Đang tải ảnh lên...', 'info');
                 const res = await api.upload.image(fileInput.files[0]);
                 const uploadedUrl = res.fileUrl || res.url || '';
                 document.getElementById('submitPreviewImageUrl').value = uploadedUrl;
                 if (!document.getElementById('submitDeliveryFileUrl').value) {
                     document.getElementById('submitDeliveryFileUrl').value = uploadedUrl;
                 }
-                showToast('Tải ảnh sản phẩm thành công!', 'success');
+                showToast('Tải ảnh thành công!', 'success');
             } catch (err) {
                 showToast('Lỗi tải ảnh: ' + err.message, 'danger');
             }
@@ -1329,7 +1261,7 @@ function openSubmitPreviewModal(reqId, title, currentPreviewUrl = '', mockupType
             const f = deliveryInput.files[0];
             document.getElementById('submitDeliveryFileName').value = f.name;
             try {
-                showToast('Đang tải tệp thiết kế bàn giao lên hệ thống...', 'info');
+                showToast('Đang tải file lên...', 'info');
                 let res;
                 if (f.type && f.type.startsWith('image/')) {
                     res = await api.upload.image(f);
@@ -1337,9 +1269,9 @@ function openSubmitPreviewModal(reqId, title, currentPreviewUrl = '', mockupType
                     res = await api.upload.file(f);
                 }
                 document.getElementById('submitDeliveryFileUrl').value = res.fileUrl || res.url || '';
-                showToast('Đã tải tệp sản phẩm bàn giao lên hệ thống!', 'success');
+                showToast('Đã tải file lên thành công!', 'success');
             } catch (err) {
-                showToast('Lỗi tải tệp bàn giao: ' + err.message, 'danger');
+                showToast('Lỗi tải file: ' + err.message, 'danger');
             }
         };
     }
@@ -1357,30 +1289,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const reqId = Number(document.getElementById('submitPreviewReqId').value);
             const previewImageUrl = document.getElementById('submitPreviewImageUrl').value.trim();
             const deliveryFileUrl = document.getElementById('submitDeliveryFileUrl').value.trim() || previewImageUrl;
-            const deliveryFileName = document.getElementById('submitDeliveryFileName').value.trim() || 'San-Pham-Thiet-Ke-Ban-Giao.zip';
-            const mockupType = document.getElementById('submitPreviewMockupType').value;
+            const deliveryFileName = document.getElementById('submitDeliveryFileName').value.trim() || 'San-Pham-Thiet-Ke.zip';
             const designerNote = document.getElementById('submitPreviewNote').value.trim();
             const btn = document.getElementById('btnConfirmSubmitPreview');
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang trả sản phẩm về hệ thống...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang gửi...';
 
             try {
                 await api.designRequests.submitPreview(reqId, {
                     previewImageUrl,
                     deliveryFileUrl,
                     deliveryFileName,
-                    mockupType,
+                    mockupType: 'STANDARD_2D',
                     designerNote
                 });
-                showToast('Đã trả sản phẩm về hệ thống! Hệ thống đã thông báo và chuyển sản phẩm về cho khách hàng.', 'success');
+                showToast('Đã bàn giao sản phẩm thành công!', 'success');
                 bootstrap.Modal.getInstance(document.getElementById('submitRequestPreviewModal'))?.hide();
                 await loadDesignerCustomRequests();
             } catch (err) {
-                showToast(err.message || 'Không thể trả sản phẩm về hệ thống', 'danger');
+                showToast(err.message || 'Không thể gửi sản phẩm', 'danger');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-send-check-fill me-1"></i> Trả Sản Phẩm Về Hệ Thống & Chuyển Cho Khách';
+                btn.innerHTML = 'Gửi sản phẩm';
             }
         });
     }
